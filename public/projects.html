@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Our Welfare Projects | Qasr-e-Shabbir Foundation</title>
+  <meta name="description" content="Explore our charitable projects focusing on orphan education sponsorship, school fee grants, food ration packs, and financial assistance.">
+    <!-- Google Fonts: Inter, Outfit & Noto Nastaliq Urdu -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="/media/branding/logo.svg">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <link rel="stylesheet" href="/css/rtl.css?v=3">
+  <style>
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 30px;
+      justify-content: center;
+    }
+    .filter-btn {
+      padding: 8px 18px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-light);
+      background: #FFFFFF;
+      color: var(--text-dark);
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .filter-btn.active, .filter-btn:hover {
+      background: var(--primary);
+      color: #FFFFFF;
+      border-color: var(--primary);
+    }
+    .search-box {
+      max-width: 480px;
+      margin: 0 auto 30px;
+      position: relative;
+    }
+    .search-box input {
+      padding-left: 42px;
+    }
+    .search-box i {
+      position: absolute;
+      top: 50%;
+      left: 15px;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+    html[dir="rtl"] .search-box input {
+      padding-left: 15px;
+      padding-right: 42px;
+    }
+    html[dir="rtl"] .search-box i {
+      left: auto;
+      right: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="/" class="header-brand">
+        <div class="brand-logos-pair">
+          <img src="/media/branding/logo.svg" alt="Qasr-e-Shabbir Foundation Main Logo" class="header-brand-logo header-logo-img" width="58" height="58" style="height: 58px; width: auto; max-width: 62px; object-fit: contain; flex-shrink: 0; display: block;" onerror="this.onerror=null; this.src='/media/branding/logo.svg';" />
+          <img src="/media/branding/flag.svg" alt="Foundation Flag" class="header-brand-logo header-flag-img" width="58" height="58" style="height: 58px; width: auto; max-width: 56px; object-fit: contain; flex-shrink: 0; display: block;" onerror="this.onerror=null; this.src='/media/branding/flag.svg';" />
+        </div>
+        <div class="brand-text">
+          <span class="brand-name" data-i18n="foundationName">QASR-E-SHABBIR FOUNDATION</span>
+          <span class="brand-tagline" data-i18n="tagline">Together for a Brighter Tomorrow</span>
+        </div>
+      </a>
+
+      <!-- Primary Navigation & Mobile Menu Container -->
+      <nav class="header-nav" id="mainNav">
+        <ul class="nav-links">
+          <li><a href="/" class="nav-link" data-i18n="navHome">Home</a></li>
+          <li><a href="/about" class="nav-link" data-i18n="navAbout">About Us</a></li>
+          <li><a href="/projects" class="nav-link active" data-i18n="navProjects">Projects</a></li>
+          <li><a href="/news" class="nav-link" data-i18n="navNews">News & Updates</a></li>
+          <li><a href="/apply" class="nav-link" data-i18n="navApply">Apply for Assistance</a></li>
+          <li><a href="/contact" class="nav-link" data-i18n="navContact">Contact</a></li>
+        </ul>
+
+        <!-- Mobile-Only Action Items Under the Toggle Button -->
+        <div class="mobile-nav-controls">
+          <div class="lang-toggle" title="Switch Language / زبان تبدیل کریں">
+            <button type="button" class="lang-btn active" data-lang="en">English</button>
+            <button type="button" class="lang-btn" data-lang="ur">اردو</button>
+          </div>
+          <a href="/projects" class="mobile-nav-search-btn">
+            <i class="fas fa-search"></i>
+            <span>Search Projects</span>
+          </a>
+          <a href="/donate" class="btn-donate-mobile">
+            <i class="fas fa-heart"></i>
+            <span data-i18n="btnDonateNow">Donate Now</span>
+          </a>
+        </div>
+      </nav>
+
+      <!-- Desktop Action Controls -->
+      <div class="header-actions desktop-actions">
+        <div class="lang-toggle" title="Switch Language / زبان تبدیل کریں">
+          <button type="button" class="lang-btn active" data-lang="en">English</button>
+          <button type="button" class="lang-btn" data-lang="ur">اردو</button>
+        </div>
+        <a href="/projects" class="header-search-btn" title="Search Projects">
+          <i class="fas fa-search"></i>
+        </a>
+        <a href="/donate" class="btn-donate-header">
+          <i class="fas fa-heart"></i>
+          <span data-i18n="btnDonateNow">Donate Now</span>
+        </a>
+      </div>
+
+      <!-- Mobile Menu Toggle Button -->
+      <button type="button" class="mobile-toggle" id="mobileToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Title Banner -->
+  <section style="background: linear-gradient(135deg, #7F1D1D 0%, #2B050E 100%); color: #FFFFFF; padding: 50px 0; text-align: center;">
+    <div class="container">
+      <h1 style="font-family: var(--font-en-title); font-size: 2.4rem; margin-bottom: 10px;" data-i18n="sectionProjectsTitle">
+        Our Welfare Projects
+      </h1>
+      <p style="color: #FECDD3; font-size: 1rem; max-width: 600px; margin: 0 auto;">
+        Dedicated initiatives supporting orphan children's schooling, food ration sustainability, and community welfare.
+      </p>
+    </div>
+  </section>
+
+  <!-- Projects Listing -->
+  <section class="section">
+    <div class="container">
+      
+      <!-- Search Input -->
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="projectSearchInput" class="form-control" placeholder="Search projects..." data-i18n="searchPlaceholder" />
+      </div>
+
+      <!-- Category Filter Tabs -->
+      <div class="filter-bar" id="categoryFilterBar">
+        <button type="button" class="filter-btn active" data-cat="all">All Projects</button>
+        <button type="button" class="filter-btn" data-cat="orphan-education">Orphan Education</button>
+        <button type="button" class="filter-btn" data-cat="school-fees-healthcare">Healthcare & School Fees</button>
+        <button type="button" class="filter-btn" data-cat="food-ration-support">Food & Ration</button>
+        <button type="button" class="filter-btn" data-cat="financial-assistance">Clean Water & Relief</button>
+      </div>
+
+      <!-- Projects Grid -->
+      <div class="projects-grid" id="allProjectsGrid">
+        <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted);" data-i18n="loading">
+          Loading projects from foundation database...
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        
+        <!-- Foundation Brand & Mission -->
+        <div class="footer-brand-col">
+          <div class="footer-logo-wrap">
+            <img src="/media/branding/logo.svg" alt="Qasr-e-Shabbir Foundation" class="footer-logo-img" onerror="this.onerror=null; this.src='/media/branding/logo.svg';" />
+            <div>
+              <h3 class="footer-brand-title" data-i18n="foundationName">QASR-E-SHABBIR FOUNDATION</h3>
+              <span class="footer-tagline" data-i18n="tagline">Together for a Brighter Tomorrow</span>
+            </div>
+          </div>
+          <p class="footer-mission-text" data-i18n="footerMission">
+            Dedicated to the educational sponsorship of orphaned children and providing monthly food and financial welfare to vulnerable families in Pakistan.
+          </p>
+        </div>
+
+        <!-- Quick Links -->
+        <div>
+          <h4 class="footer-col-title" data-i18n="quickLinks">Quick Links</h4>
+          <ul class="footer-links-list">
+            <li><a href="/" class="footer-link" data-i18n="navHome">Home</a></li>
+            <li><a href="/about" class="footer-link" data-i18n="navAbout">About Us</a></li>
+            <li><a href="/projects" class="footer-link" data-i18n="navProjects">Projects</a></li>
+            <li><a href="/news" class="footer-link" data-i18n="navNews">News & Updates</a></li>
+            <li><a href="/apply" class="footer-link" data-i18n="navApply">Apply for Assistance</a></li>
+            <li><a href="/volunteer" class="footer-link" data-i18n="navVolunteer">Become a Volunteer</a></li>
+            <li><a href="/contact" class="footer-link" data-i18n="navContact">Contact</a></li>
+          </ul>
+        </div>
+
+        <!-- Follow Us (Social Media) -->
+        <div>
+          <h4 class="footer-col-title" data-i18n="followUs">Follow Us</h4>
+          <div class="footer-social-icons">
+            <a href="https://facebook.com" target="_blank" rel="noopener" class="social-icon-btn" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://twitter.com" target="_blank" rel="noopener" class="social-icon-btn" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="https://instagram.com" target="_blank" rel="noopener" class="social-icon-btn" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="https://youtube.com" target="_blank" rel="noopener" class="social-icon-btn" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+            <a href="https://linkedin.com" target="_blank" rel="noopener" class="social-icon-btn" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+          </div>
+          <div style="margin-top: 24px;">
+            <a href="/admin" style="font-size: 0.78rem; color: #64748B; display: inline-flex; align-items: center; gap: 5px;">
+              <i class="fas fa-lock"></i> Staff Admin Portal
+            </a>
+          </div>
+        </div>
+
+        <!-- Newsletter Subscription -->
+        <div>
+          <h4 class="footer-col-title" data-i18n="newsletterTitle">Subscribe to Our Newsletter</h4>
+          <p style="font-size: 0.82rem; color: #94A3B8; margin-bottom: 8px;">
+            Receive verified updates regarding our educational and welfare milestones.
+          </p>
+          <form class="newsletter-form" onsubmit="event.preventDefault(); alert(window.FoundationI18n ? window.FoundationI18n.t('msgSuccess') : 'Subscribed successfully!'); this.reset();">
+            <input type="email" class="newsletter-input" placeholder="Your email address" data-i18n="newsletterPlaceholder" required />
+            <button type="submit" class="newsletter-btn" data-i18n="btnSubscribe">Subscribe</button>
+          </form>
+        </div>
+
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="footer-bottom">
+        <p data-i18n="copyright">© 2026 Qasr-e-Shabbir Foundation. All rights reserved.</p>
+        <div class="footer-legal-links">
+          <a href="/about" class="footer-legal-link" data-i18n="privacyPolicy">Privacy Policy</a>
+          <span>•</span>
+          <a href="/about" class="footer-legal-link" data-i18n="termsConditions">Terms & Conditions</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/translations.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.FoundationI18n) window.FoundationI18n.init();
+
+      let activeCategory = 'all';
+      let searchQuery = '';
+      let cachedProjects = [];
+
+      // Check URL query param for category e.g. /projects?category=orphan-education
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('category')) {
+        activeCategory = urlParams.get('category');
+      }
+
+      loadProjects();
+
+      async function loadProjects() {
+        try {
+          const res = await fetch(`/api/public/projects?category=${activeCategory}&search=${encodeURIComponent(searchQuery)}`);
+          const data = await res.json();
+          if (data.success) {
+            cachedProjects = data.projects;
+            renderProjectsList(cachedProjects);
+          }
+        } catch (err) {
+          console.error('Error fetching projects:', err);
+        }
+      }
+
+      function renderProjectsList(projects) {
+        const isUrdu = window.FoundationI18n && window.FoundationI18n.currentLang === 'ur';
+        const grid = document.getElementById('allProjectsGrid');
+        if (!grid) return;
+
+        if (projects.length === 0) {
+          grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted);">
+            ${isUrdu ? 'کوئی پروجیکٹ نہیں ملا۔' : 'No projects found matching the criteria.'}
+          </div>`;
+          return;
+        }
+
+        grid.innerHTML = projects.map(p => {
+          const title = isUrdu ? p.title_ur : p.title_en;
+          const desc = isUrdu ? p.short_desc_ur : p.short_desc_en;
+          const catName = isUrdu ? p.category_name_ur : p.category_name_en;
+          const goal = parseFloat(p.goal_amount) || 0;
+          const raised = parseFloat(p.raised_amount) || 0;
+          const pct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 75;
+          const benCount = p.beneficiaries_count || 126;
+          const benLabel = isUrdu ? (p.beneficiaries_label_ur || 'طلباء') : (p.beneficiaries_label_en || 'Students');
+
+          return `
+            <div class="project-card">
+              <div class="project-image-wrapper">
+                <img src="${p.image_url || '/media/projects/orphan_education.jpg'}" alt="${title}" class="project-image" loading="lazy" />
+              </div>
+              <div class="project-content">
+                <span class="project-category-tag">${catName || 'Education'}</span>
+                <h3 class="project-title">${title}</h3>
+                <p class="project-desc">${desc}</p>
+                
+                <div class="project-progress-wrapper">
+                  <div class="project-progress-bar">
+                    <div class="project-progress-fill" style="width: ${pct}%"></div>
+                  </div>
+                  <div class="project-meta-stats">
+                    <span>${pct}% ${isUrdu ? 'مکمل' : 'Funded'}</span>
+                    <span>PKR ${raised.toLocaleString()}</span>
+                  </div>
+                </div>
+
+                <div class="project-card-actions">
+                  <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-dark);">
+                    <i class="fas fa-users" style="color: var(--primary); margin-inline-end: 4px;"></i>
+                    ${benCount} ${benLabel}
+                  </span>
+                  <a href="/project/${p.slug}" class="btn-card-donate">
+                    ${isUrdu ? 'تفصیل و عطیہ' : 'Learn & Support'}
+                  </a>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Filter click
+      const filterBtns = document.querySelectorAll('.filter-btn');
+      filterBtns.forEach(btn => {
+        if (btn.dataset.cat === activeCategory) btn.classList.add('active');
+        btn.addEventListener('click', () => {
+          filterBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          activeCategory = btn.dataset.cat;
+          loadProjects();
+        });
+      });
+
+      // Search input debounced
+      const searchInput = document.getElementById('projectSearchInput');
+      let searchTimer;
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          clearTimeout(searchTimer);
+          searchTimer = setTimeout(() => {
+            searchQuery = e.target.value;
+            loadProjects();
+          }, 350);
+        });
+      }
+
+      window.addEventListener('foundation:languageChanged', () => {
+        renderProjectsList(cachedProjects);
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qasr-e-Shabbir Foundation | Orphan Education & Humanitarian Welfare</title>
+  <meta name="description" content="Qasr-e-Shabbir Foundation is dedicated to supporting orphaned children with education, school fees, and providing food ration and financial assistance to deserving families in Pakistan.">
+  
+    <!-- Google Fonts: Inter, Outfit & Noto Nastaliq Urdu -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Favicon -->
+  <link rel="icon" href="/media/branding/logo.svg">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Core Stylesheets -->
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <link rel="stylesheet" href="/css/rtl.css?v=3">
+</head>
+<body>
+
+  <!-- ==================== HEADER ==================== -->
+  <header class="site-header">
+    <div class="header-container">
+      
+      <!-- Brand & Two Logos in Header (1st Main Logo, 2nd Flag Logo) -->
+      <a href="/" class="header-brand">
+        <div class="brand-logos-pair">
+          <img src="/media/branding/logo.svg" alt="Qasr-e-Shabbir Foundation Main Logo" class="header-brand-logo header-logo-img" width="58" height="58" style="height: 58px; width: auto; max-width: 62px; object-fit: contain; flex-shrink: 0; display: block;" onerror="this.onerror=null; this.src='/media/branding/logo.svg';" />
+          <img src="/media/branding/flag.svg" alt="Foundation Flag" class="header-brand-logo header-flag-img" width="58" height="58" style="height: 58px; width: auto; max-width: 56px; object-fit: contain; flex-shrink: 0; display: block;" onerror="this.onerror=null; this.src='/media/branding/flag.svg';" />
+        </div>
+        <div class="brand-text">
+          <span class="brand-name" data-i18n="foundationName">QASR-E-SHABBIR FOUNDATION</span>
+          <span class="brand-tagline" data-i18n="tagline">Together for a Brighter Tomorrow</span>
+        </div>
+      </a>
+
+      <!-- Primary Navigation & Mobile Menu Container -->
+      <nav class="header-nav" id="mainNav">
+        <ul class="nav-links">
+          <li><a href="/" class="nav-link active" data-i18n="navHome">Home</a></li>
+          <li><a href="/about" class="nav-link" data-i18n="navAbout">About Us</a></li>
+          <li><a href="/projects" class="nav-link" data-i18n="navProjects">Projects</a></li>
+          <li><a href="/news" class="nav-link" data-i18n="navNews">News & Updates</a></li>
+          <li><a href="/apply" class="nav-link" data-i18n="navApply">Apply for Assistance</a></li>
+          <li><a href="/contact" class="nav-link" data-i18n="navContact">Contact</a></li>
+        </ul>
+
+        <!-- Mobile-Only Action Items Under the Toggle Button -->
+        <div class="mobile-nav-controls">
+          <div class="lang-toggle" title="Switch Language / زبان تبدیل کریں">
+            <button type="button" class="lang-btn active" data-lang="en">English</button>
+            <button type="button" class="lang-btn" data-lang="ur">اردو</button>
+          </div>
+          <a href="/projects" class="mobile-nav-search-btn">
+            <i class="fas fa-search"></i>
+            <span>Search Projects</span>
+          </a>
+          <a href="/donate" class="btn-donate-mobile trigger-donate-modal">
+            <i class="fas fa-heart"></i>
+            <span data-i18n="btnDonateNow">Donate Now</span>
+          </a>
+        </div>
+      </nav>
+
+      <!-- Desktop Action Controls: Language Toggle, Search & Donate CTA -->
+      <div class="header-actions desktop-actions">
+        <!-- Language Switcher: English | اردو -->
+        <div class="lang-toggle" title="Switch Language / زبان تبدیل کریں">
+          <button type="button" class="lang-btn active" data-lang="en">English</button>
+          <button type="button" class="lang-btn" data-lang="ur">اردو</button>
+        </div>
+
+        <!-- Search Button -->
+        <a href="/projects" class="header-search-btn" title="Search Projects">
+          <i class="fas fa-search"></i>
+        </a>
+
+        <!-- Donate Now Button -->
+        <a href="/donate" class="btn-donate-header trigger-donate-modal">
+          <i class="fas fa-heart"></i>
+          <span data-i18n="btnDonateNow">Donate Now</span>
+        </a>
+      </div>
+
+      <!-- Mobile Menu Toggle Button (Visible on mobile/tablet) -->
+      <button type="button" class="mobile-toggle" id="mobileToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <i class="fas fa-bars"></i>
+      </button>
+
+    </div>
+  </header>
+
+  <!-- ==================== HERO SECTION ==================== -->
+  <section class="hero-section">
+    <div class="hero-backdrop-image" id="heroBackdropImage"></div>
+    <div class="hero-bg-overlay"></div>
+    <div class="container hero-layout">
+      
+      <!-- Hero Text (Border-less, Seamless Atmospheric Presentation) -->
+      <div class="hero-content-card">
+        <span class="hero-eyebrow" id="heroEyebrow" data-i18n="heroEyebrow">WELCOME TO</span>
+        <h1 class="hero-title" id="heroHeading" data-i18n="heroHeading">Qasr-e-Shabbir Foundation</h1>
+        <p class="hero-subtitle" id="heroSubtitle" data-i18n="heroSubtitle">Together for a Brighter Tomorrow</p>
+        <p class="hero-text" id="heroText" data-i18n="heroText">
+          We work for a better, healthier and educated community by providing support, care and hope to those in need.
+        </p>
+
+        <div class="hero-actions">
+          <a href="/donate" class="btn-primary trigger-donate-modal" id="heroBtn1">
+            <i class="fas fa-heart"></i>
+            <span data-i18n="btnSupportCause" id="heroBtn1Text">Support Our Cause</span>
+          </a>
+          <a href="/about" class="btn-secondary" id="heroBtn2">
+            <span data-i18n="btnLearnMore" id="heroBtn2Text">Learn More</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==================== 5 WELFARE CATEGORIES STRIP ==================== -->
+  <section class="categories-section">
+    <div class="container">
+      <div class="categories-grid" id="categoriesGrid">
+        <!-- Rendered dynamically by main.js from MySQL API, with fallback -->
+        <div class="category-card" onclick="window.location.href='/projects?category=orphan-education'">
+          <div class="category-icon-wrapper"><i class="fas fa-graduation-cap"></i></div>
+          <h4 class="category-title" data-i18n="catEducationTitle">Education</h4>
+          <p class="category-desc" data-i18n="catEducationSub">For a Brighter Future</p>
+        </div>
+        <div class="category-card" onclick="window.location.href='/projects?category=school-fees-healthcare'">
+          <div class="category-icon-wrapper"><i class="fas fa-heartbeat"></i></div>
+          <h4 class="category-title" data-i18n="catHealthcareTitle">Healthcare</h4>
+          <p class="category-desc" data-i18n="catHealthcareSub">For Healthy Lives</p>
+        </div>
+        <div class="category-card" onclick="window.location.href='/projects?category=food-ration-support'">
+          <div class="category-icon-wrapper"><i class="fas fa-utensils"></i></div>
+          <h4 class="category-title" data-i18n="catFoodTitle">Food Support</h4>
+          <p class="category-desc" data-i18n="catFoodSub">For Needy Families</p>
+        </div>
+        <div class="category-card" onclick="window.location.href='/projects?category=financial-assistance'">
+          <div class="category-icon-wrapper"><i class="fas fa-hands-helping"></i></div>
+          <h4 class="category-title" data-i18n="catWaterTitle">Clean Water</h4>
+          <p class="category-desc" data-i18n="catWaterSub">For Better Tomorrow</p>
+        </div>
+        <div class="category-card" onclick="window.location.href='/projects?category=community-welfare'">
+          <div class="category-icon-wrapper"><i class="fas fa-users"></i></div>
+          <h4 class="category-title" data-i18n="catCommunityTitle">Community Care</h4>
+          <p class="category-desc" data-i18n="catCommunitySub">For Stronger Society</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== OUR FEATURED PROJECTS ==================== -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title" data-i18n="sectionProjectsTitle">Our Featured Projects</h2>
+        <a href="/projects" class="section-view-all">
+          <span data-i18n="viewAllProjects">View All Projects</span>
+          <i class="fas fa-arrow-right"></i>
+        </a>
+      </div>
+
+      <div class="projects-grid" id="featuredProjectsGrid">
+        <!-- Rendered dynamically from MySQL API -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== MAKE A DIFFERENCE & IMPACT STATS BANNER ==================== -->
+  <section class="difference-banner">
+    <div class="container difference-layout">
+      
+      <!-- Call to Action Banner -->
+      <div>
+        <span class="difference-badge" data-i18n="diffBadge">MAKE A DIFFERENCE</span>
+        <h2 class="difference-heading" data-i18n="diffHeading">Your Generosity Brings Real Change</h2>
+        <p class="difference-text" data-i18n="diffText">
+          Join hands with us and help create a better future for those who need it most.
+        </p>
+        <a href="/donate" class="btn-primary trigger-donate-modal">
+          <i class="fas fa-heart"></i>
+          <span data-i18n="btnDonateNow">Donate Now</span>
+        </a>
+      </div>
+
+      <!-- Real Impact Statistics Cards -->
+      <div class="impact-stats-grid" id="impactStatsGrid">
+        <!-- Rendered dynamically from MySQL API -->
+        <div class="stat-item">
+          <div class="stat-icon"><i class="fas fa-users"></i></div>
+          <div>
+            <div class="stat-number">2,450+</div>
+            <div class="stat-label" data-i18n="statPeopleHelped">People Helped</div>
+          </div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+          <div>
+            <div class="stat-number">15+</div>
+            <div class="stat-label" data-i18n="statProjectsCompleted">Projects Completed</div>
+          </div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon"><i class="fas fa-shield-alt"></i></div>
+          <div>
+            <div class="stat-number">8</div>
+            <div class="stat-label" data-i18n="statYearsService">Years of Service</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==================== LATEST NEWS & FOUNDATION UPDATES ==================== -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title" data-i18n="sectionNewsTitle">Latest News & Updates</h2>
+        <a href="/news" class="section-view-all">
+          <span data-i18n="viewAllNews">View All News</span>
+          <i class="fas fa-arrow-right"></i>
+        </a>
+      </div>
+
+      <div class="news-grid" id="latestNewsGrid">
+        <!-- Rendered dynamically from MySQL API -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        
+        <!-- Foundation Brand & Mission -->
+        <div class="footer-brand-col">
+          <div class="footer-logo-wrap">
+            <img src="/media/branding/logo.svg" alt="Qasr-e-Shabbir Foundation" class="footer-logo-img" onerror="this.onerror=null; this.src='/media/branding/logo.svg';" />
+            <div>
+              <h3 class="footer-brand-title" data-i18n="foundationName">QASR-E-SHABBIR FOUNDATION</h3>
+              <span class="footer-tagline" data-i18n="tagline">Together for a Brighter Tomorrow</span>
+            </div>
+          </div>
+          <p class="footer-mission-text" data-i18n="footerMission">
+            Dedicated to the educational sponsorship of orphaned children and providing monthly food and financial welfare to vulnerable families in Pakistan.
+          </p>
+        </div>
+
+        <!-- Quick Links -->
+        <div>
+          <h4 class="footer-col-title" data-i18n="quickLinks">Quick Links</h4>
+          <ul class="footer-links-list">
+            <li><a href="/" class="footer-link" data-i18n="navHome">Home</a></li>
+            <li><a href="/about" class="footer-link" data-i18n="navAbout">About Us</a></li>
+            <li><a href="/projects" class="footer-link" data-i18n="navProjects">Projects</a></li>
+            <li><a href="/news" class="footer-link" data-i18n="navNews">News & Updates</a></li>
+            <li><a href="/apply" class="footer-link" data-i18n="navApply">Apply for Assistance</a></li>
+            <li><a href="/volunteer" class="footer-link" data-i18n="navVolunteer">Become a Volunteer</a></li>
+            <li><a href="/contact" class="footer-link" data-i18n="navContact">Contact</a></li>
+          </ul>
+        </div>
+
+        <!-- Follow Us (Social Media) -->
+        <div>
+          <h4 class="footer-col-title" data-i18n="followUs">Follow Us</h4>
+          <div class="footer-social-icons">
+            <a href="https://facebook.com" target="_blank" rel="noopener" class="social-icon-btn" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://twitter.com" target="_blank" rel="noopener" class="social-icon-btn" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="https://instagram.com" target="_blank" rel="noopener" class="social-icon-btn" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="https://youtube.com" target="_blank" rel="noopener" class="social-icon-btn" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+            <a href="https://linkedin.com" target="_blank" rel="noopener" class="social-icon-btn" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+          </div>
+          <div style="margin-top: 24px;">
+            <a href="/admin" style="font-size: 0.78rem; color: #64748B; display: inline-flex; align-items: center; gap: 5px;">
+              <i class="fas fa-lock"></i> Staff Admin Portal
+            </a>
+          </div>
+        </div>
+
+        <!-- Newsletter Subscription -->
+        <div>
+          <h4 class="footer-col-title" data-i18n="newsletterTitle">Subscribe to Our Newsletter</h4>
+          <p style="font-size: 0.82rem; color: #94A3B8; margin-bottom: 8px;">
+            Receive verified updates regarding our educational and welfare milestones.
+          </p>
+          <form class="newsletter-form" onsubmit="event.preventDefault(); alert(window.FoundationI18n ? window.FoundationI18n.t('msgSuccess') : 'Subscribed successfully!'); this.reset();">
+            <input type="email" class="newsletter-input" placeholder="Your email address" data-i18n="newsletterPlaceholder" required />
+            <button type="submit" class="newsletter-btn" data-i18n="btnSubscribe">Subscribe</button>
+          </form>
+        </div>
+
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="footer-bottom">
+        <p data-i18n="copyright">© 2026 Qasr-e-Shabbir Foundation. All rights reserved.</p>
+        <div class="footer-legal-links">
+          <a href="/about" class="footer-legal-link" data-i18n="privacyPolicy">Privacy Policy</a>
+          <span>•</span>
+          <a href="/about" class="footer-legal-link" data-i18n="termsConditions">Terms & Conditions</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== QUICK DONATE MODAL ==================== -->
+  <div class="modal-overlay" id="donateModal">
+    <div class="modal-card">
+      <button type="button" class="modal-close-btn" id="donateModalClose" aria-label="Close dialog">&times;</button>
+      
+      <div style="text-align: center; margin-bottom: 20px;">
+        <img src="/media/branding/logo.svg" alt="Qasr-e-Shabbir Logo" class="modal-logo header-logo-img" style="width: 60px; height: 60px; margin: 0 auto 10px; border-radius: 50%; object-fit: cover;" onerror="this.onerror=null; this.src='/media/branding/logo.svg';" />
+        <h3 style="font-family: var(--font-en-title); font-size: 1.4rem; color: var(--primary-deep);" data-i18n="donateTitle">
+          Support Our Noble Cause
+        </h3>
+        <p style="font-size: 0.88rem; color: var(--text-muted);" data-i18n="donateSubtitle">
+          Your Zakat and Sadaqah directly empower orphaned children with education and sustain needy families.
+        </p>
+      </div>
+
+      <div style="background: var(--bg-mint); border: 1px solid var(--border-mint); border-radius: var(--radius-md); padding: 18px; margin-bottom: 20px;">
+        <h4 style="color: var(--primary-deep); font-size: 1rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-university"></i>
+          <span data-i18n="bankTransferHeading">Direct Bank Transfer</span>
+        </h4>
+        <div style="font-size: 0.86rem; line-height: 1.8; color: var(--text-dark);">
+          <div><strong>Bank:</strong> <span class="bank-name-display">Meezan Bank Limited (Islamic Banking)</span></div>
+          <div><strong>Account Title:</strong> <span class="account-title-display">Qasr-e-Shabbir Foundation</span></div>
+          <div><strong>Account No:</strong> <span class="account-number-display" style="font-family: monospace; font-size: 0.95rem; font-weight: 700;">01020304050607</span></div>
+          <div><strong>IBAN:</strong> <span class="iban-display" style="font-family: monospace; font-size: 0.92rem; font-weight: 700;">PK64MEZN0001020304050607</span></div>
+          <div><strong>Branch:</strong> <span class="branch-code-display">0102 (Lahore Main Branch)</span></div>
+        </div>
+      </div>
+
+      <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: var(--radius-md); padding: 16px; margin-bottom: 20px;">
+        <h4 style="color: var(--primary-deep); font-size: 0.95rem; margin-bottom: 8px;">
+          <i class="fas fa-mobile-alt" style="margin-inline-end: 6px;"></i>
+          <span data-i18n="mobileWalletsHeading">Mobile Wallets (Pakistan)</span>
+        </h4>
+        <div style="display: flex; gap: 20px; font-size: 0.85rem; flex-wrap: wrap;">
+          <div><strong>EasyPaisa:</strong> <span class="easypaisa-display" style="font-family: monospace; font-weight: 700;">0300-0817702</span></div>
+          <div><strong>JazzCash:</strong> <span class="jazzcash-display" style="font-family: monospace; font-weight: 700;">0300-0817702</span></div>
+        </div>
+      </div>
+
+      <div style="text-align: center;">
+        <a href="/donate" class="btn-primary" style="width: 100%; justify-content: center;">
+          <span data-i18n="donationProofHeading">View Full Details & Submit Receipt</span>
+          <i class="fas fa-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/js/translations.js"></script>
+  <script src="/js/main.js"></script>
+</body>
+</html>

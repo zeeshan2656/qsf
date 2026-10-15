@@ -1,0 +1,2537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | Qasr-e-Shabbir Foundation</title>
+  <link rel="icon" href="/media/branding/Qasr-e-Shabir_Foundation_Emble_1792086383401_940589.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+
+  <!-- ==================== LOGIN SCREEN ==================== -->
+  <div class="admin-login-wrapper" id="loginWrapper">
+    <div class="admin-login-card">
+      <img src="/media/branding/Qasr-e-Shabir_Foundation_Emble_1792086383401_940589.png" alt="Qasr-e-Shabbir Foundation Official Emblem" class="admin-login-logo" onerror="this.onerror=null; this.src='/media/branding/logo.svg';" style="width: 84px; height: 84px; border-radius: 50%; object-fit: contain; margin: 0 auto 16px; background: #FFFFFF; padding: 4px; box-shadow: 0 4px 14px rgba(0,0,0,0.15);" />
+      <h1 class="admin-login-title">QASR-E-SHABBIR FOUNDATION</h1>
+      <p class="admin-login-subtitle">Administrative Management Portal</p>
+
+      <div id="loginAlert" style="display: none; background: #FEE2E2; color: #991B1B; padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 16px;"></div>
+
+      <form id="adminLoginForm">
+        <div style="margin-bottom: 16px; text-align: left;">
+          <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">Username or Email</label>
+          <input type="text" id="loginUsername" class="form-control" placeholder="Enter authorized username or email" autocomplete="username" required />
+        </div>
+
+        <div style="margin-bottom: 22px; text-align: left;">
+          <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">Password</label>
+          <input type="password" id="loginPassword" class="form-control" placeholder="Enter password" autocomplete="current-password" required />
+        </div>
+
+        <button type="submit" class="btn-admin btn-admin-primary" style="width: 100%; justify-content: center; padding: 12px; font-size: 0.95rem;">
+          <i class="fas fa-lock"></i> Sign In to Staff Console
+        </button>
+
+        <p style="font-size: 0.78rem; color: #64748B; margin-top: 18px; line-height: 1.4;">
+          <i class="fas fa-shield-halved" style="color: var(--admin-primary);"></i> Authorized personnel only. Please sign in with your individual staff or administrator account credentials.
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== DASHBOARD VIEW ==================== -->
+  <div class="admin-dashboard" id="dashboardWrapper" style="display: none;">
+    
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="sidebar-header">
+        <img src="/media/branding/logo.svg" alt="Qasr-e-Shabbir Logo" class="sidebar-logo" onerror="this.onerror=null; this.src='/media/branding/logo.svg';" style="width: auto; max-width: 64px; height: 58px; border-radius: 6px; object-fit: contain; background: #FFFFFF; padding: 3px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); flex-shrink: 0;" />
+        <div style="flex-grow: 1; min-width: 0;">
+          <div class="sidebar-title">QASR-E-SHABBIR</div>
+          <span class="sidebar-badge"><i class="fas fa-shield-halved"></i> Admin CMS</span>
+        </div>
+        <button type="button" class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close sidebar">✕</button>
+      </div>
+
+      <ul class="sidebar-menu">
+        <li class="sidebar-item active">
+          <a href="#" data-tab="overview"><i class="fas fa-chart-pie"></i> <span>Overview</span></a>
+        </li>
+        <li class="sidebar-item">
+          <a href="#" data-tab="users"><i class="fas fa-users-gear"></i> <span>Users & Staff</span></a>
+        </li>
+        <li class="sidebar-item">
+          <a href="#" data-tab="accounts"><i class="fas fa-file-invoice-dollar"></i> <span>Accounts</span></a>
+        </li>
+        <li class="sidebar-item">
+          <a href="#" data-tab="projects"><i class="fas fa-hand-holding-heart"></i> <span>Welfare Projects</span></a>
+        </li>
+        <li class="sidebar-item">
+          <a href="#" data-tab="volunteers"><i class="fas fa-handshake-angle"></i> <span>Volunteer Applications</span></a>
+        </li>
+        <li class="sidebar-item">
+          <a href="#" data-tab="articles"><i class="fas fa-newspaper"></i> <span>News & Updates</span></a>
+        </li>
+        <li class="sidebar-item">
+          <a href="#" data-tab="applications"><i class="fas fa-file-shield"></i> <span>Assistance Requests</span></a>
+        </li>
+        <li class="sidebar-item">
+          <a href="#" data-tab="donations"><i class="fas fa-receipt"></i> <span>Donations & Receipts</span></a>
+        </li>
+        <li class="sidebar-item">
+          <a href="#" data-tab="submissions"><i class="fas fa-envelope"></i> <span>Contact Messages</span></a>
+        </li>
+
+        <!-- Collapsible Settings Menu -->
+        <li class="sidebar-item sidebar-item-has-submenu" id="sidebarSettingsItem">
+          <a href="#" class="sidebar-submenu-toggle" id="btnToggleSettings">
+            <i class="fas fa-gear"></i>
+            <span style="flex-grow: 1;">Settings</span>
+            <i class="fas fa-chevron-down submenu-caret"></i>
+          </a>
+          <ul class="sidebar-submenu" id="sidebarSettingsSubmenu">
+            <li class="submenu-item">
+              <a href="#" data-tab="settings-bank" title="Official Islamic Bank Account Details & Mobile Wallets">
+                <i class="fas fa-building-columns"></i>
+                <span>Bank & Mobile Wallets</span>
+              </a>
+            </li>
+            <li class="submenu-item">
+              <a href="#" data-tab="settings-contact" title="Foundation Helpline & Official Address">
+                <i class="fas fa-headset"></i>
+                <span>Helpline & Official Address</span>
+              </a>
+            </li>
+            <li class="submenu-item">
+              <a href="#" data-tab="settings-branding" title="Logo & Flag Setup">
+                <i class="fas fa-images"></i>
+                <span>Logo & Flag Setup</span>
+              </a>
+            </li>
+            <li class="submenu-item">
+              <a href="#" data-tab="settings-layout" title="Edit Layout (Hero Section)">
+                <i class="fas fa-paintbrush"></i>
+                <span>Edit Layout</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <button type="button" class="btn-sidebar-logout" id="adminLogoutBtn">
+          <i class="fas fa-arrow-right-from-bracket"></i> Sign Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- Mobile Backdrop -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <!-- Main Content -->
+    <div class="admin-main">
+      
+      <!-- Topbar -->
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button type="button" class="btn-menu-toggle" id="adminMenuToggle" aria-label="Toggle Menu">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="topbar-title-wrapper" style="display: flex; align-items: center; gap: 10px;">
+            <span id="adminPageIcon" class="topbar-page-icon"><i class="fas fa-chart-pie"></i></span>
+            <h2 class="page-title" id="adminPageTitle">Executive Overview</h2>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Contextual Primary Action Button (Updates per Active Page) -->
+          <div id="topbarContextualActionContainer" class="topbar-action-container"></div>
+
+          <!-- Authenticated User / Staff Pill -->
+          <div class="admin-user-pill" id="adminUserPill" title="Authenticated User Profile">
+            <div class="admin-avatar" id="adminAvatar">A</div>
+            <div style="display: flex; flex-direction: column; text-align: left; line-height: 1.2;">
+              <span id="adminUserName" class="admin-user-name">Administrator</span>
+              <span id="adminUserRoleBadge" style="font-size: 0.68rem; color: #64748B; font-weight: 600; text-transform: uppercase;">Admin</span>
+            </div>
+          </div>
+
+          <!-- View Website (Positioned at the Far Right) -->
+          <a href="/" target="_blank" class="btn-view-site" title="View Public Website">
+            <i class="fas fa-arrow-up-right-from-square"></i> <span class="topbar-btn-text">View Website</span>
+          </a>
+        </div>
+      </header>
+
+      <!-- Viewport -->
+      <main class="admin-content">
+
+        <!-- TAB 1: OVERVIEW -->
+        <div class="tab-pane active" id="tab-overview">
+          <div class="stats-cards-grid">
+            <div class="metric-card">
+              <div class="metric-icon"><i class="fas fa-hand-holding-heart"></i></div>
+              <div>
+                <div class="metric-value" id="metricProjects">0</div>
+                <div class="metric-label">Published Projects</div>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon" style="background: #EFF6FF; color: #2563EB;"><i class="fas fa-newspaper"></i></div>
+              <div>
+                <div class="metric-value" id="metricArticles">0</div>
+                <div class="metric-label">News Articles</div>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon" style="background: #FEF3C7; color: #D97706;"><i class="fas fa-user-shield"></i></div>
+              <div>
+                <div class="metric-value" id="metricPendingApps">0</div>
+                <div class="metric-label">Pending Aid Requests</div>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon" style="background: #EFF6FF; color: #1D4ED8;"><i class="fas fa-receipt"></i></div>
+              <div>
+                <div class="metric-value" id="metricDonationsTotal">PKR 0</div>
+                <div class="metric-label">Verified Donations</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Action to Logo & Flag -->
+          <div class="admin-card" style="background: linear-gradient(135deg, #7F1D1D 0%, #B91C1C 100%); color: #FFFFFF;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+              <div>
+                <h3 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 6px;">Manage Official Foundation Logo & Flag</h3>
+                <p style="color: #FECDD3; font-size: 0.9rem;">Upload new circular emblem or waving flag files directly into the persistent media repository.</p>
+              </div>
+              <button type="button" class="btn-admin" style="background: #FFFFFF; color: #7F1D1D; font-weight: 700;" onclick="document.querySelector('a[data-tab=\'settings-branding\']').click();">
+                <i class="fas fa-flag"></i> Open Logo & Flag Setup
+              </button>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <div class="card-header-bar">
+              <h3 class="card-title">Recent Confidential Aid Applications</h3>
+              <a href="#" onclick="document.querySelector('.sidebar-item a[data-tab=\"applications\"]').click();" style="font-size: 0.85rem; color: var(--admin-primary); font-weight: 600;">View All</a>
+            </div>
+
+            <div class="admin-table-wrapper">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Tracking #</th>
+                    <th>Applicant Name</th>
+                    <th>Contact Phone</th>
+                    <th>Status</th>
+                    <th>Submission Date</th>
+                  </tr>
+                </thead>
+                <tbody id="recentAppsTableBody">
+                  <tr><td colspan="5" style="text-align: center; color: #94A3B8;">Loading applications...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: USERS & STAFF MANAGEMENT -->
+        <div class="tab-pane" id="tab-users">
+          <p class="tab-description-subtitle" style="font-size: 0.85rem; color: #64748B; margin-bottom: 18px;">Create system users, grant modular access permissions, assign designations, and configure monthly staff salaries.</p>
+
+          <!-- Quick Metrics Grid -->
+          <div class="stats-cards-grid" style="margin-bottom: 24px;">
+            <div class="metric-card">
+              <div class="metric-icon" style="background: #FEE2E2; color: #991B1B;"><i class="fas fa-users"></i></div>
+              <div>
+                <div class="metric-value" id="metricTotalUsers">0</div>
+                <div class="metric-label">Total Users & Staff</div>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon" style="background: #ECFDF5; color: #065F46;"><i class="fas fa-hand-holding-dollar"></i></div>
+              <div>
+                <div class="metric-value" id="metricSalariedUsers">0</div>
+                <div class="metric-label">Salaried Employees</div>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon" style="background: #EFF6FF; color: #1D4ED8;"><i class="fas fa-money-bill-wave"></i></div>
+              <div>
+                <div class="metric-value" id="metricTotalPayroll">PKR 0</div>
+                <div class="metric-label">Monthly Payroll</div>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon" style="background: #FEF3C7; color: #B45309;"><i class="fas fa-user-check"></i></div>
+              <div>
+                <div class="metric-value" id="metricActiveUsers">0</div>
+                <div class="metric-label">Active Accounts</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Users Table Card -->
+          <div class="admin-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+              <div style="font-weight: 700; color: #1E293B; font-size: 1.05rem;">Registered Users & Staff Directory</div>
+              <div style="display: flex; gap: 10px;">
+                <input type="text" id="userSearchInput" class="form-control" placeholder="Search name, username, title..." style="max-width: 260px; padding: 7px 12px; font-size: 0.85rem;" />
+              </div>
+            </div>
+
+            <div class="admin-table-wrapper">
+              <table class="admin-table" id="usersTable">
+                <thead>
+                  <tr>
+                    <th>User / Staff Member</th>
+                    <th>Role & Designation</th>
+                    <th>Assigned Rights</th>
+                    <th>Salary (PKR)</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                  <tr><td colspan="6" style="text-align: center; color: #94A3B8; padding: 24px;">Loading users directory...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: BRANDING (LOGO, FLAG & STAMPS SETUP UNDER SETTINGS) -->
+        <div class="tab-pane" id="tab-settings-branding">
+          <p class="tab-description-subtitle" style="font-size: 0.85rem; color: #64748B; margin-bottom: 18px;">Manage the official circular logo, official flag, and authenticated foundation stamps for donation receipts & legal documents.</p>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;">
+            
+            <!-- 0. Foundation Name Identity Setup Card -->
+            <div class="admin-card" style="grid-column: 1 / -1; background: #FFFFFF; border: 1.5px solid #CBD5E1;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 44px; height: 44px; border-radius: 50%; background: #FFF1F2; color: var(--admin-primary); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                    <i class="fas fa-building-columns"></i>
+                  </div>
+                  <div>
+                    <h3 style="font-size: 1.15rem; font-weight: 700; color: #0F172A;">Official Foundation Legal Identity & Branding Names</h3>
+                    <span style="font-size: 0.8rem; color: #64748B;">Used throughout system headers, donation receipts, audit certificates, and public pages</span>
+                  </div>
+                </div>
+                <span class="badge badge-success"><i class="fas fa-circle-check"></i> Active in Database</span>
+              </div>
+
+              <div id="brandingNamesStatus" style="display: none; padding: 10px; border-radius: 6px; margin-bottom: 14px; font-size: 0.85rem;"></div>
+
+              <form id="brandingNamesForm" onsubmit="handleBrandingNamesSubmit(event)">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 16px;">
+                  <div>
+                    <label class="form-label"><strong>Organization Name (English) *</strong></label>
+                    <input type="text" id="branding_foundation_name_en" class="form-control" required placeholder="Qasr-e-Shabbir Foundation" value="Qasr-e-Shabbir Foundation" style="font-weight: 600;" />
+                    <small style="color: #64748B; font-size: 0.75rem;">Official name displayed across all English pages, invoices & physical receipts.</small>
+                  </div>
+                  <div>
+                    <label class="form-label"><strong>Organization Name (Urdu) *</strong></label>
+                    <input type="text" id="branding_foundation_name_ur" class="form-control" required placeholder="قصرِ شبیر فاؤنڈیشن" value="قصرِ شبیر فاؤنڈیشن" dir="rtl" style="font-weight: 600;" />
+                    <small style="color: #64748B; font-size: 0.75rem;">دفتری و قانونی نام جو تمام اردو صفحات، رسیدات اور اسناد پر درج ہوگا۔</small>
+                  </div>
+                </div>
+                <div style="display: flex; justify-content: flex-end;">
+                  <button type="submit" class="btn-admin btn-admin-primary" style="padding: 10px 24px;">
+                    <i class="fas fa-floppy-disk"></i> Save Foundation Names
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- 1. Logo Setup Card -->
+            <div class="admin-card">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div style="width: 42px; height: 42px; border-radius: 50%; background: #FFF1F2; color: var(--admin-primary); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                  <i class="fas fa-circle-dot"></i>
+                </div>
+                <div>
+                  <h3 style="font-size: 1.1rem; font-weight: 700;">1. Official Circular Logo</h3>
+                  <span style="font-size: 0.78rem; color: #64748B;">Header, footer, favicon & watermark</span>
+                </div>
+              </div>
+
+              <!-- Current Logo Preview -->
+              <div style="text-align: center; background: #F8FAFC; border: 1px dashed #CBD5E1; border-radius: 12px; padding: 20px; margin-bottom: 16px;">
+                <img id="currentLogoPreview" src="/media/branding/Qasr-e-Shabir_Foundation_Emble_1792086383401_940589.png" alt="Current Logo" style="max-width: 120px; height: 110px; border-radius: 50%; object-fit: contain; margin: 0 auto 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.12);" onerror="this.onerror=null; this.src='/media/branding/logo.svg';" />
+                <div style="font-size: 0.8rem; color: #64748B; font-weight: 600;">Active Website Logo</div>
+              </div>
+
+              <div id="logoUploadStatus" style="display: none; padding: 10px; border-radius: 6px; margin-bottom: 14px; font-size: 0.85rem;"></div>
+
+              <form id="logoUploadForm">
+                <div style="margin-bottom: 14px;">
+                  <label class="form-label" style="font-size: 0.82rem;">Upload New Circular Logo (PNG, SVG, JPG, WebP)</label>
+                  <input type="file" id="logoFileInput" accept="image/*" class="form-control" required />
+                </div>
+                <button type="submit" class="btn-admin btn-admin-primary" style="width: 100%; justify-content: center;">
+                  <i class="fas fa-upload"></i> Upload & Apply Logo
+                </button>
+              </form>
+            </div>
+
+            <!-- 2. Flag Setup Card -->
+            <div class="admin-card">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div style="width: 42px; height: 42px; border-radius: 50%; background: #EFF6FF; color: #2563EB; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                  <i class="fas fa-flag"></i>
+                </div>
+                <div>
+                  <h3 style="font-size: 1.1rem; font-weight: 700;">2. Official Foundation Flag</h3>
+                  <span style="font-size: 0.78rem; color: #64748B;">Displayed alongside logo on header</span>
+                </div>
+              </div>
+
+              <!-- Current Flag Preview -->
+              <div style="text-align: center; background: #F8FAFC; border: 1px dashed #CBD5E1; border-radius: 12px; padding: 20px; margin-bottom: 16px;">
+                <img id="currentFlagPreview" src="/media/branding/qasr-e-shabbir-flag_1792088518904_921609.svg" alt="Current Flag" style="max-height: 110px; object-fit: contain; margin: 0 auto 10px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));" onerror="this.onerror=null; this.src='/media/branding/flag.svg';" />
+                <div style="font-size: 0.8rem; color: #64748B; font-weight: 600;">Active Website Flag</div>
+              </div>
+
+              <div id="flagUploadStatus" style="display: none; padding: 10px; border-radius: 6px; margin-bottom: 14px; font-size: 0.85rem;"></div>
+
+              <form id="flagUploadForm">
+                <div style="margin-bottom: 14px;">
+                  <label class="form-label" style="font-size: 0.82rem;">Upload New Flag (PNG, SVG, JPG, WebP)</label>
+                  <input type="file" id="flagFileInput" accept="image/*" class="form-control" required />
+                </div>
+                <button type="submit" class="btn-admin btn-admin-primary" style="width: 100%; justify-content: center;">
+                  <i class="fas fa-upload"></i> Upload & Apply Flag
+                </button>
+              </form>
+            </div>
+
+            <!-- 3. Official Foundation Stamp(s) Card -->
+            <div class="admin-card">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div style="width: 42px; height: 42px; border-radius: 50%; background: #FEF3C7; color: #D97706; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                  <i class="fas fa-stamp"></i>
+                </div>
+                <div>
+                  <h3 style="font-size: 1.1rem; font-weight: 700;">3. Official Stamp(s)</h3>
+                  <span style="font-size: 0.78rem; color: #64748B;">For donation receipts & official documents</span>
+                </div>
+              </div>
+
+              <!-- Stamps Gallery -->
+              <div id="brandingStampsList" style="margin-bottom: 16px; max-height: 160px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                <!-- Populated dynamically by loadBrandingStamps() -->
+              </div>
+
+              <div id="stampUploadStatus" style="display: none; padding: 10px; border-radius: 6px; margin-bottom: 14px; font-size: 0.85rem;"></div>
+
+              <form id="stampUploadForm" onsubmit="handleStampUpload(event)">
+                <div style="margin-bottom: 10px;">
+                  <label class="form-label" style="font-size: 0.82rem;">Stamp Description / Name</label>
+                  <input type="text" id="stampNameInput" class="form-control" placeholder="e.g. Official Finance Seal (QSF 10469)" required />
+                </div>
+                <div style="margin-bottom: 10px;">
+                  <label class="form-label" style="font-size: 0.82rem;">Select Stamp Image (PNG with transparency recommended)</label>
+                  <input type="file" id="stampFileInput" accept="image/*" class="form-control" required />
+                </div>
+                <div style="margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                  <input type="checkbox" id="stampIsDefaultCheckbox" checked style="width: 16px; height: 16px; cursor: pointer;" />
+                  <label for="stampIsDefaultCheckbox" style="font-size: 0.82rem; color: #334155; cursor: pointer; user-select: none;">
+                    Set as default active stamp on receipts
+                  </label>
+                </div>
+                <button type="submit" class="btn-admin btn-admin-primary" style="width: 100%; justify-content: center;">
+                  <i class="fas fa-upload"></i> Upload Official Stamp
+                </button>
+              </form>
+            </div>
+
+            <!-- 4. Official Signatures Management Card -->
+            <div class="admin-card" style="grid-column: 1 / -1; background: #FFFFFF; border: 1.5px solid #CBD5E1;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 44px; height: 44px; border-radius: 50%; background: #ECFDF5; color: #047857; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                    <i class="fas fa-file-signature"></i>
+                  </div>
+                  <div>
+                    <h3 style="font-size: 1.15rem; font-weight: 700; color: #0F172A;">4. Official Authorized Signatures Management</h3>
+                    <span style="font-size: 0.8rem; color: #64748B;">Upload, manage, and assign official signatures (CEO, Director, General Secretary) to Employee and Volunteer ID Cards</span>
+                  </div>
+                </div>
+                <span class="badge badge-success"><i class="fas fa-shield-halved"></i> Identity Card Signatories</span>
+              </div>
+
+              <!-- Signatures Gallery List -->
+              <div style="margin-bottom: 20px;">
+                <label class="form-label" style="font-size: 0.85rem; font-weight: 700;">Active Official Signatures in System</label>
+                <div id="brandingSignaturesList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; min-height: 80px;">
+                  <!-- Populated dynamically by loadOfficialSignatures() -->
+                </div>
+              </div>
+
+              <div id="signatureUploadStatus" style="display: none; padding: 10px; border-radius: 6px; margin-bottom: 14px; font-size: 0.85rem;"></div>
+
+              <!-- Upload New Signature Form -->
+              <div style="background: #F8FAFC; border: 1px dashed #CBD5E1; border-radius: 10px; padding: 18px;">
+                <h4 style="font-size: 0.95rem; font-weight: 700; color: #1E293B; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                  <i class="fas fa-pen-nib" style="color: #047857;"></i> Upload New Official Signature
+                </h4>
+                <form id="signatureUploadForm" onsubmit="handleSignatureUpload(event)">
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 14px;">
+                    <div>
+                      <label class="form-label" style="font-size: 0.82rem;">Signatory Full Name *</label>
+                      <input type="text" id="sigNameInput" class="form-control" placeholder="e.g. Dr. Ghulam Shabbir" required />
+                    </div>
+                    <div>
+                      <label class="form-label" style="font-size: 0.82rem;">Official Designation (English) *</label>
+                      <input type="text" id="sigDesignationInput" class="form-control" placeholder="Founder & Chief Executive Officer" required />
+                    </div>
+                    <div>
+                      <label class="form-label" style="font-size: 0.82rem;">Official Designation (Urdu) *</label>
+                      <input type="text" id="sigDesignationUrInput" class="form-control" placeholder="بانی و چیف ایگزیکٹو آفیسر" dir="rtl" required />
+                    </div>
+                    <div>
+                      <label class="form-label" style="font-size: 0.82rem;">Signature Image (PNG / WebP / JPG) *</label>
+                      <input type="file" id="sigFileInput" accept="image/*" class="form-control" required />
+                      <small style="color: #64748B; font-size: 0.72rem;">Transparent PNG or clear image on white background.</small>
+                    </div>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <input type="checkbox" id="sigIsDefaultCheckbox" checked style="width: 16px; height: 16px; cursor: pointer;" />
+                      <label for="sigIsDefaultCheckbox" style="font-size: 0.82rem; color: #334155; cursor: pointer; user-select: none;">
+                        Set as system default signature for identity cards
+                      </label>
+                    </div>
+                    <button type="submit" class="btn-admin btn-admin-primary" style="padding: 8px 20px;">
+                      <i class="fas fa-upload"></i> Upload Official Signature
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- TAB 3: PROJECTS -->
+        <div class="tab-pane" id="tab-projects">
+          <div class="page-action-toolbar">
+            <div>
+              <h2 style="font-size: 1.15rem; font-weight: 800; color: #0F172A; margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-hand-holding-heart" style="color: var(--admin-primary);"></i> Welfare Projects Directory
+              </h2>
+              <p style="font-size: 0.82rem; color: #64748B; margin: 2px 0 0 0;">
+                Manage educational, healthcare, and humanitarian projects with live funding tracking.
+              </p>
+            </div>
+            <button type="button" class="btn-admin btn-admin-primary" onclick="openModal('modalProject'); resetProjectForm();">
+              <i class="fas fa-hand-holding-heart"></i> Add New Welfare Project
+            </button>
+          </div>
+
+          <!-- Summary Metric Cards -->
+          <div class="projects-metrics-grid">
+            <div class="project-metric-card">
+              <div class="project-metric-icon icon-total-projects">
+                <i class="fas fa-cubes"></i>
+              </div>
+              <div>
+                <div class="project-metric-val" id="projStatTotal">0</div>
+                <div class="project-metric-lbl">Total Projects</div>
+              </div>
+            </div>
+
+            <div class="project-metric-card">
+              <div class="project-metric-icon icon-active-projects">
+                <i class="fas fa-hand-holding-heart"></i>
+              </div>
+              <div>
+                <div class="project-metric-val" id="projStatActive">0</div>
+                <div class="project-metric-lbl">Active Projects</div>
+              </div>
+            </div>
+
+            <div class="project-metric-card">
+              <div class="project-metric-icon icon-completed-projects">
+                <i class="fas fa-circle-check"></i>
+              </div>
+              <div>
+                <div class="project-metric-val" id="projStatCompleted">0</div>
+                <div class="project-metric-lbl">Completed Projects</div>
+              </div>
+            </div>
+
+            <div class="project-metric-card">
+              <div class="project-metric-icon icon-closed-projects">
+                <i class="fas fa-lock"></i>
+              </div>
+              <div>
+                <div class="project-metric-val" id="projStatClosed">0</div>
+                <div class="project-metric-lbl">Closed Projects</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Advanced Filter Bar -->
+          <div class="advanced-filter-panel" id="projectsFilterPanel">
+            <div class="filter-panel-header">
+              <span class="filter-panel-title">
+                <i class="fas fa-filter"></i> Advanced Project Filters
+              </span>
+              <div style="font-size: 0.8rem; color: #64748B;" id="projectsFilterResultCount">
+                Showing all projects
+              </div>
+            </div>
+
+            <div class="filter-controls-grid">
+              <div class="filter-field">
+                <label class="filter-label">Search Keyword / Title</label>
+                <div style="position: relative;">
+                  <i class="fas fa-magnifying-glass" style="position: absolute; left: 10px; top: 10px; color: #94A3B8; font-size: 0.82rem;"></i>
+                  <input type="text" id="projFilterSearch" class="form-control" style="padding-left: 32px;" placeholder="Search in English or Urdu title, notes..." onkeydown="if(event.key==='Enter') applyProjectsFilters()" />
+                </div>
+              </div>
+
+              <div class="filter-field">
+                <label class="filter-label">Project Status</label>
+                <select id="projFilterStatus" class="form-control" onchange="applyProjectsFilters()">
+                  <option value="">All Statuses</option>
+                  <option value="active">Active (Receiving Funds)</option>
+                  <option value="completed">Completed (Work Finished)</option>
+                  <option value="closed">Closed (Administratively Closed)</option>
+                  <option value="draft">Draft (Unpublished)</option>
+                </select>
+              </div>
+
+              <div class="filter-field">
+                <label class="filter-label">Category</label>
+                <select id="projFilterCategory" class="form-control" onchange="applyProjectsFilters()">
+                  <option value="">All Categories</option>
+                  <option value="1">Education (تعلیم)</option>
+                  <option value="2">Healthcare (صحت)</option>
+                  <option value="3">Food Support (خوراک کی امداد)</option>
+                  <option value="4">Clean Water (صاف پانی)</option>
+                  <option value="5">Community Care (سماجی خدمت)</option>
+                </select>
+              </div>
+
+              <div class="filter-field">
+                <label class="filter-label">Funding Progress</label>
+                <select id="projFilterProgress" class="form-control" onchange="applyProjectsFilters()">
+                  <option value="">All Progress Levels</option>
+                  <option value="0-25">0% - 25% (Just Started)</option>
+                  <option value="25-50">25% - 50% (In Progress)</option>
+                  <option value="50-75">50% - 75% (Halfway Funded)</option>
+                  <option value="75-99">75% - 99% (Near Target)</option>
+                  <option value="100+">100%+ (Target Achieved)</option>
+                </select>
+              </div>
+
+              <div class="filter-field">
+                <label class="filter-label">Sort Projects By</label>
+                <select id="projFilterSort" class="form-control" onchange="applyProjectsFilters()">
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                  <option value="goal_desc">Highest Funding Target</option>
+                  <option value="raised_desc">Most Donations Raised</option>
+                  <option value="progress_desc">Highest Funding Progress %</option>
+                  <option value="title_asc">Project Title (A - Z)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="filter-actions-bar">
+              <button type="button" class="btn-filter-action btn-filter-apply" onclick="applyProjectsFilters()">
+                <i class="fas fa-check"></i> Apply Filters
+              </button>
+              <button type="button" class="btn-filter-action btn-filter-clear" onclick="clearProjectsFilters()">
+                <i class="fas fa-xmark"></i> Clear Filters
+              </button>
+            </div>
+          </div>
+
+          <!-- View 1: Card View Container -->
+          <div id="projectsCardsContainer" class="projects-cards-grid">
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #94A3B8;">
+              <i class="fas fa-circle-notch fa-spin" style="font-size: 1.5rem; margin-bottom: 8px;"></i>
+              <div>Loading welfare projects...</div>
+            </div>
+          </div>
+
+          <!-- View 2: Table View Container -->
+          <div id="projectsTableContainer" class="admin-card" style="display: none;">
+            <div class="admin-table-wrapper">
+              <table class="admin-table" id="projectsDataTable">
+                <thead>
+                  <tr>
+                    <th>Project</th>
+                    <th>Category</th>
+                    <th>Dates / Timeline</th>
+                    <th>Funding Progress</th>
+                    <th>Beneficiaries</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="projectsTableBody">
+                  <tr><td colspan="7" style="text-align: center; color: #94A3B8; padding: 30px;">Loading projects...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Pagination Bar -->
+          <div class="pagination-bar" id="projectsPaginationBar" style="display: none;">
+            <div class="pagination-info" id="projectsPaginationInfo">
+              Showing 1-10 of 20 projects
+            </div>
+            <div class="pagination-controls" id="projectsPaginationControls">
+              <!-- Dynamically generated -->
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: ARTICLES -->
+        <div class="tab-pane" id="tab-articles">
+          <div class="page-action-toolbar">
+            <div>
+              <h2 style="font-size: 1.15rem; font-weight: 800; color: #0F172A; margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-newspaper" style="color: var(--admin-primary);"></i> News & Media Updates
+              </h2>
+              <p style="font-size: 0.82rem; color: #64748B; margin: 2px 0 0 0;">
+                Publish foundation announcements, field mission reports, and press updates.
+              </p>
+            </div>
+            <button type="button" class="btn-admin btn-admin-primary" onclick="openModal('modalArticle'); resetArticleForm();">
+              <i class="fas fa-newspaper"></i> Add New News & Update
+            </button>
+          </div>
+
+          <div class="admin-card">
+            <div class="admin-table-wrapper">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Thumbnail</th>
+                    <th>Article Titles (EN / UR)</th>
+                    <th>Category</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="articlesTableBody">
+                  <tr><td colspan="6" style="text-align: center; color: #94A3B8;">Loading news articles...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 5: ASSISTANCE APPLICATIONS -->
+        <div class="tab-pane" id="tab-applications">
+          <div class="page-action-toolbar">
+            <div>
+              <h2 style="font-size: 1.15rem; font-weight: 800; color: #0F172A; margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-file-shield" style="color: var(--admin-primary);"></i> Assistance Requests & Welfare Aid
+              </h2>
+              <p style="font-size: 0.82rem; color: #64748B; margin: 2px 0 0 0;">
+                Review student scholarships, monthly family rations, and urgent medical aid applications.
+              </p>
+            </div>
+            <button type="button" class="btn-admin btn-admin-primary" onclick="openModal('modalApplication'); resetApplicationForm();">
+              <i class="fas fa-file-shield"></i> Add New Assistance Request
+            </button>
+          </div>
+
+          <div class="admin-card">
+            <div class="admin-table-wrapper">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Tracking #</th>
+                    <th>Applicant Details</th>
+                    <th>Phone</th>
+                    <th>City</th>
+                    <th>Aid Type</th>
+                    <th>Status Control</th>
+                    <th>Date</th>
+                    <th style="text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="applicationsTableBody">
+                  <tr><td colspan="7" style="text-align: center; color: #94A3B8;">Loading applications...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: ACCOUNTS & PROJECT-WISE DONATIONS -->
+        <div class="tab-pane" id="tab-accounts">
+          <p class="tab-description-subtitle" style="font-size: 0.85rem; color: #64748B; margin-bottom: 18px;">
+            Monitor project funding goals, manage multi-project donation receipts, and audit verified community contributions.
+          </p>
+
+          <!-- Top Metric Cards -->
+          <div class="accounts-overview-grid">
+            <div class="account-stat-card">
+              <div class="account-stat-icon icon-confirmed-fund">
+                <i class="fas fa-shield-heart"></i>
+              </div>
+              <div>
+                <div class="account-stat-value" id="accTotalConfirmed">PKR 0</div>
+                <div class="account-stat-label">Total Confirmed Donations</div>
+              </div>
+            </div>
+
+            <div class="account-stat-card">
+              <div class="account-stat-icon icon-pending-fund">
+                <i class="fas fa-hourglass-half"></i>
+              </div>
+              <div>
+                <div class="account-stat-value" id="accTotalPending">PKR 0</div>
+                <div class="account-stat-label">Pending / Unverified</div>
+              </div>
+            </div>
+
+            <div class="account-stat-card">
+              <div class="account-stat-icon icon-active-projects">
+                <i class="fas fa-hand-holding-dollar"></i>
+              </div>
+              <div>
+                <div class="account-stat-value" id="accActiveProjects">0 Projects</div>
+                <div class="account-stat-label">Funded Welfare Projects</div>
+              </div>
+            </div>
+
+            <div class="account-stat-card">
+              <div class="account-stat-icon icon-total-txns">
+                <i class="fas fa-receipt"></i>
+              </div>
+              <div>
+                <div class="account-stat-value" id="accConfirmedTxnCount">0 Receipts</div>
+                <div class="account-stat-label">Confirmed Transactions</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Project-Wise Funding Breakdown -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin: 24px 0 14px;">
+            <h3 style="font-size: 1.15rem; font-weight: 700; color: #1E293B; display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-diagram-project" style="color: var(--admin-primary);"></i> Project-Wise Donation Progress
+            </h3>
+            <span style="font-size: 0.8rem; color: #64748B;">Automatic progress calculated against project targets</span>
+          </div>
+
+          <div class="projects-account-grid" id="accountsProjectCardsGrid">
+            <!-- Rendered dynamically -->
+          </div>
+
+          <!-- Transaction Ledger Section -->
+          <div class="admin-card" style="margin-top: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 18px;">
+              <h3 style="font-size: 1.15rem; font-weight: 700; color: #1E293B; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-book" style="color: var(--admin-primary);"></i> Complete Donation Transactions Ledger
+              </h3>
+              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <button type="button" class="btn-admin btn-admin-secondary" style="font-size: 0.82rem; padding: 7px 14px;" onclick="loadAccounts()">
+                  <i class="fas fa-rotate"></i> Refresh Ledger
+                </button>
+              </div>
+            </div>
+
+            <!-- Filters Bar -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; background: #F8FAFC; padding: 14px; border-radius: 10px; border: 1px solid #E2E8F0;">
+              <div>
+                <label class="form-label" style="font-size: 0.76rem;">Filter by Project</label>
+                <select id="accFilterProject" class="form-control" onchange="filterAccountsTransactions()">
+                  <option value="">All Projects & Funds</option>
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+              <div>
+                <label class="form-label" style="font-size: 0.76rem;">Payment Status</label>
+                <select id="accFilterStatus" class="form-control" onchange="filterAccountsTransactions()">
+                  <option value="">All Statuses</option>
+                  <option value="confirmed">Confirmed / Verified Only</option>
+                  <option value="pending">Pending Verification</option>
+                  <option value="refunded">Refunded / Reversed</option>
+                  <option value="failed">Failed / Rejected</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label" style="font-size: 0.76rem;">Date Range</label>
+                <select id="accFilterDate" class="form-control" onchange="filterAccountsTransactions()">
+                  <option value="all">All Time</option>
+                  <option value="today">Today</option>
+                  <option value="week">Past 7 Days</option>
+                  <option value="month">This Month</option>
+                  <option value="year">This Year</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label" style="font-size: 0.76rem;">Search Donor / Ref ID</label>
+                <input type="text" id="accFilterSearch" class="form-control" placeholder="Search by name, email, txn..." oninput="filterAccountsTransactions()" />
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div class="admin-table-wrapper">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Ref / Txn ID</th>
+                    <th>Date</th>
+                    <th>Donor Details</th>
+                    <th>Target Project</th>
+                    <th>Amount (PKR)</th>
+                    <th>Payment Method</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="accountsTableBody">
+                  <tr><td colspan="8" style="text-align: center; color: #94A3B8;">Loading accounts ledger...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: VOLUNTEER & INTERNSHIP APPLICATIONS -->
+        <div class="tab-pane" id="tab-volunteers">
+          <div class="page-action-toolbar">
+            <div>
+              <h2 style="font-size: 1.15rem; font-weight: 800; color: #0F172A; margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-handshake-angle" style="color: var(--admin-primary);"></i> Volunteer & Internship Applications
+              </h2>
+              <p style="font-size: 0.82rem; color: #64748B; margin: 2px 0 0 0;">
+                Review submitted volunteer and internship applications, evaluate skills, and manage candidate statuses.
+              </p>
+            </div>
+            <button type="button" class="btn-admin btn-admin-primary" onclick="openModal('modalAddVolunteer')">
+              <i class="fas fa-user-plus"></i> Add New Volunteer Application
+            </button>
+          </div>
+
+          <!-- Stat Cards -->
+          <div class="accounts-overview-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+            <div class="account-stat-card">
+              <div class="account-stat-icon" style="background: #EEF2FF; color: #4338CA;">
+                <i class="fas fa-users"></i>
+              </div>
+              <div>
+                <div class="account-stat-value" id="volStatTotal">0</div>
+                <div class="account-stat-label">Total Applicants</div>
+              </div>
+            </div>
+
+            <div class="account-stat-card">
+              <div class="account-stat-icon icon-pending-fund">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div>
+                <div class="account-stat-value" id="volStatPending">0</div>
+                <div class="account-stat-label">Pending Review</div>
+              </div>
+            </div>
+
+            <div class="account-stat-card">
+              <div class="account-stat-icon" style="background: #EFF6FF; color: #1D4ED8;">
+                <i class="fas fa-clipboard-question"></i>
+              </div>
+              <div>
+                <div class="account-stat-value" id="volStatReview">0</div>
+                <div class="account-stat-label">Under Review</div>
+              </div>
+            </div>
+
+            <div class="account-stat-card">
+              <div class="account-stat-icon icon-confirmed-fund">
+                <i class="fas fa-circle-check"></i>
+              </div>
+              <div>
+                <div class="account-stat-value" id="volStatAccepted">0</div>
+                <div class="account-stat-label">Accepted Candidates</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <!-- Filter Bar & Search -->
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 18px;">
+              <div class="filter-tabs-bar" id="volunteerStatusFilterTabs">
+                <button type="button" class="btn-filter-tab active" data-status="all" onclick="setVolunteerStatusFilter('all')">All (<span id="countVolAll">0</span>)</button>
+                <button type="button" class="btn-filter-tab" data-status="pending" onclick="setVolunteerStatusFilter('pending')">Pending (<span id="countVolPending">0</span>)</button>
+                <button type="button" class="btn-filter-tab" data-status="under_review" onclick="setVolunteerStatusFilter('under_review')">Under Review (<span id="countVolReview">0</span>)</button>
+                <button type="button" class="btn-filter-tab" data-status="accepted" onclick="setVolunteerStatusFilter('accepted')">Accepted (<span id="countVolAccepted">0</span>)</button>
+                <button type="button" class="btn-filter-tab" data-status="rejected" onclick="setVolunteerStatusFilter('rejected')">Rejected (<span id="countVolRejected">0</span>)</button>
+              </div>
+
+              <div style="min-width: 260px;">
+                <input type="text" id="volSearchInput" class="form-control" placeholder="Search applicant name, city, email..." oninput="filterVolunteersList()" />
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div class="admin-table-wrapper">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Ref ID</th>
+                    <th>Applicant Name & City</th>
+                    <th>Application Type</th>
+                    <th>Areas of Interest</th>
+                    <th>Availability</th>
+                    <th>Status</th>
+                    <th>Applied Date</th>
+                    <th style="text-align: right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="volunteersTableBody">
+                  <tr><td colspan="8" style="text-align: center; color: #94A3B8;">Loading volunteer applications...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 6: DONATIONS -->
+        <div class="tab-pane" id="tab-donations">
+          <div class="page-action-toolbar">
+            <div>
+              <h2 style="font-size: 1.15rem; font-weight: 800; color: #0F172A; margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-receipt" style="color: var(--admin-primary);"></i> Donations & Receipts
+              </h2>
+              <p style="font-size: 0.82rem; color: #64748B; margin: 2px 0 0 0;">
+                Track and verify community contributions, issue bilingual receipts, and print audit slips.
+              </p>
+            </div>
+            <button type="button" class="btn-admin btn-admin-primary" onclick="openModal('modalDonation'); resetDonationForm();">
+              <i class="fas fa-receipt"></i> Record New Donation & Receipt
+            </button>
+          </div>
+
+          <div class="admin-card">
+            <div class="admin-table-wrapper">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Donor Name & Contact</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Txn / Ref ID</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="donationsTableBody">
+                  <tr><td colspan="6" style="text-align: center; color: #94A3B8;">Loading donations...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 7: CONTACT SUBMISSIONS -->
+        <div class="tab-pane" id="tab-submissions">
+          <p class="tab-description-subtitle" style="font-size: 0.85rem; color: #64748B; margin-bottom: 18px;">Inquiries and feedback submitted through the public contact form.</p>
+
+          <div class="admin-card">
+            <div class="admin-table-wrapper">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Sender Info</th>
+                    <th>Subject & Message</th>
+                    <th>Status</th>
+                    <th>Received At</th>
+                    <th style="text-align: right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="submissionsTableBody">
+                  <tr><td colspan="5" style="text-align: center; color: #94A3B8;">Loading messages...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBMENU 1: OFFICIAL ISLAMIC BANK ACCOUNT DETAILS & MOBILE WALLETS -->
+        <div class="tab-pane" id="tab-settings-bank">
+          <p class="tab-description-subtitle" style="font-size: 0.85rem; color: #64748B; margin-bottom: 18px;">Official Meezan Islamic Bank Account Details and Mobile Wallets (EasyPaisa & JazzCash) displayed to donors worldwide.</p>
+
+          <div class="admin-card">
+            <div id="bankSettingsSaveStatus" style="display: none; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;"></div>
+            
+            <form id="adminBankSettingsForm">
+              <h4 style="color: var(--admin-primary-dark); margin-bottom: 14px; border-bottom: 1px solid #E2E8F0; padding-bottom: 8px;">
+                <i class="fas fa-building-columns" style="color: var(--admin-primary);"></i> Official Islamic Bank Account Details
+              </h4>
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <div>
+                  <label class="form-label">Bank Name</label>
+                  <input type="text" id="setting_bank_name" name="bank_name" class="form-control" placeholder="Meezan Bank Limited (Islamic Banking)" />
+                </div>
+                <div>
+                  <label class="form-label">Account Title</label>
+                  <input type="text" id="setting_account_title" name="account_title" class="form-control" placeholder="Qasr-e-Shabbir Foundation" />
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                <div>
+                  <label class="form-label">Account Number</label>
+                  <input type="text" id="setting_account_number" name="account_number" class="form-control" placeholder="01020304050607" />
+                </div>
+                <div>
+                  <label class="form-label">IBAN Number</label>
+                  <input type="text" id="setting_iban_number" name="iban_number" class="form-control" placeholder="PK64MEZN0001020304050607" />
+                </div>
+                <div>
+                  <label class="form-label">Branch Code & City</label>
+                  <input type="text" id="setting_branch_code" name="branch_code" class="form-control" placeholder="0102 (Lahore Main Branch)" />
+                </div>
+              </div>
+
+              <h4 style="color: var(--admin-primary-dark); margin-bottom: 14px; border-bottom: 1px solid #E2E8F0; padding-bottom: 8px;">
+                <i class="fas fa-mobile-screen-button" style="color: var(--admin-primary);"></i> Mobile Wallets (EasyPaisa & JazzCash)
+              </h4>
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <div>
+                  <label class="form-label">EasyPaisa Mobile Number</label>
+                  <input type="text" id="setting_easypaisa_number" name="easypaisa_number" class="form-control" placeholder="0300-0817702" />
+                </div>
+                <div>
+                  <label class="form-label">EasyPaisa Account Title</label>
+                  <input type="text" id="setting_easypaisa_title" name="easypaisa_title" class="form-control" placeholder="Qasr-e-Shabbir Foundation" />
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                <div>
+                  <label class="form-label">JazzCash Mobile Number</label>
+                  <input type="text" id="setting_jazzcash_number" name="jazzcash_number" class="form-control" placeholder="0300-0817702" />
+                </div>
+                <div>
+                  <label class="form-label">JazzCash Account Title</label>
+                  <input type="text" id="setting_jazzcash_title" name="jazzcash_title" class="form-control" placeholder="Qasr-e-Shabbir Foundation" />
+                </div>
+              </div>
+
+              <button type="submit" class="btn-admin btn-admin-primary" style="padding: 12px 28px; font-size: 1rem;">
+                <i class="fas fa-floppy-disk"></i> Save Bank & Mobile Wallet Settings
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- SUBMENU 2: FOUNDATION HELPLINE & OFFICIAL ADDRESS -->
+        <div class="tab-pane" id="tab-settings-contact">
+          <p class="tab-description-subtitle" style="font-size: 0.85rem; color: #64748B; margin-bottom: 18px;">Update official telephone helpline, WhatsApp support, inquiry email, and physical head office address.</p>
+
+          <div class="admin-card">
+            <div id="contactSettingsSaveStatus" style="display: none; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;"></div>
+            
+            <form id="adminContactSettingsForm">
+              <h4 style="color: var(--admin-primary-dark); margin-bottom: 14px; border-bottom: 1px solid #E2E8F0; padding-bottom: 8px;">
+                <i class="fas fa-address-book" style="color: var(--admin-primary);"></i> Foundation Helpline & Official Address
+              </h4>
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <div>
+                  <label class="form-label">Helpline Phone / WhatsApp *</label>
+                  <input type="text" id="setting_contact_phone" name="contact_phone" class="form-control" placeholder="+92 300 0817702" required />
+                </div>
+                <div>
+                  <label class="form-label">Official Contact Email *</label>
+                  <input type="email" id="setting_contact_email" name="contact_email" class="form-control" placeholder="info@qasreshabbir.org" required />
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                <div>
+                  <label class="form-label">Head Office Address (English)</label>
+                  <input type="text" id="setting_contact_address_en" name="contact_address_en" class="form-control" placeholder="Anjumn-e-Hussainia, Anwaria Town Jallandher, Teh Parachinar" />
+                </div>
+                <div>
+                  <label class="form-label">Head Office Address (Urdu)</label>
+                  <input type="text" id="setting_contact_address_ur" name="contact_address_ur" class="form-control" placeholder="انواریا ٹاؤن، جالندھر، تحصیل پاراچنار" dir="rtl" />
+                </div>
+              </div>
+
+              <button type="submit" class="btn-admin btn-admin-primary" style="padding: 12px 28px; font-size: 1rem;">
+                <i class="fas fa-floppy-disk"></i> Save Helpline & Official Address
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- SUBMENU 4: EDIT LAYOUT (HERO SECTION & HOMEPAGE BANNER) -->
+        <div class="tab-pane" id="tab-settings-layout">
+          <p class="tab-description-subtitle" style="font-size: 0.85rem; color: #64748B; margin-bottom: 18px;">Customize the homepage hero banner headings, slogans, descriptive texts, call-to-action buttons, and background banner image.</p>
+
+          <div class="admin-card">
+            <div id="layoutSettingsSaveStatus" style="display: none; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;"></div>
+
+            <!-- Live Mini Preview Box -->
+            <div class="hero-live-preview-box" id="heroLivePreview">
+              <div class="hero-preview-bg" id="heroPreviewBg"></div>
+              <div class="hero-preview-overlay"></div>
+              <div class="hero-preview-content">
+                <span class="hero-preview-eyebrow" id="prevHeroEyebrow">WELCOME TO</span>
+                <h3 class="hero-preview-heading" id="prevHeroHeading">Qasr-e-Shabbir Foundation</h3>
+                <p class="hero-preview-sub" id="prevHeroSubtitle">Together for a Brighter Tomorrow</p>
+                <p class="hero-preview-text" id="prevHeroText">We work for a better, healthier and educated community by providing support, care and hope to those in need.</p>
+                <div class="hero-preview-buttons">
+                  <span class="hero-prev-btn1" id="prevHeroBtn1">Support Our Cause</span>
+                  <span class="hero-prev-btn2" id="prevHeroBtn2">Learn More</span>
+                </div>
+              </div>
+            </div>
+
+            <form id="adminLayoutSettingsForm">
+              
+              <!-- Background Banner Image -->
+              <h4 style="color: var(--admin-primary-dark); margin: 24px 0 14px; border-bottom: 1px solid #E2E8F0; padding-bottom: 8px;">
+                <i class="fas fa-image" style="color: var(--admin-primary);"></i> Hero Background Banner Image
+              </h4>
+              <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 20px; align-items: start;">
+                <div>
+                  <label class="form-label">Background Image URL / Select Preset</label>
+                  <input type="text" id="setting_hero_bg_image" name="hero_bg_image" class="form-control" placeholder="/media/branding/hero_bg.jpg" value="/media/branding/hero_bg.jpg" />
+                  <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
+                    <label class="btn-admin btn-admin-secondary" style="cursor: pointer; font-size: 0.8rem; padding: 7px 12px;">
+                      <i class="fas fa-upload"></i> Upload Image File
+                      <input type="file" id="heroBgFileInput" accept="image/*" style="display: none;" />
+                    </label>
+                    <button type="button" class="btn-admin btn-admin-secondary" style="font-size: 0.8rem; padding: 7px 12px;" onclick="setHeroBgPreset('/media/branding/hero_bg.jpg')">Dark Red Theme</button>
+                    <button type="button" class="btn-admin btn-admin-secondary" style="font-size: 0.8rem; padding: 7px 12px;" onclick="setHeroBgPreset('/food_ration_packages_1792017736170.jpg')">Food Ration</button>
+                    <button type="button" class="btn-admin btn-admin-secondary" style="font-size: 0.8rem; padding: 7px 12px;" onclick="setHeroBgPreset('/hero_boy_studying_1792017668425.jpg')">Student Studying</button>
+                  </div>
+                </div>
+                <div>
+                  <label class="form-label">Banner Thumbnail</label>
+                  <div style="width: 100%; height: 110px; border-radius: 8px; border: 1px solid #CBD5E1; overflow: hidden; background: #1E293B; display: flex; align-items: center; justify-content: center;">
+                    <img id="heroBgThumbnail" src="/media/branding/hero_bg.jpg" alt="Hero Banner Preview" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='/media/branding/hero_bg.jpg';" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Eyebrow & Title -->
+              <h4 style="color: var(--admin-primary-dark); margin: 20px 0 14px; border-bottom: 1px solid #E2E8F0; padding-bottom: 8px;">
+                <i class="fas fa-heading" style="color: var(--admin-primary);"></i> Headings & Slogans (Bilingual)
+              </h4>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <div>
+                  <label class="form-label">Top Eyebrow Badge (English)</label>
+                  <input type="text" id="setting_hero_eyebrow_en" name="hero_eyebrow_en" class="form-control" placeholder="WELCOME TO" value="WELCOME TO" />
+                </div>
+                <div>
+                  <label class="form-label">Top Eyebrow Badge (Urdu)</label>
+                  <input type="text" id="setting_hero_eyebrow_ur" name="hero_eyebrow_ur" class="form-control" placeholder="خوش آمدید" value="خوش آمدید" dir="rtl" />
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <div>
+                  <label class="form-label">Main Hero Title (English) *</label>
+                  <input type="text" id="setting_hero_heading_en" name="hero_heading_en" class="form-control" placeholder="Qasr-e-Shabbir Foundation" value="Qasr-e-Shabbir Foundation" required />
+                </div>
+                <div>
+                  <label class="form-label">Main Hero Title (Urdu) *</label>
+                  <input type="text" id="setting_hero_heading_ur" name="hero_heading_ur" class="form-control" placeholder="قصرِ شبیر فاؤنڈیشن" value="قصرِ شبیر فاؤنڈیشن" dir="rtl" required />
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <div>
+                  <label class="form-label">Tagline / Subtitle (English)</label>
+                  <input type="text" id="setting_hero_subtitle_en" name="hero_subtitle_en" class="form-control" placeholder="Together for a Brighter Tomorrow" value="Together for a Brighter Tomorrow" />
+                </div>
+                <div>
+                  <label class="form-label">Tagline / Subtitle (Urdu)</label>
+                  <input type="text" id="setting_hero_subtitle_ur" name="hero_subtitle_ur" class="form-control" placeholder="روشن مستقبل کے لیے ایک ساتھ" value="روشن مستقبل کے لیے ایک ساتھ" dir="rtl" />
+                </div>
+              </div>
+
+              <!-- Descriptive Paragraph -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                <div>
+                  <label class="form-label">Descriptive Paragraph (English)</label>
+                  <textarea id="setting_hero_text_en" name="hero_text_en" class="form-control" rows="3" placeholder="We work for a better, healthier and educated community by providing support, care and hope to those in need.">We work for a better, healthier and educated community by providing support, care and hope to those in need.</textarea>
+                </div>
+                <div>
+                  <label class="form-label">Descriptive Paragraph (Urdu)</label>
+                  <textarea id="setting_hero_text_ur" name="hero_text_ur" class="form-control" rows="3" placeholder="ہم ضرورت مندوں کو مدد، دیکھ بھال اور امید فراہم کر کے ایک بہتر، صحت مند اور تعلیم یافتہ معاشرے کی تعمیر کے لیے کام کرتے ہیں۔" dir="rtl">ہم ضرورت مندوں کو مدد، دیکھ بھال اور امید فراہم کر کے ایک بہتر، صحت مند اور تعلیم یافتہ معاشرے کی تعمیر کے لیے کام کرتے ہیں۔</textarea>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <h4 style="color: var(--admin-primary-dark); margin: 20px 0 14px; border-bottom: 1px solid #E2E8F0; padding-bottom: 8px;">
+                <i class="fas fa-arrow-pointer" style="color: var(--admin-primary);"></i> Call To Action (CTA) Buttons
+              </h4>
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <div>
+                  <label class="form-label">Primary Button Text (EN)</label>
+                  <input type="text" id="setting_hero_btn1_text_en" name="hero_btn1_text_en" class="form-control" placeholder="Support Our Cause" value="Support Our Cause" />
+                </div>
+                <div>
+                  <label class="form-label">Primary Button Text (UR)</label>
+                  <input type="text" id="setting_hero_btn1_text_ur" name="hero_btn1_text_ur" class="form-control" placeholder="تعاون کریں" value="تعاون کریں" dir="rtl" />
+                </div>
+                <div>
+                  <label class="form-label">Primary Button Link</label>
+                  <input type="text" id="setting_hero_btn1_link" name="hero_btn1_link" class="form-control" placeholder="/donate" value="/donate" />
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                <div>
+                  <label class="form-label">Secondary Button Text (EN)</label>
+                  <input type="text" id="setting_hero_btn2_text_en" name="hero_btn2_text_en" class="form-control" placeholder="Learn More" value="Learn More" />
+                </div>
+                <div>
+                  <label class="form-label">Secondary Button Text (UR)</label>
+                  <input type="text" id="setting_hero_btn2_text_ur" name="hero_btn2_text_ur" class="form-control" placeholder="ہمارے بارے میں" value="ہمارے بارے میں" dir="rtl" />
+                </div>
+                <div>
+                  <label class="form-label">Secondary Button Link</label>
+                  <input type="text" id="setting_hero_btn2_link" name="hero_btn2_link" class="form-control" placeholder="/about" value="/about" />
+                </div>
+              </div>
+
+              <button type="submit" class="btn-admin btn-admin-primary" style="padding: 12px 28px; font-size: 1rem;">
+                <i class="fas fa-floppy-disk"></i> Save & Apply Homepage Hero Layout
+              </button>
+            </form>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ==================== MODALS FOR DATA MANAGEMENT (ADD & EDIT) ==================== -->
+
+  <!-- 1. Modal: Add / Edit Project -->
+  <div class="admin-modal-overlay" id="modalProject">
+    <div class="admin-modal-card admin-modal-form-widescreen" style="max-width: 1040px; width: 94vw;">
+      <div class="modal-header-compact">
+        <h3 id="projectModalHeading" style="font-size: 1.25rem; font-weight: 700; color: var(--admin-primary); display: flex; align-items: center; gap: 10px;"><i class="fas fa-hand-holding-heart"></i> Add New Welfare Project</h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('modalProject')" title="Close">✕</button>
+      </div>
+      <form id="formAddProject" onsubmit="handleProjectFormSubmit(event)">
+        <input type="hidden" name="id" id="projectEditId" value="" />
+        
+        <div class="modal-form-grid-2col">
+          <!-- Left Column: Core Parameters, Financials & Dates -->
+          <div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <label class="form-label">Project Title (English) *</label>
+                <input type="text" id="proj_title_en" name="title_en" class="form-control" required placeholder="e.g. Orphan High School Education" />
+              </div>
+              <div>
+                <label class="form-label">Project Title (Urdu) *</label>
+                <input type="text" id="proj_title_ur" name="title_ur" class="form-control" required placeholder="مثال: یتیم بچوں کی ہائی اسکول تعلیم" dir="rtl" />
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <label class="form-label">Category *</label>
+                <select id="proj_category_id" name="category_id" class="form-control" required>
+                  <option value="1">Education (تعلیم)</option>
+                  <option value="2">Healthcare (صحت)</option>
+                  <option value="3">Food Support (خوراک کی امداد)</option>
+                  <option value="4">Clean Water (صاف پانی)</option>
+                  <option value="5">Community Care (سماجی خدمت)</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Project Status *</label>
+                <select id="proj_status" name="status" class="form-control" required>
+                  <option value="active">Active (Receiving Funds)</option>
+                  <option value="completed">Completed (Work Finished)</option>
+                  <option value="closed">Closed (Administratively Closed)</option>
+                  <option value="draft">Draft (Unpublished)</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Image Path or URL</label>
+              <input type="text" id="proj_image_url" name="image_url" class="form-control" value="/media/projects/orphan_education.jpg" />
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <label class="form-label">Target Funding Goal (PKR) *</label>
+                <input type="number" id="proj_goal_amount" name="goal_amount" class="form-control" required placeholder="1500000" min="0" />
+              </div>
+              <div>
+                <label class="form-label">Current Confirmed Raised (PKR)</label>
+                <input type="number" id="proj_raised_amount" name="raised_amount" class="form-control" value="0" min="0" />
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <label class="form-label">Project Start Date</label>
+                <input type="date" id="proj_start_date" name="start_date" class="form-control" />
+              </div>
+              <div>
+                <label class="form-label">Expected Completion Date</label>
+                <input type="date" id="proj_expected_completion_date" name="expected_completion_date" class="form-control" />
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div>
+                <label class="form-label">Beneficiaries Count</label>
+                <input type="number" id="proj_beneficiaries_count" name="beneficiaries_count" class="form-control" value="120" min="0" />
+              </div>
+              <div>
+                <label class="form-label">Beneficiaries Label (EN / UR)</label>
+                <input type="text" id="proj_beneficiaries_label_en" name="beneficiaries_label_en" class="form-control" value="Students" placeholder="Students" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Descriptions & Administrative Notes -->
+          <div>
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Short Description (English)</label>
+              <textarea id="proj_short_desc_en" name="short_desc_en" class="form-control" rows="3" style="min-height: 80px;" placeholder="Brief summary of project..."></textarea>
+            </div>
+
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Short Description (Urdu)</label>
+              <textarea id="proj_short_desc_ur" name="short_desc_ur" class="form-control" rows="3" style="min-height: 80px;" placeholder="منصوبے کا مختصر تعارف..." dir="rtl"></textarea>
+            </div>
+
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Administrative Notes & Remarks</label>
+              <textarea id="proj_notes" name="notes" class="form-control" rows="3" style="min-height: 80px;" placeholder="Internal project notes, partner institutions, field coordinator remarks..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 18px; padding-top: 14px; border-top: 1px solid #E2E8F0;">
+          <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalProject')">Cancel</button>
+          <button type="submit" id="projectSubmitBtn" class="btn-admin btn-admin-primary"><i class="fas fa-check"></i> Save & Publish Project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Project Complete Details & Dedicated Donation Ledger -->
+  <div class="admin-modal-overlay" id="modalProjectDetails">
+    <div class="admin-modal-card project-details-modal-card" style="max-width: 1380px; width: 96vw; max-height: 94vh;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; border-bottom: 1px solid #E2E8F0; padding-bottom: 14px;">
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <h3 id="projDetailModalTitle" style="font-size: 1.25rem; font-weight: 800; color: var(--admin-primary); margin: 0; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-hand-holding-heart"></i> Project Details & Donation Ledger
+          </h3>
+          <span id="projDetailStatusBadge" class="status-pill status-active">Active</span>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeModal('modalProjectDetails')" title="Close">✕</button>
+      </div>
+
+      <div id="projectDetailModalContent" class="modal-body-scroll" style="max-height: calc(94vh - 160px); overflow-y: auto;">
+        <!-- Rendered dynamically with project metadata & dedicated ledger -->
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 22px; padding-top: 16px; border-top: 1px solid #E2E8F0; flex-wrap: wrap; gap: 10px;">
+        <div id="projectDetailFooterActions" style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <!-- Action buttons: Edit, Mark Completed, Close Project, etc. -->
+        </div>
+        <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalProjectDetails')">Close View</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Modal: Add / Edit Article -->
+  <div class="admin-modal-overlay" id="modalArticle">
+    <div class="admin-modal-card admin-modal-form-widescreen" style="max-width: 980px; width: 94vw;">
+      <div class="modal-header-compact">
+        <h3 id="articleModalHeading" style="font-size: 1.25rem; font-weight: 700; color: var(--admin-primary); display: flex; align-items: center; gap: 10px;"><i class="fas fa-newspaper"></i> Publish News & Update Article</h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('modalArticle')" title="Close">✕</button>
+      </div>
+      <form id="formAddArticle">
+        <input type="hidden" name="id" id="articleEditId" value="" />
+
+        <div class="modal-form-grid-2col">
+          <!-- Left Column: Titles & Meta -->
+          <div>
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Article Title (English) *</label>
+              <input type="text" id="art_title_en" name="title_en" class="form-control" required placeholder="e.g. Free Eye Screening Camp Held" />
+            </div>
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Article Title (Urdu) *</label>
+              <input type="text" id="art_title_ur" name="title_ur" class="form-control" required placeholder="مثال: فری آئی کیمپ کا کامیاب انعقاد" dir="rtl" />
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <label class="form-label">Category</label>
+                <select id="art_category_id" name="category_id" class="form-control">
+                  <option value="1">Education (تعلیم)</option>
+                  <option value="2">Healthcare (صحت)</option>
+                  <option value="3">Food Support (خوراک کی امداد)</option>
+                  <option value="4">Clean Water (صاف پانی)</option>
+                  <option value="5">Community Care (سماجی خدمت)</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Image Path or URL</label>
+                <input type="text" id="art_image_url" name="image_url" class="form-control" value="/media/news/news_1.png" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Content Stories -->
+          <div>
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Short Summary (English) *</label>
+              <textarea id="art_short_desc_en" name="short_desc_en" class="form-control" rows="2" style="min-height: 56px;" required placeholder="Short summary for homepage cards..."></textarea>
+            </div>
+
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Short Summary (Urdu) *</label>
+              <textarea id="art_short_desc_ur" name="short_desc_ur" class="form-control" rows="2" style="min-height: 56px;" required placeholder="ہوم پیج کے لیے مختصر خلاصہ..." dir="rtl"></textarea>
+            </div>
+
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Full Article Story (English)</label>
+              <textarea id="art_content_en" name="content_en" class="form-control" rows="2" style="min-height: 60px;" placeholder="Full details of the field mission..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 18px; padding-top: 14px; border-top: 1px solid #E2E8F0;">
+          <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalArticle')">Cancel</button>
+          <button type="submit" id="articleSubmitBtn" class="btn-admin btn-admin-primary"><i class="fas fa-check"></i> Publish Article</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: View News & Update Article Details -->
+  <div class="admin-modal-overlay" id="modalViewArticle">
+    <div class="admin-modal-card" style="max-width: 820px; width: 94vw;">
+      <div class="modal-header-compact">
+        <h3 id="viewArticleHeading" style="font-size: 1.25rem; font-weight: 700; color: var(--admin-primary); display: flex; align-items: center; gap: 10px;">
+          <i class="fas fa-newspaper"></i> News & Update Article Details
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('modalViewArticle')" title="Close">✕</button>
+      </div>
+      <div id="viewArticleModalBody">
+        <!-- Rendered dynamically -->
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; padding-top: 14px; border-top: 1px solid #E2E8F0;">
+        <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalViewArticle')">Close</button>
+        <button type="button" class="btn-admin btn-admin-primary" id="btnEditArticleFromView"><i class="fas fa-pen"></i> Edit Article</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Modal: Add / Edit Donation -->
+  <div class="admin-modal-overlay" id="modalDonation">
+    <div class="admin-modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; border-bottom: 1px solid #E2E8F0; padding-bottom: 14px;">
+        <h3 id="donationModalHeading" style="font-size: 1.25rem; font-weight: 700; color: var(--admin-primary); display: flex; align-items: center; gap: 10px;"><i class="fas fa-receipt"></i> Record Direct / Offline Donation</h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('modalDonation')" title="Close">✕</button>
+      </div>
+      <form id="formAddDonation">
+        <input type="hidden" name="id" id="donationEditId" value="" />
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label class="form-label">Donor Full Name *</label>
+            <input type="text" id="don_donor_name" name="donor_name" class="form-control" required placeholder="e.g. Haji Abdul Rasheed" />
+          </div>
+          <div>
+            <label class="form-label">Donor Phone *</label>
+            <input type="text" id="don_donor_phone" name="donor_phone" class="form-control" required placeholder="0300-1234567" />
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label class="form-label">Amount (PKR) *</label>
+            <input type="number" id="don_amount" name="amount" class="form-control" required placeholder="50000" />
+          </div>
+          <div>
+            <label class="form-label">Payment Channel</label>
+            <select id="don_payment_method" name="payment_method" class="form-control">
+              <option value="Meezan Bank">Direct Bank Transfer (Meezan Bank)</option>
+              <option value="EasyPaisa">EasyPaisa</option>
+              <option value="JazzCash">JazzCash</option>
+              <option value="Other Bank">Other Bank Transfer</option>
+              <option value="Cash / Cheque">Direct Office Cash / Cheque</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label class="form-label">Bank Ref / Transaction ID</label>
+            <input type="text" id="don_transaction_reference" name="transaction_reference" class="form-control" placeholder="e.g. MZN-998827" />
+          </div>
+          <div>
+            <label class="form-label">Verification Status</label>
+            <select id="don_status" name="status" class="form-control">
+              <option value="verified">Verified (Approved)</option>
+              <option value="pending">Pending Verification</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 18px;">
+          <label class="form-label">Donation Purpose & Notes</label>
+          <input type="text" id="don_notes" name="notes" class="form-control" placeholder="e.g. Annual orphan student tuition Zakat" />
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 18px; border-top: 1px solid #E2E8F0;">
+          <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalDonation')">Cancel</button>
+          <button type="submit" id="donationSubmitBtn" class="btn-admin btn-admin-primary"><i class="fas fa-check"></i> Record & Save Donation</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. Modal: Add / Edit Assistance Request -->
+  <div class="admin-modal-overlay" id="modalApplication">
+    <div class="admin-modal-card admin-modal-form-widescreen" style="max-width: 980px; width: 94vw;">
+      <div class="modal-header-compact">
+        <h3 id="applicationModalHeading" style="font-size: 1.25rem; font-weight: 700; color: var(--admin-primary); display: flex; align-items: center; gap: 10px;"><i class="fas fa-file-signature"></i> Add New Assistance Application</h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('modalApplication')" title="Close">✕</button>
+      </div>
+      <form id="formAddApplication">
+        <input type="hidden" name="id" id="applicationEditId" value="" />
+
+        <div class="modal-form-grid-2col">
+          <!-- Left Column -->
+          <div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <label class="form-label">Applicant Name (Student/Child) *</label>
+                <input type="text" id="app_applicant_name" name="applicant_name" class="form-control" required placeholder="e.g. Ali Hassan" />
+              </div>
+              <div>
+                <label class="form-label">Guardian / Mother Name *</label>
+                <input type="text" id="app_guardian_name" name="guardian_name" class="form-control" required placeholder="e.g. Kulsoom Bibi" />
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <label class="form-label">Contact Phone *</label>
+                <input type="text" id="app_phone" name="phone" class="form-control" required placeholder="0300-0000000" />
+              </div>
+              <div>
+                <label class="form-label">City *</label>
+                <input type="text" id="app_city" name="city" class="form-control" required placeholder="Lahore / Multan / Karachi" />
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <label class="form-label">Assistance Category</label>
+                <select id="app_assistance_type" name="assistance_type" class="form-control">
+                  <option value="education">Orphan Education Support</option>
+                  <option value="ration">Monthly Ration & Food Package</option>
+                  <option value="medical">Medical Assistance</option>
+                  <option value="financial">Urgent Family Financial Aid</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">CNIC or B-Form Number</label>
+                <input type="text" id="app_cnic_or_bform" name="cnic_or_bform" class="form-control" placeholder="35201-XXXXXXX-X" />
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div>
+                <label class="form-label">Family Members Count</label>
+                <input type="number" id="app_family_members_count" name="family_members_count" class="form-control" value="4" min="1" />
+              </div>
+              <div>
+                <label class="form-label">Monthly Household Income (PKR)</label>
+                <input type="number" id="app_monthly_income" name="monthly_income" class="form-control" value="0" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div>
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Residential Address</label>
+              <input type="text" id="app_address" name="address" class="form-control" placeholder="Full residential street & mohallah address" />
+            </div>
+
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Application Circumstances & Request</label>
+              <textarea id="app_details" name="details" class="form-control" rows="3" style="min-height: 75px;" placeholder="Brief statement of orphan family status and aid required..."></textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div>
+                <label class="form-label">Verification Status</label>
+                <select id="app_status" name="status" class="form-control">
+                  <option value="pending">Pending</option>
+                  <option value="under_review">Under Review</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Verification Notes</label>
+                <input type="text" id="app_notes" name="notes" class="form-control" placeholder="Admin verification remarks" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; padding-top: 14px; border-top: 1px solid #E2E8F0; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <button type="button" class="btn-admin btn-admin-secondary" id="btnPrintAppFromModal" onclick="printCurrentApplicationDossier()" style="display: none;">
+              <i class="fas fa-print"></i> Print Official Dossier (A4)
+            </button>
+          </div>
+          <div style="display: flex; gap: 12px;">
+            <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalApplication')">Cancel</button>
+            <button type="submit" id="applicationSubmitBtn" class="btn-admin btn-admin-primary"><i class="fas fa-check"></i> Save Application Changes</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: View Assistance Request Dossier / Details -->
+  <div class="admin-modal-overlay" id="modalViewApplication">
+    <div class="admin-modal-card" style="max-width: 860px; width: 94vw;">
+      <div class="modal-header-compact">
+        <h3 id="viewAppHeading" style="font-size: 1.25rem; font-weight: 700; color: var(--admin-primary); display: flex; align-items: center; gap: 10px;">
+          <i class="fas fa-file-shield"></i> Assistance Request Dossier
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('modalViewApplication')" title="Close">✕</button>
+      </div>
+      <div id="viewApplicationModalBody">
+        <!-- Rendered dynamically -->
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; padding-top: 14px; border-top: 1px solid #E2E8F0; flex-wrap: wrap; gap: 10px;">
+        <button type="button" class="btn-admin btn-admin-secondary" id="btnPrintAppFromViewModal" onclick="printCurrentApplicationDossier()"><i class="fas fa-print"></i> Print Dossier (A4)</button>
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalViewApplication')">Close</button>
+          <button type="button" class="btn-admin btn-admin-primary" id="btnEditAppFromView"><i class="fas fa-pen"></i> Edit / Review</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Modal: View User & Staff Profile -->
+  <div class="admin-modal-overlay" id="modalViewUser">
+    <div class="admin-modal-card" style="max-width: 600px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #E2E8F0; padding-bottom: 14px;">
+        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--admin-primary); display: flex; align-items: center; gap: 10px;">
+          <i class="fas fa-id-card"></i> User & Staff Member Profile
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('modalViewUser')" title="Close">✕</button>
+      </div>
+
+      <div id="viewUserModalBody">
+        <!-- Rendered dynamically by viewUser(id) -->
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 18px; border-top: 1px solid #E2E8F0;">
+        <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalViewUser')">Close</button>
+        <button type="button" class="btn-admin btn-admin-primary" id="btnEditFromView">
+          <i class="fas fa-pen-to-square"></i> Edit User & Rights
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Modal: Add / Edit User & Staff -->
+  <div class="admin-modal-overlay" id="modalUser">
+    <div class="admin-modal-card admin-modal-form-widescreen" style="max-width: 980px; width: 94vw;">
+      <div class="modal-header-compact">
+        <h3 id="userModalHeading" style="font-size: 1.25rem; font-weight: 700; color: var(--admin-primary); display: flex; align-items: center; gap: 10px;">
+          <i class="fas fa-user-plus"></i> Add New User / Staff Member
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('modalUser')" title="Close">✕</button>
+      </div>
+
+      <form id="formUser">
+        <input type="hidden" name="id" id="userEditId" value="" />
+
+        <div class="modal-form-grid-2col">
+          <!-- Left Column: User Profile & Role -->
+          <div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <label class="form-label">Full Name *</label>
+                <input type="text" id="user_full_name" name="full_name" class="form-control" required placeholder="e.g. Syed Muhammad Ali" />
+              </div>
+              <div>
+                <label class="form-label">Username (Unique) *</label>
+                <input type="text" id="user_username" name="username" class="form-control" required placeholder="e.g. sm_ali" />
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <label class="form-label">Email Address *</label>
+                <input type="email" id="user_email" name="email" class="form-control" required placeholder="ali@qasreshabbir.org" />
+              </div>
+              <div>
+                <label class="form-label" id="userPasswordLabel">Password *</label>
+                <input type="password" id="user_password" name="password" class="form-control" placeholder="••••••••" />
+                <small id="userPasswordHint" style="color: #64748B; font-size: 0.72rem; display: none;">Leave blank to keep existing password</small>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <label class="form-label">Role / Access Level *</label>
+                <select id="user_role" name="role" class="form-control">
+                  <option value="admin">Administrator (General Admin)</option>
+                  <option value="superadmin">Super Administrator (Full System Control)</option>
+                  <option value="manager">Operations & Program Manager</option>
+                  <option value="accountant">Accounts & Finance Officer</option>
+                  <option value="staff">Field Staff / Welfare Officer</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Job Title / Designation (English)</label>
+                <input type="text" id="user_designation" name="designation" class="form-control" placeholder="e.g. Chief Finance Officer" />
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <label class="form-label">Job Title / Designation (Urdu)</label>
+                <input type="text" id="user_designation_ur" name="designation_ur" class="form-control" placeholder="مثلاً چیف فنانس آفیسر" dir="rtl" />
+              </div>
+              <div>
+                <label class="form-label">Assigned Signatory for ID Card</label>
+                <select id="user_signature_id" name="signature_id" class="form-control">
+                  <option value="">Default (Founder & CEO Signature)</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <label class="form-label">Phone / WhatsApp</label>
+                <input type="text" id="user_phone" name="phone" class="form-control" placeholder="+92 300 0000000" />
+              </div>
+              <div>
+                <label class="form-label">Account Status</label>
+                <select id="user_is_active" name="is_active" class="form-control">
+                  <option value="1">Active (Can Login & Operate)</option>
+                  <option value="0">Suspended / Inactive</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Salary Assignment Block -->
+            <div class="salary-toggle-box" id="salaryToggleBox" style="padding: 10px 14px; margin-bottom: 0;">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 700; color: #1E293B; margin-bottom: 0; font-size: 0.84rem;">
+                <input type="checkbox" id="user_has_salary" name="has_salary" style="width: 16px; height: 16px; accent-color: var(--admin-primary);" />
+                <span><i class="fas fa-money-check-dollar" style="color: #059669; margin-right: 4px;"></i> Salaried Staff Member</span>
+              </label>
+              <div id="salaryInputContainer" style="display: none; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #CBD5E1;">
+                <label class="form-label" style="font-size: 0.78rem; font-weight: 600;">Monthly Salary Amount (PKR) *</label>
+                <div style="position: relative;">
+                  <span style="position: absolute; left: 10px; top: 8px; font-weight: 700; color: #64748B; font-size: 0.82rem;">PKR</span>
+                  <input type="number" id="user_salary" name="salary" class="form-control" style="padding-left: 48px; height: 34px;" placeholder="50000" min="0" step="500" value="0" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Mandatory Staff Profile Photo Upload -->
+            <div style="margin-top: 12px; background: #F8FAFC; border: 1.5px dashed #CBD5E1; border-radius: 8px; padding: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="form-label" style="font-weight: 700; color: #1E293B; margin-bottom: 0; font-size: 0.84rem;">
+                  <i class="fas fa-camera" style="color: var(--admin-primary); margin-right: 4px;"></i> Staff Profile Photo <span id="userPhotoMandatoryStar" style="color: #DC2626;">*</span>
+                </label>
+                <span id="userPhotoBadge" style="font-size: 0.72rem; font-weight: 700; color: #DC2626; background: #FEE2E2; padding: 1px 7px; border-radius: 9999px;">Mandatory for ID Card</span>
+              </div>
+              <p style="font-size: 0.75rem; color: #64748B; margin-bottom: 8px;">Upload official portrait photo (JPG, PNG, WebP — Max 10MB) to generate Staff Identity Card.</p>
+              
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div id="userPhotoPreviewBox" style="width: 58px; height: 68px; border-radius: 6px; border: 1px solid #CBD5E1; background: #FFFFFF; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; box-shadow: 0 1px 4px rgba(0,0,0,0.06);">
+                  <img id="userPhotoPreviewImg" src="" alt="Staff Preview" style="width: 100%; height: 100%; object-fit: cover; display: none;" />
+                  <i id="userPhotoPlaceholderIcon" class="fas fa-user" style="font-size: 1.5rem; color: #94A3B8;"></i>
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                  <input type="file" id="user_photo" name="photo" accept="image/jpeg,image/png,image/webp,image/jpg" style="display: none;" />
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <button type="button" class="btn-admin btn-admin-secondary" onclick="document.getElementById('user_photo').click()" style="padding: 6px 12px; font-size: 0.8rem; background: #FFFFFF;">
+                      <i class="fas fa-upload"></i> Choose Photo
+                    </button>
+                    <button type="button" id="btnRemoveUserPhoto" style="display: none; background: #FEE2E2; border: 1px solid #FECDD3; color: #DC2626; font-size: 0.75rem; padding: 5px 8px; border-radius: 4px; cursor: pointer;">
+                      ✕ Remove
+                    </button>
+                  </div>
+                  <div id="userPhotoFileName" style="font-size: 0.73rem; color: #64748B; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    No photo selected
+                  </div>
+                </div>
+              </div>
+              <div id="userPhotoError" style="display: none; color: #DC2626; font-size: 0.75rem; margin-top: 6px; font-weight: 600;"></div>
+            </div>
+          </div>
+
+          <!-- Right Column: Rights and Permissions Assignment -->
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label class="form-label" style="margin-bottom: 0;"><strong>Assigned Rights & Section Access:</strong></label>
+              <div style="font-size: 0.78rem;">
+                <a href="#" id="btnSelectAllPerms" style="color: var(--admin-primary); margin-right: 10px; font-weight: 600;">Select All</a>
+                <a href="#" id="btnClearAllPerms" style="color: #64748B; font-weight: 600;">Clear</a>
+              </div>
+            </div>
+            <div class="perm-grid" style="grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px;">
+              <label class="perm-item">
+                <input type="checkbox" name="permissions" value="accounts" class="perm-checkbox" checked />
+                <span><i class="fas fa-file-invoice-dollar"></i> Accounts & Projects</span>
+              </label>
+              <label class="perm-item">
+                <input type="checkbox" name="permissions" value="projects" class="perm-checkbox" checked />
+                <span><i class="fas fa-hand-holding-heart"></i> Welfare Projects</span>
+              </label>
+              <label class="perm-item">
+                <input type="checkbox" name="permissions" value="volunteers" class="perm-checkbox" checked />
+                <span><i class="fas fa-handshake-angle"></i> Volunteers</span>
+              </label>
+              <label class="perm-item">
+                <input type="checkbox" name="permissions" value="articles" class="perm-checkbox" checked />
+                <span><i class="fas fa-newspaper"></i> News & Updates</span>
+              </label>
+              <label class="perm-item">
+                <input type="checkbox" name="permissions" value="applications" class="perm-checkbox" checked />
+                <span><i class="fas fa-file-shield"></i> Assistance Requests</span>
+              </label>
+              <label class="perm-item">
+                <input type="checkbox" name="permissions" value="donations" class="perm-checkbox" checked />
+                <span><i class="fas fa-receipt"></i> Donations & Receipts</span>
+              </label>
+              <label class="perm-item">
+                <input type="checkbox" name="permissions" value="submissions" class="perm-checkbox" checked />
+                <span><i class="fas fa-envelope"></i> Contact Messages</span>
+              </label>
+              <label class="perm-item">
+                <input type="checkbox" name="permissions" value="settings" class="perm-checkbox" checked />
+                <span><i class="fas fa-gear"></i> Site, Bank & Branding</span>
+              </label>
+              <label class="perm-item" style="grid-column: 1 / -1;">
+                <input type="checkbox" name="permissions" value="users" class="perm-checkbox" />
+                <span><i class="fas fa-users-gear"></i> User Management</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 18px; padding-top: 14px; border-top: 1px solid #E2E8F0;">
+          <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalUser')">Cancel</button>
+          <button type="submit" id="userSubmitBtn" class="btn-admin btn-admin-primary">
+            <i class="fas fa-check"></i> Save User & Assign Rights
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 7. Modal: Volunteer Application Details & Status Management -->
+  <div class="admin-modal-overlay" id="modalVolunteerDetail">
+    <div class="admin-modal-card" style="max-width: 680px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #E2E8F0; padding-bottom: 14px;">
+        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--admin-primary); display: flex; align-items: center; gap: 10px;">
+          <i class="fas fa-handshake-angle"></i> Volunteer / Internship Candidate Profile
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('modalVolunteerDetail')" title="Close">✕</button>
+      </div>
+
+      <div id="volunteerModalContent">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #E2E8F0;">
+        <h4 style="font-size: 0.95rem; font-weight: 700; color: #1E293B; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-user-check" style="color: var(--admin-primary);"></i> Update Application Status
+        </h4>
+        <form id="formUpdateVolunteerStatus" onsubmit="handleVolunteerStatusSubmit(event)">
+          <input type="hidden" id="volDetailId" value="" />
+          <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 14px; margin-bottom: 14px;">
+            <div>
+              <label class="form-label">Review Status *</label>
+              <select id="volDetailStatusSelect" class="form-control" required>
+                <option value="pending">Pending</option>
+                <option value="under_review">Under Review</option>
+                <option value="accepted">Accepted</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Internal Admin Review Notes</label>
+              <input type="text" id="volDetailAdminNotes" class="form-control" placeholder="Interview remarks, department assignment..." />
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <button type="button" class="btn-admin btn-admin-secondary" id="btnPrintVolFromModal" onclick="printCurrentVolunteerProfile()">
+                <i class="fas fa-print"></i> Print Candidate Dossier (A4)
+              </button>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button type="button" class="btn-admin" id="btnEditFromVolunteerDetail" onclick="triggerEditFromDetail()" style="background: #0284C7; color: #FFFFFF; border-color: #0284C7;">
+                <i class="fas fa-pen-to-square"></i> Edit Volunteer
+              </button>
+              <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalVolunteerDetail')">Close</button>
+              <button type="submit" class="btn-admin btn-admin-primary">
+                <i class="fas fa-floppy-disk"></i> Save Status Decision
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. Modal: Record Manual Project Donation -->
+  <div class="admin-modal-overlay" id="modalManualDonation">
+    <div class="admin-modal-card admin-modal-form-widescreen" style="max-width: 960px; width: 94vw;">
+      <div class="modal-header-compact">
+        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--admin-primary); display: flex; align-items: center; gap: 10px;">
+          <i class="fas fa-hand-holding-dollar"></i> Record Project Donation
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('modalManualDonation')" title="Close">✕</button>
+      </div>
+
+      <form id="formManualDonation" onsubmit="handleManualDonationSubmit(event)">
+        <div class="modal-form-grid-2col">
+          <!-- Left Column -->
+          <div>
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Target Welfare Project *</label>
+              <select id="manual_project_id" name="project_id" class="form-control">
+                <option value="">General / Unrestricted Fund</option>
+                <!-- Dynamically populated with active projects -->
+              </select>
+            </div>
+
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Donation Amount (PKR) *</label>
+              <div style="position: relative;">
+                <span style="position: absolute; left: 12px; top: 8px; font-weight: 700; color: #64748B; font-size: 0.88rem;">PKR</span>
+                <input type="number" id="manual_amount" name="amount" class="form-control" style="padding-left: 54px;" placeholder="5000" min="1" step="1" required />
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <label class="form-label">Donor Full Name</label>
+                <input type="text" id="manual_donor_name" name="donor_name" class="form-control" placeholder="Leave empty for Anonymous" />
+              </div>
+              <div>
+                <label class="form-label">Donor Phone / WhatsApp</label>
+                <input type="text" id="manual_donor_phone" name="donor_phone" class="form-control" placeholder="+92 300 1234567" />
+              </div>
+            </div>
+
+            <div>
+              <label class="form-label">Donor Email</label>
+              <input type="email" id="manual_donor_email" name="donor_email" class="form-control" placeholder="donor@example.com" />
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div>
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Payment Method *</label>
+              <select id="manual_payment_method" name="payment_method" class="form-control" required>
+                <option value="Cash">Cash in Hand / Field Office</option>
+                <option value="Meezan Bank">Meezan Islamic Bank Transfer</option>
+                <option value="EasyPaisa">EasyPaisa Mobile Wallet</option>
+                <option value="JazzCash">JazzCash Mobile Wallet</option>
+                <option value="Bank Transfer">Other Bank Direct Wire / IBAN</option>
+                <option value="Cheque">Bank Cheque / Pay Order</option>
+                <option value="Online">Online Payment Gateway</option>
+              </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <label class="form-label">Transaction / Slip Ref *</label>
+                <div style="display: flex; gap: 4px;">
+                  <input type="text" id="manual_transaction_id" name="transaction_id" class="form-control" placeholder="TXN-2026-..." required />
+                  <button type="button" class="btn-admin btn-admin-secondary" style="padding: 0 8px;" onclick="generateManualRef()" title="Generate unique Reference ID">
+                    <i class="fas fa-arrows-rotate"></i>
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label class="form-label">Payment Status *</label>
+                <select id="manual_status" name="status" class="form-control" required>
+                  <option value="confirmed" selected>Confirmed</option>
+                  <option value="pending">Pending</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="form-label">Donation Notes / Purpose</label>
+              <textarea id="manual_notes" name="notes" class="form-control" rows="3" style="min-height: 80px;" placeholder="e.g. Zakat contribution, Sadqah Jariyah, Books sponsorship..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 18px; padding-top: 14px; border-top: 1px solid #E2E8F0;">
+          <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalManualDonation')">Cancel</button>
+          <button type="submit" id="btnSubmitManualDonation" class="btn-admin btn-admin-primary">
+            <i class="fas fa-check"></i> Record & Save Donation
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 9. Modal: Add New Volunteer Manually (Admin) -->
+  <div class="admin-modal-overlay" id="modalAddVolunteer">
+    <div class="admin-modal-card admin-modal-form-widescreen" style="max-width: 960px; width: 94vw;">
+      <div class="modal-header-compact">
+        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--admin-primary); display: flex; align-items: center; gap: 10px;">
+          <i class="fas fa-user-plus"></i> Add New Volunteer / Intern Record
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('modalAddVolunteer')" title="Close">✕</button>
+      </div>
+
+      <form id="formAddVolunteer" onsubmit="handleManualVolunteerSubmit(event)">
+        <div class="modal-form-grid-2col">
+          <!-- Left Column: Personal & Contact Info -->
+          <div>
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Full Name *</label>
+              <input type="text" id="man_vol_name" class="form-control" placeholder="Candidate Name" required />
+            </div>
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Email Address *</label>
+              <input type="email" id="man_vol_email" class="form-control" placeholder="candidate@example.com" required />
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <label class="form-label">Phone / WhatsApp *</label>
+                <input type="text" id="man_vol_phone" class="form-control" placeholder="0300-1234567" required />
+              </div>
+              <div>
+                <label class="form-label">City *</label>
+                <input type="text" id="man_vol_city" class="form-control" placeholder="Lahore / Rawalpindi" required />
+              </div>
+            </div>
+            <div>
+              <label class="form-label">Application Type *</label>
+              <select id="man_vol_type" class="form-control" required>
+                <option value="volunteer" selected>Volunteer (فلاحی رضاکار)</option>
+                <option value="internship">Student Internship (طالب علم انٹرن شپ)</option>
+              </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; margin-bottom: 12px;">
+              <div>
+                <label class="form-label">Job Title / Designation (English)</label>
+                <input type="text" id="man_vol_designation" class="form-control" placeholder="Honorary Field Volunteer" />
+              </div>
+              <div>
+                <label class="form-label">Job Title / Designation (Urdu)</label>
+                <input type="text" id="man_vol_designation_ur" class="form-control" placeholder="فلاحی رضاکار / فیلڈ آفیسر" dir="rtl" />
+              </div>
+            </div>
+
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Assigned Signatory for ID Card</label>
+              <select id="man_vol_signature_id" name="signature_id" class="form-control">
+                <option value="">Default (Founder & CEO Signature)</option>
+              </select>
+            </div>
+
+            <!-- Mandatory Volunteer Profile Photo -->
+            <div style="margin-top: 12px; background: #F8FAFC; border: 1.5px dashed #CBD5E1; border-radius: 8px; padding: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="form-label" style="font-weight: 700; color: #1E293B; margin-bottom: 0; font-size: 0.84rem;">
+                  <i class="fas fa-camera" style="color: var(--admin-primary); margin-right: 4px;"></i> Profile Photo <span style="color: #DC2626;">*</span>
+                </label>
+                <span style="font-size: 0.72rem; font-weight: 700; color: #DC2626; background: #FEE2E2; padding: 1px 7px; border-radius: 9999px;">Mandatory for ID Card</span>
+              </div>
+              <p style="font-size: 0.75rem; color: #64748B; margin-bottom: 8px;">Upload official volunteer photo (JPG, PNG, WebP — Max 10MB) for identity card generation.</p>
+              
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div id="manVolPhotoPreviewBox" style="width: 58px; height: 68px; border-radius: 6px; border: 1px solid #CBD5E1; background: #FFFFFF; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; box-shadow: 0 1px 4px rgba(0,0,0,0.06);">
+                  <img id="manVolPhotoPreviewImg" src="" alt="Volunteer Preview" style="width: 100%; height: 100%; object-fit: cover; display: none;" />
+                  <i id="manVolPhotoPlaceholderIcon" class="fas fa-user" style="font-size: 1.5rem; color: #94A3B8;"></i>
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                  <input type="file" id="man_vol_photo" name="photo" accept="image/jpeg,image/png,image/webp,image/jpg" required style="display: none;" />
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <button type="button" class="btn-admin btn-admin-secondary" onclick="document.getElementById('man_vol_photo').click()" style="padding: 6px 12px; font-size: 0.8rem; background: #FFFFFF;">
+                      <i class="fas fa-upload"></i> Choose Photo
+                    </button>
+                    <button type="button" id="btnRemoveManVolPhoto" style="display: none; background: #FEE2E2; border: 1px solid #FECDD3; color: #DC2626; font-size: 0.75rem; padding: 5px 8px; border-radius: 4px; cursor: pointer;">
+                      ✕ Remove
+                    </button>
+                  </div>
+                  <div id="manVolPhotoFileName" style="font-size: 0.73rem; color: #64748B; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    No photo selected
+                  </div>
+                </div>
+              </div>
+              <div id="manVolPhotoError" style="display: none; color: #DC2626; font-size: 0.75rem; margin-top: 6px; font-weight: 600;"></div>
+            </div>
+          </div>
+
+          <!-- Right Column: Qualification, Areas & Status -->
+          <div>
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Education / Qualification</label>
+              <input type="text" id="man_vol_education" class="form-control" placeholder="e.g. BS Computer Science, Intermediate..." />
+            </div>
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Areas of Interest / Field Work</label>
+              <input type="text" id="man_vol_interests" class="form-control" placeholder="e.g. Food Ration, Education, Medical Camps..." />
+            </div>
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Availability</label>
+              <select id="man_vol_availability" class="form-control">
+                <option value="Weekends Only">Weekends Only</option>
+                <option value="Part-time (Evenings)">Part-time (Evenings)</option>
+                <option value="Full-time">Full-time</option>
+                <option value="Emergency Relief Call">Emergency Relief Call</option>
+              </select>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div>
+                <label class="form-label">Review Status *</label>
+                <select id="man_vol_status" class="form-control" required>
+                  <option value="accepted" selected>Accepted (Active Volunteer)</option>
+                  <option value="under_review">Under Review</option>
+                  <option value="pending">Pending</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Internal Admin Review Notes</label>
+                <input type="text" id="man_vol_notes" class="form-control" placeholder="Department assignment..." />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 18px; padding-top: 14px; border-top: 1px solid #E2E8F0;">
+          <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalAddVolunteer')">Cancel</button>
+          <button type="submit" class="btn-admin btn-admin-primary">
+            <i class="fas fa-check"></i> Register Volunteer Record
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Volunteer Profile & ID Card Signatory (Admin) -->
+  <div class="admin-modal-overlay" id="modalEditVolunteer">
+    <div class="admin-modal-card admin-modal-form-widescreen" style="max-width: 960px; width: 94vw;">
+      <div class="modal-header-compact">
+        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--admin-primary); display: flex; align-items: center; gap: 10px;">
+          <i class="fas fa-user-pen"></i> Edit Volunteer / Intern Record
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('modalEditVolunteer')" title="Close">✕</button>
+      </div>
+
+      <form id="formEditVolunteer" onsubmit="handleEditVolunteerSubmit(event)">
+        <input type="hidden" id="edit_vol_id" name="id" />
+
+        <div class="modal-form-grid-2col">
+          <!-- Left Column: Personal & Contact Info -->
+          <div>
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Full Name *</label>
+              <input type="text" id="edit_vol_name" class="form-control" placeholder="Candidate Name" required />
+            </div>
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Email Address</label>
+              <input type="email" id="edit_vol_email" class="form-control" placeholder="candidate@example.com" />
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <label class="form-label">Phone / WhatsApp *</label>
+                <input type="text" id="edit_vol_phone" class="form-control" placeholder="0300-1234567" required />
+              </div>
+              <div>
+                <label class="form-label">City *</label>
+                <input type="text" id="edit_vol_city" class="form-control" placeholder="Lahore / Rawalpindi" required />
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <label class="form-label">Application Type *</label>
+                <select id="edit_vol_type" class="form-control" required>
+                  <option value="volunteer">Volunteer (فلاحی رضاکار)</option>
+                  <option value="internship">Student Internship (طالب علم انٹرن شپ)</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Assigned Signatory for ID Card</label>
+                <select id="edit_vol_signature_id" name="signature_id" class="form-control">
+                  <option value="">Default (Founder & CEO Signature)</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <label class="form-label">Job Title / Designation (English)</label>
+                <input type="text" id="edit_vol_designation" class="form-control" placeholder="e.g. Senior Field Volunteer" />
+              </div>
+              <div>
+                <label class="form-label">Job Title / Designation (Urdu)</label>
+                <input type="text" id="edit_vol_designation_ur" class="form-control" placeholder="مثلاً سینئر فلاحی رضاکار" dir="rtl" />
+              </div>
+            </div>
+
+            <!-- Profile Photo Upload / Replacement -->
+            <div style="margin-top: 12px; background: #F8FAFC; border: 1.5px dashed #CBD5E1; border-radius: 8px; padding: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="form-label" style="font-weight: 700; color: #1E293B; margin-bottom: 0; font-size: 0.84rem;">
+                  <i class="fas fa-camera" style="color: var(--admin-primary); margin-right: 4px;"></i> Profile Photo
+                </label>
+                <span style="font-size: 0.72rem; color: #64748B;">Leave unchanged to keep current</span>
+              </div>
+              
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div id="editVolPhotoPreviewBox" style="width: 58px; height: 68px; border-radius: 6px; border: 1px solid #CBD5E1; background: #FFFFFF; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; box-shadow: 0 1px 4px rgba(0,0,0,0.06);">
+                  <img id="editVolPhotoPreviewImg" src="" alt="Volunteer Preview" style="width: 100%; height: 100%; object-fit: cover; display: none;" />
+                  <i id="editVolPhotoPlaceholderIcon" class="fas fa-user" style="font-size: 1.5rem; color: #94A3B8;"></i>
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                  <input type="file" id="edit_vol_photo" name="photo" accept="image/jpeg,image/png,image/webp,image/jpg" style="display: none;" />
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <button type="button" class="btn-admin btn-admin-secondary" onclick="document.getElementById('edit_vol_photo').click()" style="padding: 6px 12px; font-size: 0.8rem; background: #FFFFFF;">
+                      <i class="fas fa-upload"></i> Change Photo
+                    </button>
+                    <button type="button" id="btnRemoveEditVolPhoto" style="display: none; background: #FEE2E2; border: 1px solid #FECDD3; color: #DC2626; font-size: 0.75rem; padding: 5px 8px; border-radius: 4px; cursor: pointer;">
+                      ✕ Reset
+                    </button>
+                  </div>
+                  <div id="editVolPhotoFileName" style="font-size: 0.73rem; color: #64748B; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    Using current stored photo
+                  </div>
+                </div>
+              </div>
+              <div id="editVolPhotoError" style="display: none; color: #DC2626; font-size: 0.75rem; margin-top: 6px; font-weight: 600;"></div>
+            </div>
+          </div>
+
+          <!-- Right Column: Qualification, Areas & Status -->
+          <div>
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Education / Qualification</label>
+              <input type="text" id="edit_vol_education" class="form-control" placeholder="e.g. BS Computer Science, Intermediate..." />
+            </div>
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Areas of Interest / Field Work</label>
+              <input type="text" id="edit_vol_interests" class="form-control" placeholder="e.g. Food Ration, Education, Medical Camps..." />
+            </div>
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Availability</label>
+              <select id="edit_vol_availability" class="form-control">
+                <option value="Weekends Only">Weekends Only</option>
+                <option value="Part-time (Evenings)">Part-time (Evenings)</option>
+                <option value="Full-time">Full-time</option>
+                <option value="Emergency Relief Call">Emergency Relief Call</option>
+              </select>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div>
+                <label class="form-label">Review Status *</label>
+                <select id="edit_vol_status" class="form-control" required>
+                  <option value="accepted">Accepted (Active Volunteer)</option>
+                  <option value="under_review">Under Review</option>
+                  <option value="pending">Pending</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Internal Admin Review Notes</label>
+                <input type="text" id="edit_vol_notes" class="form-control" placeholder="Department assignment..." />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 18px; padding-top: 14px; border-top: 1px solid #E2E8F0;">
+          <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalEditVolunteer')">Cancel</button>
+          <button type="submit" class="btn-admin btn-admin-primary">
+            <i class="fas fa-check"></i> Save Volunteer Updates
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 10. Modal: View Official Bilingual Donation Receipt & Audit Slip -->
+  <div class="admin-modal-overlay" id="modalAccountReceipt">
+    <div class="admin-modal-card" style="max-width: 760px; width: 95%; max-height: 92vh;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #E2E8F0; padding-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--admin-primary); display: flex; align-items: center; gap: 10px; margin: 0;">
+          <i class="fas fa-receipt"></i> Official Donation Receipt
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('modalAccountReceipt')" title="Close">✕</button>
+      </div>
+
+      <!-- Language & Stamp Controls Bar -->
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+        <!-- Language Selector Bar -->
+        <div class="receipt-lang-selector" style="display: flex; justify-content: space-between; align-items: center; background: #F8FAFC; padding: 10px 14px; border-radius: 8px; border: 1px solid #E2E8F0; flex-wrap: wrap; gap: 10px;">
+          <span style="font-size: 0.82rem; font-weight: 600; color: #475569;">
+            <i class="fas fa-language" style="color: var(--admin-primary); margin-right: 6px;"></i> Receipt Language / زبان کا انتخاب:
+          </span>
+          <div class="btn-group" style="display: flex; gap: 6px;">
+            <button type="button" id="btnReceiptLangEn" class="btn-admin btn-admin-primary" style="padding: 5px 14px; font-size: 0.8rem;" onclick="setReceiptLanguage('en')">
+              English Receipt
+            </button>
+            <button type="button" id="btnReceiptLangUr" class="btn-admin btn-admin-secondary" style="padding: 5px 14px; font-size: 0.85rem; font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', Tahoma, sans-serif;" onclick="setReceiptLanguage('ur')">
+              اردو میں پرنٹ کریں
+            </button>
+          </div>
+        </div>
+
+        <!-- Stamp Selector Bar -->
+        <div class="receipt-stamp-bar" style="display: flex; justify-content: space-between; align-items: center; background: #F8FAFC; padding: 8px 14px; border-radius: 8px; border: 1px solid #E2E8F0; flex-wrap: wrap; gap: 10px;">
+          <span style="font-size: 0.82rem; font-weight: 600; color: #475569;">
+            <i class="fas fa-stamp" style="color: var(--admin-primary); margin-right: 6px;"></i> Official Stamp / دفتری مہر:
+          </span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <select id="receiptStampSelect" class="form-control" style="padding: 4px 10px; font-size: 0.82rem; width: auto; min-width: 220px;" onchange="onReceiptStampChange()">
+              <option value="">No Stamp / بغیر مہر</option>
+              <!-- Populated dynamically with official stamps -->
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Printable Receipt Slip Body -->
+      <div id="receiptModalBody" class="modal-body-scroll" style="max-height: calc(92vh - 180px); overflow-y: auto;">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid #E2E8F0; flex-wrap: wrap; gap: 10px;">
+        <div style="font-size: 0.78rem; color: #64748B;">
+          <i class="fas fa-info-circle"></i> Supports instant printing and <strong>Save as PDF</strong> (A4 format).
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalAccountReceipt')">Close</button>
+          <button type="button" class="btn-admin btn-admin-primary" onclick="printReceiptContent()">
+            <i class="fas fa-print"></i> Print / Save as PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 11. Modal: View Contact Message Details -->
+  <div class="admin-modal-overlay" id="modalViewSubmission">
+    <div class="admin-modal-card" style="max-width: 720px; width: 94vw;">
+      <div class="modal-header-compact">
+        <h3 id="viewSubmissionHeading" style="font-size: 1.25rem; font-weight: 700; color: var(--admin-primary); display: flex; align-items: center; gap: 10px; margin: 0;">
+          <i class="fas fa-envelope-open-text"></i> Contact Message Details
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('modalViewSubmission')" title="Close">✕</button>
+      </div>
+
+      <div id="viewSubmissionModalBody">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; padding-top: 16px; border-top: 1px solid #E2E8F0;">
+        <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalViewSubmission')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 12. Modal: View, Print & Download Identity Card (Volunteer / Staff) -->
+  <div class="admin-modal-overlay" id="modalIdCard">
+    <div class="admin-modal-card id-card-modal-card" style="max-width: 860px; width: 95vw; max-height: 94vh;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid #E2E8F0; padding-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <h3 id="idCardModalTitle" style="font-size: 1.25rem; font-weight: 800; color: var(--admin-primary); display: flex; align-items: center; gap: 8px; margin: 0;">
+            <i class="fas fa-id-card"></i> Official Identity Card
+          </h3>
+          <p id="idCardModalSubtitle" style="font-size: 0.8rem; color: #64748B; margin: 3px 0 0 0;">
+            CR80 Standard Identification Credential • Qasr-e-Shabbir Foundation
+          </p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeModal('modalIdCard')" title="Close">✕</button>
+      </div>
+
+      <!-- Controls Bar -->
+      <div class="id-card-controls-bar" style="display: flex; justify-content: space-between; align-items: center; background: #F8FAFC; padding: 10px 16px; border-radius: 8px; border: 1px solid #E2E8F0; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <span style="font-size: 0.82rem; font-weight: 700; color: #475569;">Card View:</span>
+          <div class="btn-group" style="display: flex; gap: 4px;">
+            <button type="button" id="btnCardViewDual" class="btn-admin btn-admin-primary" style="padding: 4px 12px; font-size: 0.78rem;" onclick="setIdCardViewMode('dual')">
+              <i class="fas fa-columns"></i> Both (Front & Back)
+            </button>
+            <button type="button" id="btnCardViewFront" class="btn-admin btn-admin-secondary" style="padding: 4px 12px; font-size: 0.78rem;" onclick="setIdCardViewMode('front')">
+              Front Side
+            </button>
+            <button type="button" id="btnCardViewBack" class="btn-admin btn-admin-secondary" style="padding: 4px 12px; font-size: 0.78rem;" onclick="setIdCardViewMode('back')">
+              Back Side
+            </button>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button type="button" class="btn-admin btn-admin-secondary" onclick="downloadIdCardPdf()" style="padding: 6px 14px; font-size: 0.82rem; font-weight: 600;">
+            <i class="fas fa-file-pdf" style="color: #DC2626;"></i> Download PDF
+          </button>
+          <button type="button" class="btn-admin btn-admin-primary" onclick="printIdCard()" style="padding: 6px 16px; font-size: 0.82rem; font-weight: 700;">
+            <i class="fas fa-print"></i> Print Card
+          </button>
+        </div>
+      </div>
+
+      <!-- Printable Card Preview Area -->
+      <div id="idCardModalBody" class="modal-body-scroll" style="max-height: calc(94vh - 180px); overflow-y: auto; padding: 10px 4px 20px;">
+        <!-- Dynamically rendered ID Card Front & Back -->
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 12px; border-top: 1px solid #E2E8F0; font-size: 0.76rem; color: #64748B;">
+        <span><i class="fas fa-shield-halved" style="color: #059669;"></i> Official Cryptographic Ref & Barcode Verification Embedded</span>
+        <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalIdCard')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/admin.js"></script>
+</body>
+</html>
