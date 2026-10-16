@@ -87,6 +87,41 @@
           <a href="#" data-tab="submissions"><i class="fas fa-envelope"></i> <span>Contact Messages</span></a>
         </li>
 
+        <!-- Collapsible Organization Setup Menu -->
+        <li class="sidebar-item sidebar-item-has-submenu" id="sidebarOrgItem">
+          <a href="#" class="sidebar-submenu-toggle" id="btnToggleOrg">
+            <i class="fas fa-sitemap"></i>
+            <span style="flex-grow: 1;">Organization Setup</span>
+            <i class="fas fa-chevron-down submenu-caret"></i>
+          </a>
+          <ul class="sidebar-submenu" id="sidebarOrgSubmenu">
+            <li class="submenu-item">
+              <a href="#" data-tab="org-departments" title="Departments & Operational Wings">
+                <i class="fas fa-building-user"></i>
+                <span>Departments</span>
+              </a>
+            </li>
+            <li class="submenu-item">
+              <a href="#" data-tab="org-roles" title="User Roles & Access Levels">
+                <i class="fas fa-user-shield"></i>
+                <span>User Roles</span>
+              </a>
+            </li>
+            <li class="submenu-item">
+              <a href="#" data-tab="org-designations" title="Designations & Job Titles">
+                <i class="fas fa-award"></i>
+                <span>Designations</span>
+              </a>
+            </li>
+            <li class="submenu-item">
+              <a href="#" data-tab="org-categories" title="Welfare Project & News Categories">
+                <i class="fas fa-shapes"></i>
+                <span>Project Categories</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+
         <!-- Collapsible Settings Menu -->
         <li class="sidebar-item sidebar-item-has-submenu" id="sidebarSettingsItem">
           <a href="#" class="sidebar-submenu-toggle" id="btnToggleSettings">
@@ -529,19 +564,9 @@
 
         <!-- TAB 3: PROJECTS -->
         <div class="tab-pane" id="tab-projects">
-          <div class="page-action-toolbar">
-            <div>
-              <h2 style="font-size: 1.15rem; font-weight: 800; color: #0F172A; margin: 0; display: flex; align-items: center; gap: 8px;">
-                <i class="fas fa-hand-holding-heart" style="color: var(--admin-primary);"></i> Welfare Projects Directory
-              </h2>
-              <p style="font-size: 0.82rem; color: #64748B; margin: 2px 0 0 0;">
-                Manage educational, healthcare, and humanitarian projects with live funding tracking.
-              </p>
-            </div>
-            <button type="button" class="btn-admin btn-admin-primary" onclick="openModal('modalProject'); resetProjectForm();">
-              <i class="fas fa-hand-holding-heart"></i> Add New Welfare Project
-            </button>
-          </div>
+          <p class="tab-description-subtitle" style="font-size: 0.85rem; color: #64748B; margin-bottom: 18px;">
+            Manage educational, healthcare, flood relief, and community welfare projects with real-time funding progress.
+          </p>
 
           <!-- Summary Metric Cards -->
           <div class="projects-metrics-grid">
@@ -707,19 +732,9 @@
 
         <!-- TAB 4: ARTICLES -->
         <div class="tab-pane" id="tab-articles">
-          <div class="page-action-toolbar">
-            <div>
-              <h2 style="font-size: 1.15rem; font-weight: 800; color: #0F172A; margin: 0; display: flex; align-items: center; gap: 8px;">
-                <i class="fas fa-newspaper" style="color: var(--admin-primary);"></i> News & Media Updates
-              </h2>
-              <p style="font-size: 0.82rem; color: #64748B; margin: 2px 0 0 0;">
-                Publish foundation announcements, field mission reports, and press updates.
-              </p>
-            </div>
-            <button type="button" class="btn-admin btn-admin-primary" onclick="openModal('modalArticle'); resetArticleForm();">
-              <i class="fas fa-newspaper"></i> Add New News & Update
-            </button>
-          </div>
+          <p class="tab-description-subtitle" style="font-size: 0.85rem; color: #64748B; margin-bottom: 18px;">
+            Publish foundation announcements, field mission reports, and press updates.
+          </p>
 
           <div class="admin-card">
             <div class="admin-table-wrapper">
@@ -744,19 +759,9 @@
 
         <!-- TAB 5: ASSISTANCE APPLICATIONS -->
         <div class="tab-pane" id="tab-applications">
-          <div class="page-action-toolbar">
-            <div>
-              <h2 style="font-size: 1.15rem; font-weight: 800; color: #0F172A; margin: 0; display: flex; align-items: center; gap: 8px;">
-                <i class="fas fa-file-shield" style="color: var(--admin-primary);"></i> Assistance Requests & Welfare Aid
-              </h2>
-              <p style="font-size: 0.82rem; color: #64748B; margin: 2px 0 0 0;">
-                Review student scholarships, monthly family rations, and urgent medical aid applications.
-              </p>
-            </div>
-            <button type="button" class="btn-admin btn-admin-primary" onclick="openModal('modalApplication'); resetApplicationForm();">
-              <i class="fas fa-file-shield"></i> Add New Assistance Request
-            </button>
-          </div>
+          <p class="tab-description-subtitle" style="font-size: 0.85rem; color: #64748B; margin-bottom: 18px;">
+            Review student scholarships, monthly family rations, and urgent medical aid applications.
+          </p>
 
           <div class="admin-card">
             <div class="admin-table-wrapper">
@@ -915,19 +920,9 @@
 
         <!-- TAB: VOLUNTEER & INTERNSHIP APPLICATIONS -->
         <div class="tab-pane" id="tab-volunteers">
-          <div class="page-action-toolbar">
-            <div>
-              <h2 style="font-size: 1.15rem; font-weight: 800; color: #0F172A; margin: 0; display: flex; align-items: center; gap: 8px;">
-                <i class="fas fa-handshake-angle" style="color: var(--admin-primary);"></i> Volunteer & Internship Applications
-              </h2>
-              <p style="font-size: 0.82rem; color: #64748B; margin: 2px 0 0 0;">
-                Review submitted volunteer and internship applications, evaluate skills, and manage candidate statuses.
-              </p>
-            </div>
-            <button type="button" class="btn-admin btn-admin-primary" onclick="openModal('modalAddVolunteer')">
-              <i class="fas fa-user-plus"></i> Add New Volunteer Application
-            </button>
-          </div>
+          <p class="tab-description-subtitle" style="font-size: 0.85rem; color: #64748B; margin-bottom: 18px;">
+            Review submitted volunteer and internship applications, evaluate skills, and manage candidate statuses.
+          </p>
 
           <!-- Stat Cards -->
           <div class="accounts-overview-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
@@ -1013,19 +1008,9 @@
 
         <!-- TAB 6: DONATIONS -->
         <div class="tab-pane" id="tab-donations">
-          <div class="page-action-toolbar">
-            <div>
-              <h2 style="font-size: 1.15rem; font-weight: 800; color: #0F172A; margin: 0; display: flex; align-items: center; gap: 8px;">
-                <i class="fas fa-receipt" style="color: var(--admin-primary);"></i> Donations & Receipts
-              </h2>
-              <p style="font-size: 0.82rem; color: #64748B; margin: 2px 0 0 0;">
-                Track and verify community contributions, issue bilingual receipts, and print audit slips.
-              </p>
-            </div>
-            <button type="button" class="btn-admin btn-admin-primary" onclick="openModal('modalDonation'); resetDonationForm();">
-              <i class="fas fa-receipt"></i> Record New Donation & Receipt
-            </button>
-          </div>
+          <p class="tab-description-subtitle" style="font-size: 0.85rem; color: #64748B; margin-bottom: 18px;">
+            Track and verify community contributions, issue bilingual receipts, and print audit slips.
+          </p>
 
           <div class="admin-card">
             <div class="admin-table-wrapper">
@@ -1322,6 +1307,269 @@
                 <i class="fas fa-floppy-disk"></i> Save & Apply Homepage Hero Layout
               </button>
             </form>
+          </div>
+        </div>
+
+        <!-- ==================== ORGANIZATION SETUP TABS ==================== -->
+
+        <!-- TAB: ORGANIZATION SETUP - DEPARTMENTS -->
+        <div class="tab-pane" id="tab-org-departments">
+          <p class="tab-description-subtitle" style="font-size: 0.85rem; color: #64748B; margin-bottom: 18px;">
+            Define foundation wings, functional units, and operational departments to organize field missions, staff assignments, and volunteer coordination.
+          </p>
+
+          <!-- Quick Metrics Grid -->
+          <div class="stats-cards-grid" style="margin-bottom: 24px;">
+            <div class="metric-card">
+              <div class="metric-icon" style="background: #FEE2E2; color: #991B1B;"><i class="fas fa-building-user"></i></div>
+              <div>
+                <div class="metric-value" id="metricTotalDepartments">0</div>
+                <div class="metric-label">Total Departments</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon" style="background: #ECFDF5; color: #065F46;"><i class="fas fa-circle-check"></i></div>
+              <div>
+                <div class="metric-value" id="metricActiveDepartments">0</div>
+                <div class="metric-label">Active Units</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon" style="background: #EFF6FF; color: #1D4ED8;"><i class="fas fa-users-gear"></i></div>
+              <div>
+                <div class="metric-value" id="metricDeptStaffCount">0</div>
+                <div class="metric-label">Assigned Personnel</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Departments Directory Table Card -->
+          <div class="admin-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+              <div style="font-weight: 700; color: #1E293B; font-size: 1.05rem;">
+                <i class="fas fa-sitemap" style="color: var(--admin-primary); margin-right: 6px;"></i> Departments & Operational Wings
+              </div>
+              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <input type="text" id="deptSearchInput" class="form-control" placeholder="Search department name or code..." style="max-width: 260px; padding: 7px 12px; font-size: 0.85rem;" />
+                <select id="deptFilterStatus" class="form-control" style="max-width: 150px; padding: 7px 10px; font-size: 0.85rem;">
+                  <option value="">All Statuses</option>
+                  <option value="1">Active Only</option>
+                  <option value="0">Inactive Only</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="admin-table-wrapper">
+              <table class="admin-table" id="departmentsTable">
+                <thead>
+                  <tr>
+                    <th style="width: 100px;">Code</th>
+                    <th>Department (English / Urdu)</th>
+                    <th>Description</th>
+                    <th style="text-align: center;">Assigned Personnel</th>
+                    <th style="text-align: center;">Sort Order</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="departmentsTableBody">
+                  <tr><td colspan="7" style="text-align: center; color: #94A3B8; padding: 24px;">Loading departments directory...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: ORGANIZATION SETUP - USER ROLES -->
+        <div class="tab-pane" id="tab-org-roles">
+          <p class="tab-description-subtitle" style="font-size: 0.85rem; color: #64748B; margin-bottom: 18px;">
+            Manage administrative roles, access tiers, and operational privileges for foundation staff, coordinators, and volunteers.
+          </p>
+
+          <!-- Quick Metrics Grid -->
+          <div class="stats-cards-grid" style="margin-bottom: 24px;">
+            <div class="metric-card">
+              <div class="metric-icon" style="background: #FEF3C7; color: #B45309;"><i class="fas fa-user-shield"></i></div>
+              <div>
+                <div class="metric-value" id="metricTotalRoles">0</div>
+                <div class="metric-label">Total System Roles</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon" style="background: #EFF6FF; color: #1D4ED8;"><i class="fas fa-lock"></i></div>
+              <div>
+                <div class="metric-value" id="metricSystemRoles">0</div>
+                <div class="metric-label">Protected Core Roles</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon" style="background: #ECFDF5; color: #065F46;"><i class="fas fa-users"></i></div>
+              <div>
+                <div class="metric-value" id="metricRoleUsersCount">0</div>
+                <div class="metric-label">Users & Staff Assigned</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Roles Table Card -->
+          <div class="admin-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+              <div style="font-weight: 700; color: #1E293B; font-size: 1.05rem;">
+                <i class="fas fa-shield-halved" style="color: var(--admin-primary); margin-right: 6px;"></i> User Roles & System Access Levels
+              </div>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="roleSearchInput" class="form-control" placeholder="Search role title or key..." style="max-width: 260px; padding: 7px 12px; font-size: 0.85rem;" />
+              </div>
+            </div>
+
+            <div class="admin-table-wrapper">
+              <table class="admin-table" id="rolesTable">
+                <thead>
+                  <tr>
+                    <th style="width: 140px;">Role Key</th>
+                    <th>Role Title (English / Urdu)</th>
+                    <th>Description</th>
+                    <th style="text-align: center;">Classification</th>
+                    <th style="text-align: center;">Members</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="rolesTableBody">
+                  <tr><td colspan="7" style="text-align: center; color: #94A3B8; padding: 24px;">Loading user roles...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: ORGANIZATION SETUP - DESIGNATIONS -->
+        <div class="tab-pane" id="tab-org-designations">
+          <p class="tab-description-subtitle" style="font-size: 0.85rem; color: #64748B; margin-bottom: 18px;">
+            Establish formal job titles, field ranks, and official designations for staff members and volunteers across all foundation wings.
+          </p>
+
+          <!-- Quick Metrics Grid -->
+          <div class="stats-cards-grid" style="margin-bottom: 24px;">
+            <div class="metric-card">
+              <div class="metric-icon" style="background: #FEE2E2; color: #991B1B;"><i class="fas fa-award"></i></div>
+              <div>
+                <div class="metric-value" id="metricTotalDesignations">0</div>
+                <div class="metric-label">Total Designations</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon" style="background: #ECFDF5; color: #065F46;"><i class="fas fa-circle-check"></i></div>
+              <div>
+                <div class="metric-value" id="metricActiveDesignations">0</div>
+                <div class="metric-label">Active Designations</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon" style="background: #EFF6FF; color: #1D4ED8;"><i class="fas fa-sitemap"></i></div>
+              <div>
+                <div class="metric-value" id="metricDesignationDepts">0</div>
+                <div class="metric-label">Departments Covered</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Designations Table Card -->
+          <div class="admin-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+              <div style="font-weight: 700; color: #1E293B; font-size: 1.05rem;">
+                <i class="fas fa-id-badge" style="color: var(--admin-primary); margin-right: 6px;"></i> Official Designations & Job Titles
+              </div>
+              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <input type="text" id="desigSearchInput" class="form-control" placeholder="Search designation title..." style="max-width: 240px; padding: 7px 12px; font-size: 0.85rem;" />
+                <select id="desigFilterDepartment" class="form-control" style="max-width: 200px; padding: 7px 10px; font-size: 0.85rem;">
+                  <option value="">All Departments</option>
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+            </div>
+
+            <div class="admin-table-wrapper">
+              <table class="admin-table" id="designationsTable">
+                <thead>
+                  <tr>
+                    <th>Designation (English / Urdu)</th>
+                    <th>Assigned Department</th>
+                    <th style="text-align: center;">Rank / Level</th>
+                    <th>Description</th>
+                    <th style="text-align: center;">Assigned Count</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="designationsTableBody">
+                  <tr><td colspan="7" style="text-align: center; color: #94A3B8; padding: 24px;">Loading designations...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: ORGANIZATION SETUP - PROJECT CATEGORIES -->
+        <div class="tab-pane" id="tab-org-categories">
+          <p class="tab-description-subtitle" style="font-size: 0.85rem; color: #64748B; margin-bottom: 18px;">
+            Configure public project and news categories such as Flood Relief, Education, Healthcare, Food Support, and Clean Water.
+          </p>
+
+          <!-- Quick Metrics Grid -->
+          <div class="stats-cards-grid" style="margin-bottom: 24px;">
+            <div class="metric-card">
+              <div class="metric-icon" style="background: #FEE2E2; color: #991B1B;"><i class="fas fa-shapes"></i></div>
+              <div>
+                <div class="metric-value" id="metricTotalCategories">0</div>
+                <div class="metric-label">Total Categories</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon" style="background: #ECFDF5; color: #065F46;"><i class="fas fa-circle-check"></i></div>
+              <div>
+                <div class="metric-value" id="metricActiveCategories">0</div>
+                <div class="metric-label">Active Categories</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon" style="background: #EFF6FF; color: #1D4ED8;"><i class="fas fa-hand-holding-heart"></i></div>
+              <div>
+                <div class="metric-value" id="metricCatProjectsCount">0</div>
+                <div class="metric-label">Linked Projects</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Categories Table Card -->
+          <div class="admin-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+              <div style="font-weight: 700; color: #1E293B; font-size: 1.05rem;">
+                <i class="fas fa-layer-group" style="color: var(--admin-primary); margin-right: 6px;"></i> Project & News Categories
+              </div>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="catSearchInput" class="form-control" placeholder="Search category name or slug..." style="max-width: 260px; padding: 7px 12px; font-size: 0.85rem;" />
+              </div>
+            </div>
+
+            <div class="admin-table-wrapper">
+              <table class="admin-table" id="categoriesTable">
+                <thead>
+                  <tr>
+                    <th style="width: 60px; text-align: center;">Icon</th>
+                    <th>Category (English / Urdu)</th>
+                    <th>URL Slug</th>
+                    <th>Description</th>
+                    <th style="text-align: center;">Projects</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="categoriesTableBody">
+                  <tr><td colspan="7" style="text-align: center; color: #94A3B8; padding: 24px;">Loading categories directory...</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -1813,46 +2061,60 @@
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
               <div>
-                <label class="form-label">Role / Access Level *</label>
-                <select id="user_role" name="role" class="form-control">
-                  <option value="admin">Administrator (General Admin)</option>
-                  <option value="superadmin">Super Administrator (Full System Control)</option>
-                  <option value="manager">Operations & Program Manager</option>
-                  <option value="accountant">Accounts & Finance Officer</option>
-                  <option value="staff">Field Staff / Welfare Officer</option>
+                <label class="form-label">Department / Wing *</label>
+                <select id="user_department_id" name="department_id" class="form-control" onchange="onUserDepartmentSelect(this.value)">
+                  <option value="">Select Department</option>
+                  <!-- Dynamically populated from /api/admin/departments -->
                 </select>
               </div>
               <div>
-                <label class="form-label">Job Title / Designation (English)</label>
-                <input type="text" id="user_designation" name="designation" class="form-control" placeholder="e.g. Chief Finance Officer" />
+                <label class="form-label">User Role & Access Level *</label>
+                <select id="user_role_id" name="role_id" class="form-control" onchange="onUserRoleSelect(this.value)">
+                  <option value="">Select Role</option>
+                  <!-- Dynamically populated from /api/admin/roles -->
+                </select>
+                <input type="hidden" id="user_role" name="role" value="staff" />
               </div>
+            </div>
+
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Official Designation (From Setup)</label>
+              <select id="user_designation_id" name="designation_id" class="form-control" onchange="onUserDesignationSelect(this.value)">
+                <option value="">Select Designation or Custom Title</option>
+                <!-- Dynamically populated from /api/admin/designations -->
+              </select>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
               <div>
-                <label class="form-label">Job Title / Designation (Urdu)</label>
+                <label class="form-label">Designation Title (English)</label>
+                <input type="text" id="user_designation" name="designation" class="form-control" placeholder="e.g. Chief Finance Officer" />
+              </div>
+              <div>
+                <label class="form-label">Designation Title (Urdu)</label>
                 <input type="text" id="user_designation_ur" name="designation_ur" class="form-control" placeholder="مثلاً چیف فنانس آفیسر" dir="rtl" />
               </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
               <div>
                 <label class="form-label">Assigned Signatory for ID Card</label>
                 <select id="user_signature_id" name="signature_id" class="form-control">
                   <option value="">Default (Founder & CEO Signature)</option>
                 </select>
               </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
               <div>
                 <label class="form-label">Phone / WhatsApp</label>
                 <input type="text" id="user_phone" name="phone" class="form-control" placeholder="+92 300 0000000" />
               </div>
-              <div>
-                <label class="form-label">Account Status</label>
-                <select id="user_is_active" name="is_active" class="form-control">
-                  <option value="1">Active (Can Login & Operate)</option>
-                  <option value="0">Suspended / Inactive</option>
-                </select>
-              </div>
+            </div>
+
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Account Status</label>
+              <select id="user_is_active" name="is_active" class="form-control">
+                <option value="1">Active (Can Login & Operate)</option>
+                <option value="0">Suspended / Inactive</option>
+              </select>
             </div>
 
             <!-- Salary Assignment Block -->
@@ -2150,15 +2412,41 @@
                 <input type="text" id="man_vol_city" class="form-control" placeholder="Lahore / Rawalpindi" required />
               </div>
             </div>
-            <div>
-              <label class="form-label">Application Type *</label>
-              <select id="man_vol_type" class="form-control" required>
-                <option value="volunteer" selected>Volunteer (فلاحی رضاکار)</option>
-                <option value="internship">Student Internship (طالب علم انٹرن شپ)</option>
-              </select>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; margin-bottom: 12px;">
+              <div>
+                <label class="form-label">Application Type *</label>
+                <select id="man_vol_type" class="form-control" required>
+                  <option value="volunteer" selected>Volunteer (فلاحی رضاکار)</option>
+                  <option value="internship">Student Internship (طالب علم انٹرن شپ)</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Assigned Role</label>
+                <select id="man_vol_role_id" class="form-control">
+                  <option value="">Select Role (Default: Volunteer)</option>
+                  <!-- Dynamically populated from /api/admin/roles -->
+                </select>
+              </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; margin-bottom: 12px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <label class="form-label">Department / Wing</label>
+                <select id="man_vol_department_id" class="form-control" onchange="onManVolDepartmentSelect(this.value)">
+                  <option value="">Select Department</option>
+                  <!-- Dynamically populated from /api/admin/departments -->
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Official Designation</label>
+                <select id="man_vol_designation_id" class="form-control" onchange="onManVolDesignationSelect(this.value)">
+                  <option value="">Select Designation</option>
+                  <!-- Dynamically populated from /api/admin/designations -->
+                </select>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
               <div>
                 <label class="form-label">Job Title / Designation (English)</label>
                 <input type="text" id="man_vol_designation" class="form-control" placeholder="Honorary Field Volunteer" />
@@ -2300,9 +2588,27 @@
                 </select>
               </div>
               <div>
-                <label class="form-label">Assigned Signatory for ID Card</label>
-                <select id="edit_vol_signature_id" name="signature_id" class="form-control">
-                  <option value="">Default (Founder & CEO Signature)</option>
+                <label class="form-label">Assigned Role</label>
+                <select id="edit_vol_role_id" class="form-control">
+                  <option value="">Select Role (Default: Volunteer)</option>
+                  <!-- Dynamically populated from /api/admin/roles -->
+                </select>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <label class="form-label">Department / Wing</label>
+                <select id="edit_vol_department_id" class="form-control" onchange="onEditVolDepartmentSelect(this.value)">
+                  <option value="">Select Department</option>
+                  <!-- Dynamically populated from /api/admin/departments -->
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Official Designation</label>
+                <select id="edit_vol_designation_id" class="form-control" onchange="onEditVolDesignationSelect(this.value)">
+                  <option value="">Select Designation</option>
+                  <!-- Dynamically populated from /api/admin/designations -->
                 </select>
               </div>
             </div>
@@ -2316,6 +2622,13 @@
                 <label class="form-label">Job Title / Designation (Urdu)</label>
                 <input type="text" id="edit_vol_designation_ur" class="form-control" placeholder="مثلاً سینئر فلاحی رضاکار" dir="rtl" />
               </div>
+            </div>
+
+            <div style="margin-bottom: 12px;">
+              <label class="form-label">Assigned Signatory for ID Card</label>
+              <select id="edit_vol_signature_id" name="signature_id" class="form-control">
+                <option value="">Default (Founder & CEO Signature)</option>
+              </select>
             </div>
 
             <!-- Profile Photo Upload / Replacement -->
@@ -2528,6 +2841,341 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 12px; border-top: 1px solid #E2E8F0; font-size: 0.76rem; color: #64748B;">
         <span><i class="fas fa-shield-halved" style="color: #059669;"></i> Official Cryptographic Ref & Barcode Verification Embedded</span>
         <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalIdCard')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== ORGANIZATION SETUP MODALS ==================== -->
+
+  <!-- Modal 13: Add / Edit Department -->
+  <div class="admin-modal-overlay" id="modalDepartment">
+    <div class="admin-modal-card admin-modal-form-widescreen" style="max-width: 860px; width: 94vw;">
+      <div class="modal-header-compact">
+        <h3 id="departmentModalHeading" style="font-size: 1.25rem; font-weight: 700; color: var(--admin-primary); display: flex; align-items: center; gap: 10px;">
+          <i class="fas fa-building-user"></i> Add New Department / Operational Wing
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('modalDepartment')" title="Close">✕</button>
+      </div>
+
+      <form id="formDepartment" onsubmit="handleDepartmentFormSubmit(event)">
+        <input type="hidden" name="id" id="dept_id" value="" />
+
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label class="form-label">Department Code *</label>
+            <input type="text" id="dept_code" name="code" class="form-control" required placeholder="e.g. RELIEF, HEALTH" style="text-transform: uppercase; font-weight: 700;" />
+            <small style="color: #64748B; font-size: 0.72rem;">Unique identifier code (2–16 uppercase characters)</small>
+          </div>
+          <div>
+            <label class="form-label">Sort Order & Status</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <input type="number" id="dept_sort_order" name="sort_order" class="form-control" value="0" min="0" placeholder="Sort order" />
+              <select id="dept_is_active" name="is_active" class="form-control">
+                <option value="1">Active (Active Operational Wing)</option>
+                <option value="0">Inactive / Archived</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label class="form-label">Department Name (English) *</label>
+            <input type="text" id="dept_name_en" name="name_en" class="form-control" required placeholder="e.g. Disaster & Emergency Relief" />
+          </div>
+          <div>
+            <label class="form-label">Department Name (Urdu) *</label>
+            <input type="text" id="dept_name_ur" name="name_ur" class="form-control" required placeholder="مثال: آفات و ہنگامی ریلیف" dir="rtl" />
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label class="form-label">Description / Mandate (English)</label>
+            <textarea id="dept_description_en" name="description_en" class="form-control" rows="3" style="min-height: 80px;" placeholder="Core functions, field operations, and responsibilities..."></textarea>
+          </div>
+          <div>
+            <label class="form-label">Description / Mandate (Urdu)</label>
+            <textarea id="dept_description_ur" name="description_ur" class="form-control" rows="3" style="min-height: 80px;" placeholder="شعبے کے دفتری اور فیلڈ امور کی تفصیلات..." dir="rtl"></textarea>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 18px; padding-top: 14px; border-top: 1px solid #E2E8F0;">
+          <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalDepartment')">Cancel</button>
+          <button type="submit" id="btnSubmitDepartment" class="btn-admin btn-admin-primary">
+            <i class="fas fa-check"></i> Save Department
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 14: View Department Details -->
+  <div class="admin-modal-overlay" id="modalViewDepartment">
+    <div class="admin-modal-card" style="max-width: 720px; width: 94vw;">
+      <div class="modal-header-compact">
+        <h3 id="viewDepartmentHeading" style="font-size: 1.25rem; font-weight: 700; color: var(--admin-primary); display: flex; align-items: center; gap: 10px;">
+          <i class="fas fa-building-user"></i> Department Details
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('modalViewDepartment')" title="Close">✕</button>
+      </div>
+
+      <div id="viewDepartmentModalBody">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; padding-top: 14px; border-top: 1px solid #E2E8F0;">
+        <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalViewDepartment')">Close</button>
+        <button type="button" class="btn-admin btn-admin-primary" id="btnEditDepartmentFromView">
+          <i class="fas fa-pen"></i> Edit Department
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 15: Add / Edit User Role -->
+  <div class="admin-modal-overlay" id="modalRole">
+    <div class="admin-modal-card admin-modal-form-widescreen" style="max-width: 840px; width: 94vw;">
+      <div class="modal-header-compact">
+        <h3 id="roleModalHeading" style="font-size: 1.25rem; font-weight: 700; color: var(--admin-primary); display: flex; align-items: center; gap: 10px;">
+          <i class="fas fa-user-shield"></i> Add / Edit User Role
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('modalRole')" title="Close">✕</button>
+      </div>
+
+      <form id="formRole" onsubmit="handleRoleFormSubmit(event)">
+        <input type="hidden" name="id" id="role_id" value="" />
+
+        <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label class="form-label">Role Key / Unique Identifier *</label>
+            <input type="text" id="role_key" name="role_key" class="form-control" required placeholder="e.g. coordinator, field_lead" style="font-family: monospace;" />
+            <small id="roleKeyHint" style="color: #64748B; font-size: 0.72rem;">Lowercase slug without spaces (e.g. coordinator)</small>
+          </div>
+          <div>
+            <label class="form-label">Status</label>
+            <select id="role_is_active" name="is_active" class="form-control">
+              <option value="1">Active</option>
+              <option value="0">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label class="form-label">Role Title (English) *</label>
+            <input type="text" id="role_name_en" name="name_en" class="form-control" required placeholder="e.g. Field Coordinator" />
+          </div>
+          <div>
+            <label class="form-label">Role Title (Urdu) *</label>
+            <input type="text" id="role_name_ur" name="name_ur" class="form-control" required placeholder="مثال: فیلڈ کوآرڈینیٹر" dir="rtl" />
+          </div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <label class="form-label">Description & Access Scope</label>
+          <textarea id="role_description" name="description" class="form-control" rows="3" style="min-height: 80px;" placeholder="Define operational purview, user level, and privileges associated with this role..."></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 18px; padding-top: 14px; border-top: 1px solid #E2E8F0;">
+          <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalRole')">Cancel</button>
+          <button type="submit" id="btnSubmitRole" class="btn-admin btn-admin-primary">
+            <i class="fas fa-check"></i> Save User Role
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 16: View User Role Details -->
+  <div class="admin-modal-overlay" id="modalViewRole">
+    <div class="admin-modal-card" style="max-width: 720px; width: 94vw;">
+      <div class="modal-header-compact">
+        <h3 id="viewRoleHeading" style="font-size: 1.25rem; font-weight: 700; color: var(--admin-primary); display: flex; align-items: center; gap: 10px;">
+          <i class="fas fa-user-shield"></i> User Role Details
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('modalViewRole')" title="Close">✕</button>
+      </div>
+
+      <div id="viewRoleModalBody">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; padding-top: 14px; border-top: 1px solid #E2E8F0;">
+        <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalViewRole')">Close</button>
+        <button type="button" class="btn-admin btn-admin-primary" id="btnEditRoleFromView">
+          <i class="fas fa-pen"></i> Edit Role
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 17: Add / Edit Designation -->
+  <div class="admin-modal-overlay" id="modalDesignation">
+    <div class="admin-modal-card admin-modal-form-widescreen" style="max-width: 860px; width: 94vw;">
+      <div class="modal-header-compact">
+        <h3 id="designationModalHeading" style="font-size: 1.25rem; font-weight: 700; color: var(--admin-primary); display: flex; align-items: center; gap: 10px;">
+          <i class="fas fa-award"></i> Add / Edit Official Designation
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('modalDesignation')" title="Close">✕</button>
+      </div>
+
+      <form id="formDesignation" onsubmit="handleDesignationFormSubmit(event)">
+        <input type="hidden" name="id" id="desig_id" value="" />
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label class="form-label">Designation Title (English) *</label>
+            <input type="text" id="desig_title_en" name="title_en" class="form-control" required placeholder="e.g. Senior Medical Officer" />
+          </div>
+          <div>
+            <label class="form-label">Designation Title (Urdu) *</label>
+            <input type="text" id="desig_title_ur" name="title_ur" class="form-control" required placeholder="مثال: سینئر میڈیکل آفیسر" dir="rtl" />
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label class="form-label">Department / Wing</label>
+            <select id="desig_department_id" name="department_id" class="form-control">
+              <option value="">General / Foundation-Wide</option>
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Rank / Level / Grade</label>
+            <input type="text" id="desig_level" name="level" class="form-control" placeholder="e.g. Officer, Lead, Senior" />
+          </div>
+          <div>
+            <label class="form-label">Status</label>
+            <select id="desig_is_active" name="is_active" class="form-control">
+              <option value="1">Active</option>
+              <option value="0">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <label class="form-label">Job Description & Official Responsibilities</label>
+          <textarea id="desig_description" name="description" class="form-control" rows="3" style="min-height: 80px;" placeholder="Responsibilities, credentials required, and operational overview..."></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 18px; padding-top: 14px; border-top: 1px solid #E2E8F0;">
+          <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalDesignation')">Cancel</button>
+          <button type="submit" id="btnSubmitDesignation" class="btn-admin btn-admin-primary">
+            <i class="fas fa-check"></i> Save Designation
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 18: View Designation Details -->
+  <div class="admin-modal-overlay" id="modalViewDesignation">
+    <div class="admin-modal-card" style="max-width: 720px; width: 94vw;">
+      <div class="modal-header-compact">
+        <h3 id="viewDesignationHeading" style="font-size: 1.25rem; font-weight: 700; color: var(--admin-primary); display: flex; align-items: center; gap: 10px;">
+          <i class="fas fa-award"></i> Designation Details
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('modalViewDesignation')" title="Close">✕</button>
+      </div>
+
+      <div id="viewDesignationModalBody">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; padding-top: 14px; border-top: 1px solid #E2E8F0;">
+        <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalViewDesignation')">Close</button>
+        <button type="button" class="btn-admin btn-admin-primary" id="btnEditDesignationFromView">
+          <i class="fas fa-pen"></i> Edit Designation
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 19: Add / Edit Project Category -->
+  <div class="admin-modal-overlay" id="modalCategory">
+    <div class="admin-modal-card admin-modal-form-widescreen" style="max-width: 860px; width: 94vw;">
+      <div class="modal-header-compact">
+        <h3 id="categoryModalHeading" style="font-size: 1.25rem; font-weight: 700; color: var(--admin-primary); display: flex; align-items: center; gap: 10px;">
+          <i class="fas fa-shapes"></i> Add / Edit Project & News Category
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('modalCategory')" title="Close">✕</button>
+      </div>
+
+      <form id="formCategory" onsubmit="handleCategoryFormSubmit(event)">
+        <input type="hidden" name="id" id="cat_id" value="" />
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label class="form-label">Category Name (English) *</label>
+            <input type="text" id="cat_name_en" name="name_en" class="form-control" required placeholder="e.g. Flood Relief" oninput="autoGenerateCategorySlug(this.value)" />
+          </div>
+          <div>
+            <label class="form-label">Category Name (Urdu) *</label>
+            <input type="text" id="cat_name_ur" name="name_ur" class="form-control" required placeholder="مثال: سیلاب ریلیف" dir="rtl" />
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label class="form-label">URL Slug *</label>
+            <input type="text" id="cat_slug" name="slug" class="form-control" required placeholder="flood-relief" style="font-family: monospace;" />
+            <small style="color: #64748B; font-size: 0.72rem;">Unique web identifier (lowercase, hyphens only)</small>
+          </div>
+          <div>
+            <label class="form-label">FontAwesome Icon Class</label>
+            <input type="text" id="cat_icon_class" name="icon_class" class="form-control" placeholder="fas fa-hand-holding-heart" value="fas fa-hand-holding-heart" />
+          </div>
+          <div>
+            <label class="form-label">Status</label>
+            <select id="cat_is_active" name="is_active" class="form-control">
+              <option value="1">Active</option>
+              <option value="0">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label class="form-label">Short Description (English)</label>
+            <textarea id="cat_description_en" name="description_en" class="form-control" rows="2" style="min-height: 60px;" placeholder="Public category summary for donation cards..."></textarea>
+          </div>
+          <div>
+            <label class="form-label">Short Description (Urdu)</label>
+            <textarea id="cat_description_ur" name="description_ur" class="form-control" rows="2" style="min-height: 60px;" placeholder="عوامی تعارف برائے عطیات و فلاحی منصوبے..." dir="rtl"></textarea>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 18px; padding-top: 14px; border-top: 1px solid #E2E8F0;">
+          <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalCategory')">Cancel</button>
+          <button type="submit" id="btnSubmitCategory" class="btn-admin btn-admin-primary">
+            <i class="fas fa-check"></i> Save Category
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 20: View Project Category Details -->
+  <div class="admin-modal-overlay" id="modalViewCategory">
+    <div class="admin-modal-card" style="max-width: 720px; width: 94vw;">
+      <div class="modal-header-compact">
+        <h3 id="viewCategoryHeading" style="font-size: 1.25rem; font-weight: 700; color: var(--admin-primary); display: flex; align-items: center; gap: 10px;">
+          <i class="fas fa-shapes"></i> Category Details
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeModal('modalViewCategory')" title="Close">✕</button>
+      </div>
+
+      <div id="viewCategoryModalBody">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; padding-top: 14px; border-top: 1px solid #E2E8F0;">
+        <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalViewCategory')">Close</button>
+        <button type="button" class="btn-admin btn-admin-primary" id="btnEditCategoryFromView">
+          <i class="fas fa-pen"></i> Edit Category
+        </button>
       </div>
     </div>
   </div>

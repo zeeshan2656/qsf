@@ -39,6 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.sidebar-menu > .sidebar-item').forEach(item => {
       item.style.display = '';
     });
+    const orgItem = document.getElementById('sidebarOrgItem');
+    if (orgItem) orgItem.style.display = '';
     const settingsItem = document.getElementById('sidebarSettingsItem');
     if (settingsItem) settingsItem.style.display = '';
   }
@@ -54,6 +56,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (!Array.isArray(perms)) perms = [];
 
+    // Normalize organization setup subtabs
+    if (tabId.startsWith('org-') || tabId === 'org') {
+      return isSuper || perms.includes('users') || perms.includes('settings');
+    }
+
     // Normalize settings subtabs
     if (tabId.startsWith('settings-') || tabId === 'branding' || tabId === 'settings') {
       return perms.includes('settings');
@@ -63,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function getFirstPermittedTab() {
-    const tabsInOrder = ['overview', 'users', 'accounts', 'projects', 'volunteers', 'articles', 'applications', 'donations', 'submissions', 'settings-bank'];
+    const tabsInOrder = ['overview', 'users', 'accounts', 'projects', 'volunteers', 'articles', 'applications', 'donations', 'submissions', 'org-departments', 'settings-bank'];
     for (const t of tabsInOrder) {
       if (isTabPermitted(t)) return t;
     }
@@ -74,6 +81,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!currentUser) return;
     const isSuper = currentUser.role === 'superadmin' || currentUser.role === 'admin' || currentUser.is_super_admin === 1 || currentUser.is_admin === 1;
 
+    let perms = currentUser.permissions;
+    if (typeof perms === 'string') {
+      try { perms = JSON.parse(perms); } catch(e) { perms = []; }
+    }
+    if (!Array.isArray(perms)) perms = [];
+
     // Filter each top-level sidebar item
     document.querySelectorAll('.sidebar-menu > .sidebar-item').forEach(item => {
       const link = item.querySelector('a[data-tab]');
@@ -83,6 +96,13 @@ document.addEventListener('DOMContentLoaded', () => {
         item.style.display = allowed ? '' : 'none';
       }
     });
+
+    // Organization Setup menu item
+    const orgItem = document.getElementById('sidebarOrgItem');
+    if (orgItem) {
+      const allowed = isSuper || perms.includes('users') || perms.includes('settings');
+      orgItem.style.display = allowed ? '' : 'none';
+    }
 
     // Settings item
     const settingsItem = document.getElementById('sidebarSettingsItem');
@@ -116,6 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     applyRoleBasedUI();
+    populateOrgDropdowns();
 
     // Direct user to allowed tab
     const startTab = isTabPermitted(activeTab) ? activeTab : getFirstPermittedTab();
@@ -168,6 +189,16 @@ document.addEventListener('DOMContentLoaded', () => {
         currentUser = null;
         showLogin();
       }
+    });
+  }
+
+  // Collapsible Organization Setup Accordion Toggle
+  const btnToggleOrg = document.getElementById('btnToggleOrg');
+  const sidebarOrgItem = document.getElementById('sidebarOrgItem');
+  if (btnToggleOrg && sidebarOrgItem) {
+    btnToggleOrg.addEventListener('click', (e) => {
+      e.preventDefault();
+      sidebarOrgItem.classList.toggle('open');
     });
   }
 
@@ -390,6 +421,94 @@ document.addEventListener('DOMContentLoaded', () => {
       titleUr: 'ترتیبات: لے آؤٹ میں ترمیم',
       icon: 'fas fa-paintbrush',
       actions: []
+    },
+    'org-departments': {
+      titleEn: 'Departments & Wings',
+      titleUr: 'شعبہ جات اور ونگز',
+      icon: 'fas fa-building-user',
+      actions: [
+        {
+          textEn: 'Print / Export PDF',
+          textUr: 'پرنٹ / پی ڈی ایف',
+          icon: 'fas fa-print',
+          type: 'secondary',
+          onClick: "exportTablePDF('org-departments')"
+        },
+        {
+          textEn: 'Add Department',
+          textUr: 'نیا شعبہ شامل کریں',
+          icon: 'fas fa-plus-circle',
+          type: 'primary',
+          permission: 'can_manage_users',
+          onClick: 'openAddDepartmentModal()'
+        }
+      ]
+    },
+    'org-roles': {
+      titleEn: 'User Roles & Access Levels',
+      titleUr: 'صارفین کے کردار و درجات',
+      icon: 'fas fa-user-shield',
+      actions: [
+        {
+          textEn: 'Print / Export PDF',
+          textUr: 'پرنٹ / پی ڈی ایف',
+          icon: 'fas fa-print',
+          type: 'secondary',
+          onClick: "exportTablePDF('org-roles')"
+        },
+        {
+          textEn: 'Add User Role',
+          textUr: 'نیا رول شامل کریں',
+          icon: 'fas fa-plus-circle',
+          type: 'primary',
+          permission: 'can_manage_users',
+          onClick: 'openAddRoleModal()'
+        }
+      ]
+    },
+    'org-designations': {
+      titleEn: 'Designations & Job Titles',
+      titleUr: 'عہدے اور دفتری خطابات',
+      icon: 'fas fa-award',
+      actions: [
+        {
+          textEn: 'Print / Export PDF',
+          textUr: 'پرنٹ / پی ڈی ایف',
+          icon: 'fas fa-print',
+          type: 'secondary',
+          onClick: "exportTablePDF('org-designations')"
+        },
+        {
+          textEn: 'Add Designation',
+          textUr: 'نیا عہدہ شامل کریں',
+          icon: 'fas fa-plus-circle',
+          type: 'primary',
+          permission: 'can_manage_users',
+          onClick: 'openAddDesignationModal()'
+        }
+      ]
+    },
+    'org-categories': {
+      titleEn: 'Project & News Categories',
+      titleUr: 'فلاحی منصوبوں اور خبروں کے زمرہ جات',
+      icon: 'fas fa-shapes',
+      actions: [
+        {
+          textEn: 'Print / Export PDF',
+          textUr: 'پرنٹ / پی ڈی ایف',
+          icon: 'fas fa-print',
+          type: 'secondary',
+          onClick: "exportTablePDF('org-categories')"
+        },
+        {
+          textEn: 'Add Category',
+          textUr: 'نیا زمرہ شامل کریں',
+          icon: 'fas fa-plus-circle',
+          type: 'primary',
+          permission: 'can_manage_projects',
+          onClick: 'openAddCategoryModal()'
+        }
+      ]
     }
   };
 
@@ -495,7 +614,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const parentSub = l.closest('.submenu-item');
         if (parentSub) {
           parentSub.classList.add('active');
-          if (sidebarSettingsItem) {
+          const orgParent = l.closest('#sidebarOrgItem');
+          if (orgParent) {
+            orgParent.classList.add('open', 'active-parent');
+          }
+          if (sidebarSettingsItem && l.closest('#sidebarSettingsItem')) {
             sidebarSettingsItem.classList.add('open', 'active-parent');
           }
         } else {
@@ -528,6 +651,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tabId === 'applications') loadApplications();
     if (tabId === 'donations') loadDonations();
     if (tabId === 'submissions') loadSubmissions();
+    if (tabId === 'org-departments') loadDepartments();
+    if (tabId === 'org-roles') loadRoles();
+    if (tabId === 'org-designations') loadDesignations();
+    if (tabId === 'org-categories') loadCategories();
     if (tabId === 'settings' || tabId === 'settings-bank' || tabId === 'settings-contact' || tabId === 'settings-layout') {
       loadSettings();
       if (tabId === 'settings-layout') {
@@ -4713,7 +4840,11 @@ document.addEventListener('DOMContentLoaded', () => {
       articles: { title: 'News, Field Reports & Announcements Register', subtitle: 'Published and draft press releases, relief field reports & updates' },
       applications: { title: 'Confidential Assistance Requests Register', subtitle: 'Orphan education, food ration and emergency medical aid applications' },
       donations: { title: 'Donations & Receipts Verification Ledger', subtitle: 'Community financial contributions, verification logs and audit tracking' },
-      submissions: { title: 'Public Inquiries & Contact Messages Register', subtitle: 'Messages received via the public portal contact form' }
+      submissions: { title: 'Public Inquiries & Contact Messages Register', subtitle: 'Messages received via the public portal contact form' },
+      'org-departments': { title: 'Official Departments & Wings Directory', subtitle: 'Foundation operational units, mandates & assigned staff directory' },
+      'org-roles': { title: 'User Roles & Access Levels Register', subtitle: 'System permissions, administrative classification & user assignments' },
+      'org-designations': { title: 'Official Designations & Job Titles Register', subtitle: 'Staff & volunteer designations, department links & operational ranks' },
+      'org-categories': { title: 'Project & News Categories Directory', subtitle: 'Welfare initiative categories, public web slugs & linked projects' }
     };
 
     const meta = titles[tableType] || { title: 'Administrative Record Table', subtitle: 'Qasr-e-Shabbir Foundation Management Console' };
@@ -5522,6 +5653,1235 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  // ==================== ORGANIZATION SETUP MODULE (DEPARTMENTS, ROLES, DESIGNATIONS, CATEGORIES) ====================
+  let allDepartmentsData = [];
+  let allRolesData = [];
+  let allDesignationsData = [];
+  let allCategoriesData = [];
+
+  // Populate dynamic dropdowns across modals (Users, Volunteers, Projects, News)
+  async function populateOrgDropdowns() {
+    try {
+      const [deptRes, roleRes, desigRes, catRes] = await Promise.all([
+        fetch('/api/admin/departments').then(r => r.json()).catch(() => ({ success: false })),
+        fetch('/api/admin/roles').then(r => r.json()).catch(() => ({ success: false })),
+        fetch('/api/admin/designations').then(r => r.json()).catch(() => ({ success: false })),
+        fetch('/api/admin/categories').then(r => r.json()).catch(() => ({ success: false }))
+      ]);
+
+      if (deptRes.success && Array.isArray(deptRes.departments)) {
+        allDepartmentsData = deptRes.departments;
+        populateDepartmentSelects(allDepartmentsData);
+      }
+      if (roleRes.success && Array.isArray(roleRes.roles)) {
+        allRolesData = roleRes.roles;
+        populateRoleSelects(allRolesData);
+      }
+      if (desigRes.success && Array.isArray(desigRes.designations)) {
+        allDesignationsData = desigRes.designations;
+        populateDesignationSelects(allDesignationsData);
+      }
+      if (catRes.success && Array.isArray(catRes.categories)) {
+        allCategoriesData = catRes.categories;
+        populateCategorySelects(allCategoriesData);
+      }
+    } catch (err) {
+      console.error('[populateOrgDropdowns Error]', err);
+    }
+  }
+
+  function populateDepartmentSelects(departments) {
+    const activeDepts = departments.filter(d => d.is_active == 1);
+    const optionsHtml = '<option value="">Select Department / Wing</option>' +
+      activeDepts.map(d => `<option value="${d.id}">${escapeHtml(d.name_en)} (${escapeHtml(d.code)})</option>`).join('');
+
+    ['user_department_id', 'man_vol_department_id', 'edit_vol_department_id', 'desig_department_id'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        const val = el.value;
+        el.innerHTML = (id === 'desig_department_id') 
+          ? '<option value="">General / Foundation-Wide</option>' + activeDepts.map(d => `<option value="${d.id}">${escapeHtml(d.name_en)} (${escapeHtml(d.code)})</option>`).join('')
+          : optionsHtml;
+        if (val) el.value = val;
+      }
+    });
+
+    const filterEl = document.getElementById('desigFilterDepartment');
+    if (filterEl) {
+      const val = filterEl.value;
+      filterEl.innerHTML = '<option value="">All Departments</option>' +
+        departments.map(d => `<option value="${d.id}">${escapeHtml(d.name_en)} (${escapeHtml(d.code)})</option>`).join('');
+      if (val) filterEl.value = val;
+    }
+  }
+
+  function populateRoleSelects(roles) {
+    const activeRoles = roles.filter(r => r.is_active == 1);
+    const optionsHtml = '<option value="">Select Role / Access Level</option>' +
+      activeRoles.map(r => `<option value="${r.id}" data-key="${escapeHtml(r.role_key)}">${escapeHtml(r.name_en)} (${escapeHtml(r.role_key)})</option>`).join('');
+
+    ['user_role_id', 'man_vol_role_id', 'edit_vol_role_id'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        const val = el.value;
+        el.innerHTML = optionsHtml;
+        if (val) el.value = val;
+      }
+    });
+  }
+
+  function populateDesignationSelects(designations, filterDeptId = null) {
+    let list = designations.filter(d => d.is_active == 1);
+    if (filterDeptId) {
+      list = list.filter(d => !d.department_id || String(d.department_id) === String(filterDeptId));
+    }
+    const optionsHtml = '<option value="">Select Official Designation</option>' +
+      list.map(d => `<option value="${d.id}" data-en="${escapeHtml(d.title_en)}" data-ur="${escapeHtml(d.title_ur || '')}" data-dept="${d.department_id || ''}">${escapeHtml(d.title_en)}${d.department_name_en ? ` — ${escapeHtml(d.department_name_en)}` : ''}</option>`).join('');
+
+    ['user_designation_id', 'man_vol_designation_id', 'edit_vol_designation_id'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        const val = el.value;
+        el.innerHTML = optionsHtml;
+        if (val) el.value = val;
+      }
+    });
+  }
+
+  function populateCategorySelects(categories) {
+    const activeCats = categories.filter(c => c.is_active == 1);
+    const optionsHtml = activeCats.map(c => `
+      <option value="${c.id}">${escapeHtml(c.name_en)}${c.name_ur ? ` (${escapeHtml(c.name_ur)})` : ''}</option>
+    `).join('');
+
+    ['proj_category_id', 'art_category_id'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        const val = el.value;
+        el.innerHTML = optionsHtml;
+        if (val) el.value = val;
+      }
+    });
+
+    const filterSelect = document.getElementById('projFilterCategory');
+    if (filterSelect) {
+      const val = filterSelect.value;
+      filterSelect.innerHTML = '<option value="all">All Welfare Categories</option>' +
+        categories.map(c => `<option value="${c.id}">${escapeHtml(c.name_en)}</option>`).join('');
+      if (val) filterSelect.value = val;
+    }
+  }
+
+  // Sync Dropdown change listeners
+  window.onUserDepartmentSelect = function(deptId) {
+    populateDesignationSelects(allDesignationsData, deptId);
+  };
+
+  window.onUserRoleSelect = function(roleId) {
+    const roleObj = allRolesData.find(r => String(r.id) === String(roleId));
+    if (roleObj) {
+      const roleHidden = document.getElementById('user_role');
+      if (roleHidden) roleHidden.value = roleObj.role_key;
+    }
+  };
+
+  window.onUserDesignationSelect = function(desigId) {
+    const desigObj = allDesignationsData.find(d => String(d.id) === String(desigId));
+    if (desigObj) {
+      const enInput = document.getElementById('user_designation');
+      const urInput = document.getElementById('user_designation_ur');
+      if (enInput) enInput.value = desigObj.title_en || '';
+      if (urInput) urInput.value = desigObj.title_ur || '';
+      if (desigObj.department_id) {
+        const deptSelect = document.getElementById('user_department_id');
+        if (deptSelect && !deptSelect.value) deptSelect.value = desigObj.department_id;
+      }
+    }
+  };
+
+  window.onManVolDepartmentSelect = function(deptId) {
+    populateDesignationSelects(allDesignationsData, deptId);
+  };
+
+  window.onManVolDesignationSelect = function(desigId) {
+    const desigObj = allDesignationsData.find(d => String(d.id) === String(desigId));
+    if (desigObj) {
+      const enInput = document.getElementById('man_vol_designation');
+      const urInput = document.getElementById('man_vol_designation_ur');
+      if (enInput) enInput.value = desigObj.title_en || '';
+      if (urInput) urInput.value = desigObj.title_ur || '';
+    }
+  };
+
+  window.onEditVolDepartmentSelect = function(deptId) {
+    populateDesignationSelects(allDesignationsData, deptId);
+  };
+
+  window.onEditVolDesignationSelect = function(desigId) {
+    const desigObj = allDesignationsData.find(d => String(d.id) === String(desigId));
+    if (desigObj) {
+      const enInput = document.getElementById('edit_vol_designation');
+      const urInput = document.getElementById('edit_vol_designation_ur');
+      if (enInput) enInput.value = desigObj.title_en || '';
+      if (urInput) urInput.value = desigObj.title_ur || '';
+    }
+  };
+
+  window.autoGenerateCategorySlug = function(name) {
+    const slugInput = document.getElementById('cat_slug');
+    if (slugInput && !document.getElementById('cat_id').value) {
+      slugInput.value = name.toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    }
+  };
+
+  // ==================== 1. DEPARTMENTS CRUD ====================
+  async function loadDepartments() {
+    const tbody = document.getElementById('departmentsTableBody');
+    if (!tbody) return;
+    try {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94A3B8; padding: 24px;"><i class="fas fa-spinner fa-spin"></i> Loading departments...</td></tr>';
+      const res = await fetch('/api/admin/departments');
+      const data = await res.json();
+      if (!data.success || !Array.isArray(data.departments)) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #DC2626; padding: 24px;">Failed to load departments: ${escapeHtml(data.message || 'Error')}</td></tr>`;
+        return;
+      }
+      allDepartmentsData = data.departments;
+      updateDepartmentMetrics(allDepartmentsData);
+      renderDepartmentsTable(allDepartmentsData);
+      populateDepartmentSelects(allDepartmentsData);
+    } catch (err) {
+      console.error(err);
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #DC2626; padding: 24px;">Network error loading departments.</td></tr>';
+    }
+  }
+
+  function updateDepartmentMetrics(depts) {
+    const total = depts.length;
+    const active = depts.filter(d => d.is_active == 1).length;
+    const staffTotal = depts.reduce((acc, d) => acc + (Number(d.staff_count) || 0) + (Number(d.volunteer_count) || 0), 0);
+    const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setTxt('metricTotalDepartments', total);
+    setTxt('metricActiveDepartments', active);
+    setTxt('metricDeptStaffCount', staffTotal);
+  }
+
+  function renderDepartmentsTable(depts) {
+    const tbody = document.getElementById('departmentsTableBody');
+    if (!tbody) return;
+    const searchVal = (document.getElementById('deptSearchInput')?.value || '').toLowerCase().trim();
+    const statusVal = document.getElementById('deptFilterStatus')?.value || '';
+
+    let list = depts;
+    if (statusVal !== '') {
+      list = list.filter(d => String(d.is_active) === statusVal);
+    }
+    if (searchVal) {
+      list = list.filter(d =>
+        (d.name_en && d.name_en.toLowerCase().includes(searchVal)) ||
+        (d.name_ur && d.name_ur.toLowerCase().includes(searchVal)) ||
+        (d.code && d.code.toLowerCase().includes(searchVal)) ||
+        (d.description_en && d.description_en.toLowerCase().includes(searchVal))
+      );
+    }
+
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94A3B8; padding: 24px;">No departments found.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = list.map(d => {
+      const activeBadge = d.is_active == 1
+        ? '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Active</span>'
+        : '<span class="badge badge-danger"><i class="fas fa-ban"></i> Inactive</span>';
+      const staffCount = Number(d.staff_count) || 0;
+      const volCount = Number(d.volunteer_count) || 0;
+      const totalPersonnel = staffCount + volCount;
+
+      return `
+        <tr>
+          <td>
+            <span class="badge" style="background: #EFF6FF; color: #1D4ED8; font-weight: 700; font-family: monospace; font-size: 0.82rem; letter-spacing: 0.5px;">
+              ${escapeHtml(d.code)}
+            </span>
+          </td>
+          <td>
+            <div style="font-weight: 700; color: #0F172A; font-size: 0.95rem;">${escapeHtml(d.name_en)}</div>
+            ${d.name_ur ? `<div style="font-family: 'Noto Nastaliq Urdu', Tahoma, sans-serif; font-size: 0.84rem; color: #475569; margin-top: 2px;" dir="rtl">${escapeHtml(d.name_ur)}</div>` : ''}
+          </td>
+          <td style="max-width: 240px; font-size: 0.8rem; color: #64748B;">
+            ${escapeHtml(d.description_en || 'Foundation operational wing')}
+          </td>
+          <td style="text-align: center;">
+            <span style="display: inline-flex; align-items: center; gap: 4px; font-weight: 700; color: #0F172A; background: #F1F5F9; padding: 3px 9px; border-radius: 9999px; font-size: 0.78rem;">
+              <i class="fas fa-users" style="color: var(--admin-primary); font-size: 0.7rem;"></i> ${totalPersonnel}
+            </span>
+          </td>
+          <td style="text-align: center; font-size: 0.82rem; font-weight: 600; color: #475569;">
+            ${d.sort_order || 0}
+          </td>
+          <td>${activeBadge}</td>
+          <td style="text-align: right; white-space: nowrap;">
+            <div class="action-btn-group">
+              <button type="button" class="btn-action btn-action-view" onclick="viewDepartment(${d.id})" title="View Details" aria-label="View department">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button type="button" class="btn-action btn-action-edit" onclick="editDepartment(${d.id})" title="Edit Department" aria-label="Edit department">
+                <i class="fas fa-pen-to-square"></i>
+              </button>
+              <button type="button" class="btn-action btn-action-delete" onclick="deleteDepartment(${d.id}, '${escapeHtml(d.name_en)}')" title="Delete Department" aria-label="Delete department">
+                <i class="fas fa-trash-can"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // Hook department search listeners
+  const deptSearchInput = document.getElementById('deptSearchInput');
+  if (deptSearchInput) {
+    deptSearchInput.addEventListener('input', () => renderDepartmentsTable(allDepartmentsData));
+  }
+  const deptFilterStatus = document.getElementById('deptFilterStatus');
+  if (deptFilterStatus) {
+    deptFilterStatus.addEventListener('change', () => renderDepartmentsTable(allDepartmentsData));
+  }
+
+  window.openAddDepartmentModal = function() {
+    const form = document.getElementById('formDepartment');
+    if (form) form.reset();
+    document.getElementById('dept_id').value = '';
+    document.getElementById('dept_is_active').value = '1';
+    document.getElementById('dept_sort_order').value = '0';
+    document.getElementById('departmentModalHeading').innerHTML = '<i class="fas fa-building-user"></i> Add New Department / Operational Wing';
+    openModal('modalDepartment');
+  };
+
+  window.editDepartment = async function(id) {
+    try {
+      const res = await fetch(`/api/admin/departments/${id}`);
+      const data = await res.json();
+      if (!data.success || !data.department) {
+        alert(data.message || 'Error fetching department.');
+        return;
+      }
+      const d = data.department;
+      document.getElementById('dept_id').value = d.id;
+      document.getElementById('dept_code').value = d.code || '';
+      document.getElementById('dept_name_en').value = d.name_en || '';
+      document.getElementById('dept_name_ur').value = d.name_ur || '';
+      document.getElementById('dept_description_en').value = d.description_en || '';
+      document.getElementById('dept_description_ur').value = d.description_ur || '';
+      document.getElementById('dept_sort_order').value = d.sort_order || 0;
+      document.getElementById('dept_is_active').value = d.is_active ? '1' : '0';
+      document.getElementById('departmentModalHeading').innerHTML = `<i class="fas fa-pen-to-square"></i> Edit Department: ${escapeHtml(d.name_en)}`;
+      openModal('modalDepartment');
+    } catch (err) {
+      alert('Error fetching department.');
+    }
+  };
+
+  window.viewDepartment = async function(id) {
+    try {
+      const res = await fetch(`/api/admin/departments/${id}`);
+      const data = await res.json();
+      if (!data.success || !data.department) {
+        alert(data.message || 'Error fetching department.');
+        return;
+      }
+      const d = data.department;
+      const bodyHtml = `
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #E2E8F0; padding-bottom: 14px; margin-bottom: 16px;">
+          <div>
+            <div style="font-size: 1.3rem; font-weight: 800; color: #0F172A;">${escapeHtml(d.name_en)}</div>
+            <div style="font-family: 'Noto Nastaliq Urdu', Tahoma, sans-serif; font-size: 1.1rem; color: #475569; margin-top: 4px;" dir="rtl">${escapeHtml(d.name_ur || '')}</div>
+          </div>
+          <span class="badge" style="background: #EFF6FF; color: #1D4ED8; font-weight: 800; font-size: 0.95rem; font-family: monospace;">${escapeHtml(d.code)}</span>
+        </div>
+        <div class="view-user-grid" style="margin-bottom: 16px;">
+          <div class="view-user-field">
+            <label class="view-user-label"><i class="fas fa-users-gear"></i> Assigned Staff</label>
+            <div class="view-user-value"><strong>${d.staff_count || 0}</strong> Registered Staff</div>
+          </div>
+          <div class="view-user-field">
+            <label class="view-user-label"><i class="fas fa-handshake-angle"></i> Assigned Volunteers</label>
+            <div class="view-user-value"><strong>${d.volunteer_count || 0}</strong> Volunteers</div>
+          </div>
+          <div class="view-user-field">
+            <label class="view-user-label"><i class="fas fa-arrow-down-1-9"></i> Sort Order</label>
+            <div class="view-user-value">${d.sort_order || 0}</div>
+          </div>
+          <div class="view-user-field">
+            <label class="view-user-label"><i class="fas fa-signal"></i> Operational Status</label>
+            <div class="view-user-value">${d.is_active ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Inactive</span>'}</div>
+          </div>
+        </div>
+        <div style="margin-bottom: 14px;">
+          <label class="view-user-label"><i class="fas fa-file-lines"></i> Mandate & Responsibilities (English)</label>
+          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 10px 14px; border-radius: 6px; font-size: 0.85rem; color: #334155;">
+            ${escapeHtml(d.description_en || 'No description provided.')}
+          </div>
+        </div>
+        <div>
+          <label class="view-user-label"><i class="fas fa-file-lines"></i> Mandate & Responsibilities (Urdu)</label>
+          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 10px 14px; border-radius: 6px; font-size: 0.9rem; color: #334155; font-family: 'Noto Nastaliq Urdu', Tahoma, sans-serif;" dir="rtl">
+            ${escapeHtml(d.description_ur || 'کوئی تفصیل درج نہیں ہے۔')}
+          </div>
+        </div>
+      `;
+      document.getElementById('viewDepartmentModalBody').innerHTML = bodyHtml;
+      const btnEdit = document.getElementById('btnEditDepartmentFromView');
+      if (btnEdit) {
+        btnEdit.onclick = function() {
+          closeModal('modalViewDepartment');
+          editDepartment(id);
+        };
+      }
+      openModal('modalViewDepartment');
+    } catch (err) {
+      alert('Error loading department view.');
+    }
+  };
+
+  window.handleDepartmentFormSubmit = async function(e) {
+    if (e) e.preventDefault();
+    const btn = document.getElementById('btnSubmitDepartment');
+    if (btn) btn.disabled = true;
+
+    const id = document.getElementById('dept_id').value;
+    const payload = {
+      code: document.getElementById('dept_code').value.trim().toUpperCase(),
+      name_en: document.getElementById('dept_name_en').value.trim(),
+      name_ur: document.getElementById('dept_name_ur').value.trim(),
+      description_en: document.getElementById('dept_description_en').value.trim(),
+      description_ur: document.getElementById('dept_description_ur').value.trim(),
+      sort_order: parseInt(document.getElementById('dept_sort_order').value) || 0,
+      is_active: parseInt(document.getElementById('dept_is_active').value) || 1
+    };
+
+    const url = id ? `/api/admin/departments/${id}` : '/api/admin/departments';
+    const method = id ? 'PUT' : 'POST';
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(id ? 'Department updated successfully!' : 'Department created successfully!');
+        closeModal('modalDepartment');
+        loadDepartments();
+      } else {
+        alert(data.message || 'Error saving department.');
+      }
+    } catch (err) {
+      alert('Network error while saving department.');
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  };
+
+  window.deleteDepartment = async function(id, name) {
+    if (!confirm(`Are you sure you want to delete the department "${name}"? This action cannot be undone.`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/admin/departments/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        alert('Department deleted successfully!');
+        loadDepartments();
+      } else {
+        alert(data.message || 'Error deleting department.');
+      }
+    } catch (err) {
+      alert('Network error.');
+    }
+  };
+
+  // ==================== 2. USER ROLES CRUD ====================
+  async function loadRoles() {
+    const tbody = document.getElementById('rolesTableBody');
+    if (!tbody) return;
+    try {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94A3B8; padding: 24px;"><i class="fas fa-spinner fa-spin"></i> Loading user roles...</td></tr>';
+      const res = await fetch('/api/admin/roles');
+      const data = await res.json();
+      if (!data.success || !Array.isArray(data.roles)) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #DC2626; padding: 24px;">Failed to load roles: ${escapeHtml(data.message || 'Error')}</td></tr>`;
+        return;
+      }
+      allRolesData = data.roles;
+      updateRoleMetrics(allRolesData);
+      renderRolesTable(allRolesData);
+      populateRoleSelects(allRolesData);
+    } catch (err) {
+      console.error(err);
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #DC2626; padding: 24px;">Network error loading roles.</td></tr>';
+    }
+  }
+
+  function updateRoleMetrics(roles) {
+    const total = roles.length;
+    const system = roles.filter(r => r.is_system == 1).length;
+    const custom = total - system;
+    const usersTotal = roles.reduce((acc, r) => acc + (Number(r.users_count) || 0), 0);
+    const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setTxt('metricTotalRoles', total);
+    setTxt('metricSystemRoles', system);
+    setTxt('metricRoleUsersCount', usersTotal);
+  }
+
+  function renderRolesTable(roles) {
+    const tbody = document.getElementById('rolesTableBody');
+    if (!tbody) return;
+    const searchVal = (document.getElementById('roleSearchInput')?.value || '').toLowerCase().trim();
+
+    let list = roles;
+    if (searchVal) {
+      list = list.filter(r =>
+        (r.role_key && r.role_key.toLowerCase().includes(searchVal)) ||
+        (r.name_en && r.name_en.toLowerCase().includes(searchVal)) ||
+        (r.name_ur && r.name_ur.toLowerCase().includes(searchVal)) ||
+        (r.description && r.description.toLowerCase().includes(searchVal))
+      );
+    }
+
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94A3B8; padding: 24px;">No user roles found.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = list.map(r => {
+      const isSystem = r.is_system == 1;
+      const classBadge = isSystem
+        ? '<span class="badge" style="background: #EFF6FF; color: #1D4ED8; font-weight: 700;"><i class="fas fa-lock"></i> Protected Core</span>'
+        : '<span class="badge" style="background: #F1F5F9; color: #475569; font-weight: 600;">Custom Role</span>';
+      const activeBadge = r.is_active == 1
+        ? '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Active</span>'
+        : '<span class="badge badge-danger"><i class="fas fa-ban"></i> Inactive</span>';
+
+      return `
+        <tr>
+          <td>
+            <code style="font-weight: 700; color: #991B1B; font-size: 0.84rem; background: #FFF1F2; padding: 2px 7px; border-radius: 4px;">
+              ${escapeHtml(r.role_key)}
+            </code>
+          </td>
+          <td>
+            <div style="font-weight: 700; color: #0F172A; font-size: 0.95rem;">${escapeHtml(r.name_en)}</div>
+            ${r.name_ur ? `<div style="font-family: 'Noto Nastaliq Urdu', Tahoma, sans-serif; font-size: 0.84rem; color: #475569; margin-top: 2px;" dir="rtl">${escapeHtml(r.name_ur)}</div>` : ''}
+          </td>
+          <td style="max-width: 240px; font-size: 0.8rem; color: #64748B;">
+            ${escapeHtml(r.description || 'System access level')}
+          </td>
+          <td style="text-align: center;">${classBadge}</td>
+          <td style="text-align: center;">
+            <span style="font-weight: 700; color: #0F172A; background: #F1F5F9; padding: 2px 8px; border-radius: 9999px; font-size: 0.78rem;">
+              ${r.users_count || 0}
+            </span>
+          </td>
+          <td>${activeBadge}</td>
+          <td style="text-align: right; white-space: nowrap;">
+            <div class="action-btn-group">
+              <button type="button" class="btn-action btn-action-view" onclick="viewRole(${r.id})" title="View Role" aria-label="View role">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button type="button" class="btn-action btn-action-edit" onclick="editRole(${r.id})" title="Edit Role" aria-label="Edit role">
+                <i class="fas fa-pen-to-square"></i>
+              </button>
+              ${!isSystem ? `
+                <button type="button" class="btn-action btn-action-delete" onclick="deleteRole(${r.id}, '${escapeHtml(r.name_en)}')" title="Delete Role" aria-label="Delete role">
+                  <i class="fas fa-trash-can"></i>
+                </button>
+              ` : `
+                <button type="button" class="btn-action btn-action-delete" disabled style="opacity: 0.35; cursor: not-allowed;" title="Protected System Role">
+                  <i class="fas fa-lock"></i>
+                </button>
+              `}
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  const roleSearchInput = document.getElementById('roleSearchInput');
+  if (roleSearchInput) {
+    roleSearchInput.addEventListener('input', () => renderRolesTable(allRolesData));
+  }
+
+  window.openAddRoleModal = function() {
+    const form = document.getElementById('formRole');
+    if (form) form.reset();
+    document.getElementById('role_id').value = '';
+    const roleKeyInput = document.getElementById('role_key');
+    if (roleKeyInput) {
+      roleKeyInput.readOnly = false;
+      roleKeyInput.style.background = '#FFFFFF';
+    }
+    document.getElementById('role_is_active').value = '1';
+    document.getElementById('roleModalHeading').innerHTML = '<i class="fas fa-user-shield"></i> Add New User Role';
+    openModal('modalRole');
+  };
+
+  window.editRole = async function(id) {
+    try {
+      const res = await fetch(`/api/admin/roles/${id}`);
+      const data = await res.json();
+      if (!data.success || !data.role) {
+        alert(data.message || 'Error loading role.');
+        return;
+      }
+      const r = data.role;
+      document.getElementById('role_id').value = r.id;
+      const roleKeyInput = document.getElementById('role_key');
+      if (roleKeyInput) {
+        roleKeyInput.value = r.role_key || '';
+        roleKeyInput.readOnly = (r.is_system == 1);
+        roleKeyInput.style.background = (r.is_system == 1) ? '#F1F5F9' : '#FFFFFF';
+      }
+      document.getElementById('role_name_en').value = r.name_en || '';
+      document.getElementById('role_name_ur').value = r.name_ur || '';
+      document.getElementById('role_description').value = r.description || '';
+      document.getElementById('role_is_active').value = r.is_active ? '1' : '0';
+      document.getElementById('roleModalHeading').innerHTML = `<i class="fas fa-pen-to-square"></i> Edit Role: ${escapeHtml(r.name_en)}`;
+      openModal('modalRole');
+    } catch (err) {
+      alert('Error fetching role.');
+    }
+  };
+
+  window.viewRole = async function(id) {
+    try {
+      const res = await fetch(`/api/admin/roles/${id}`);
+      const data = await res.json();
+      if (!data.success || !data.role) {
+        alert(data.message || 'Error loading role.');
+        return;
+      }
+      const r = data.role;
+      const bodyHtml = `
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #E2E8F0; padding-bottom: 14px; margin-bottom: 16px;">
+          <div>
+            <div style="font-size: 1.3rem; font-weight: 800; color: #0F172A;">${escapeHtml(r.name_en)}</div>
+            <div style="font-family: 'Noto Nastaliq Urdu', Tahoma, sans-serif; font-size: 1.05rem; color: #475569; margin-top: 4px;" dir="rtl">${escapeHtml(r.name_ur || '')}</div>
+          </div>
+          <code style="font-size: 0.95rem; font-weight: 700; background: #FFF1F2; color: #991B1B; padding: 4px 10px; border-radius: 6px;">
+            ${escapeHtml(r.role_key)}
+          </code>
+        </div>
+        <div class="view-user-grid" style="margin-bottom: 16px;">
+          <div class="view-user-field">
+            <label class="view-user-label"><i class="fas fa-users"></i> Users Assigned</label>
+            <div class="view-user-value"><strong>${r.users_count || 0}</strong> Registered Personnel</div>
+          </div>
+          <div class="view-user-field">
+            <label class="view-user-label"><i class="fas fa-shield"></i> Role Classification</label>
+            <div class="view-user-value">${r.is_system == 1 ? '<span class="badge" style="background:#EFF6FF;color:#1D4ED8;"><i class="fas fa-lock"></i> Protected System Role</span>' : '<span class="badge">Custom Administrative Role</span>'}</div>
+          </div>
+          <div class="view-user-field">
+            <label class="view-user-label"><i class="fas fa-signal"></i> Status</label>
+            <div class="view-user-value">${r.is_active ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Inactive</span>'}</div>
+          </div>
+        </div>
+        <div>
+          <label class="view-user-label"><i class="fas fa-file-lines"></i> Description & Access Scope</label>
+          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 10px 14px; border-radius: 6px; font-size: 0.85rem; color: #334155;">
+            ${escapeHtml(r.description || 'System access role')}
+          </div>
+        </div>
+      `;
+      document.getElementById('viewRoleModalBody').innerHTML = bodyHtml;
+      const btnEdit = document.getElementById('btnEditRoleFromView');
+      if (btnEdit) {
+        btnEdit.onclick = function() {
+          closeModal('modalViewRole');
+          editRole(id);
+        };
+      }
+      openModal('modalViewRole');
+    } catch (err) {
+      alert('Error fetching role details.');
+    }
+  };
+
+  window.handleRoleFormSubmit = async function(e) {
+    if (e) e.preventDefault();
+    const btn = document.getElementById('btnSubmitRole');
+    if (btn) btn.disabled = true;
+
+    const id = document.getElementById('role_id').value;
+    const payload = {
+      role_key: document.getElementById('role_key').value.trim().toLowerCase(),
+      name_en: document.getElementById('role_name_en').value.trim(),
+      name_ur: document.getElementById('role_name_ur').value.trim(),
+      description: document.getElementById('role_description').value.trim(),
+      is_active: parseInt(document.getElementById('role_is_active').value) || 1
+    };
+
+    const url = id ? `/api/admin/roles/${id}` : '/api/admin/roles';
+    const method = id ? 'PUT' : 'POST';
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(id ? 'User role updated successfully!' : 'User role created successfully!');
+        closeModal('modalRole');
+        loadRoles();
+      } else {
+        alert(data.message || 'Error saving user role.');
+      }
+    } catch (err) {
+      alert('Network error while saving user role.');
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  };
+
+  window.deleteRole = async function(id, name) {
+    if (!confirm(`Are you sure you want to delete the role "${name}"? This action cannot be undone.`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/admin/roles/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        alert('User role deleted successfully!');
+        loadRoles();
+      } else {
+        alert(data.message || 'Error deleting role.');
+      }
+    } catch (err) {
+      alert('Network error.');
+    }
+  };
+
+  // ==================== 3. DESIGNATIONS CRUD ====================
+  async function loadDesignations() {
+    const tbody = document.getElementById('designationsTableBody');
+    if (!tbody) return;
+    try {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94A3B8; padding: 24px;"><i class="fas fa-spinner fa-spin"></i> Loading designations...</td></tr>';
+      const res = await fetch('/api/admin/designations');
+      const data = await res.json();
+      if (!data.success || !Array.isArray(data.designations)) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #DC2626; padding: 24px;">Failed to load designations: ${escapeHtml(data.message || 'Error')}</td></tr>`;
+        return;
+      }
+      allDesignationsData = data.designations;
+      updateDesignationMetrics(allDesignationsData);
+      renderDesignationsTable(allDesignationsData);
+      populateDesignationSelects(allDesignationsData);
+    } catch (err) {
+      console.error(err);
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #DC2626; padding: 24px;">Network error loading designations.</td></tr>';
+    }
+  }
+
+  function updateDesignationMetrics(desigs) {
+    const total = desigs.length;
+    const active = desigs.filter(d => d.is_active == 1).length;
+    const deptsSet = new Set(desigs.map(d => d.department_id).filter(Boolean));
+    const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setTxt('metricTotalDesignations', total);
+    setTxt('metricActiveDesignations', active);
+    setTxt('metricDesignationDepts', deptsSet.size);
+  }
+
+  function renderDesignationsTable(desigs) {
+    const tbody = document.getElementById('designationsTableBody');
+    if (!tbody) return;
+    const searchVal = (document.getElementById('desigSearchInput')?.value || '').toLowerCase().trim();
+    const deptVal = document.getElementById('desigFilterDepartment')?.value || '';
+
+    let list = desigs;
+    if (deptVal) {
+      list = list.filter(d => String(d.department_id) === deptVal);
+    }
+    if (searchVal) {
+      list = list.filter(d =>
+        (d.title_en && d.title_en.toLowerCase().includes(searchVal)) ||
+        (d.title_ur && d.title_ur.toLowerCase().includes(searchVal)) ||
+        (d.level && d.level.toLowerCase().includes(searchVal)) ||
+        (d.department_name_en && d.department_name_en.toLowerCase().includes(searchVal)) ||
+        (d.description && d.description.toLowerCase().includes(searchVal))
+      );
+    }
+
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94A3B8; padding: 24px;">No designations found.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = list.map(d => {
+      const activeBadge = d.is_active == 1
+        ? '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Active</span>'
+        : '<span class="badge badge-danger"><i class="fas fa-ban"></i> Inactive</span>';
+      const deptBadge = d.department_name_en
+        ? `<span class="badge" style="background: #F1F5F9; color: #334155; font-weight: 600;"><i class="fas fa-building-user" style="color: var(--admin-primary); margin-right: 4px;"></i>${escapeHtml(d.department_name_en)}</span>`
+        : '<span style="color: #94A3B8; font-size: 0.78rem;">General / Foundation</span>';
+      const totalPersonnel = (Number(d.users_count) || 0) + (Number(d.volunteers_count) || 0);
+
+      return `
+        <tr>
+          <td>
+            <div style="font-weight: 700; color: #0F172A; font-size: 0.95rem;">${escapeHtml(d.title_en)}</div>
+            ${d.title_ur ? `<div style="font-family: 'Noto Nastaliq Urdu', Tahoma, sans-serif; font-size: 0.84rem; color: #475569; margin-top: 2px;" dir="rtl">${escapeHtml(d.title_ur)}</div>` : ''}
+          </td>
+          <td>${deptBadge}</td>
+          <td style="text-align: center; font-size: 0.82rem; font-weight: 600; color: #475569;">
+            ${escapeHtml(d.level || 'Standard')}
+          </td>
+          <td style="max-width: 240px; font-size: 0.8rem; color: #64748B;">
+            ${escapeHtml(d.description || 'Job role designation')}
+          </td>
+          <td style="text-align: center;">
+            <span style="font-weight: 700; color: #0F172A; background: #F1F5F9; padding: 2px 8px; border-radius: 9999px; font-size: 0.78rem;">
+              ${totalPersonnel}
+            </span>
+          </td>
+          <td>${activeBadge}</td>
+          <td style="text-align: right; white-space: nowrap;">
+            <div class="action-btn-group">
+              <button type="button" class="btn-action btn-action-view" onclick="viewDesignation(${d.id})" title="View Designation" aria-label="View designation">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button type="button" class="btn-action btn-action-edit" onclick="editDesignation(${d.id})" title="Edit Designation" aria-label="Edit designation">
+                <i class="fas fa-pen-to-square"></i>
+              </button>
+              <button type="button" class="btn-action btn-action-delete" onclick="deleteDesignation(${d.id}, '${escapeHtml(d.title_en)}')" title="Delete Designation" aria-label="Delete designation">
+                <i class="fas fa-trash-can"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  const desigSearchInput = document.getElementById('desigSearchInput');
+  if (desigSearchInput) {
+    desigSearchInput.addEventListener('input', () => renderDesignationsTable(allDesignationsData));
+  }
+  const desigFilterDepartment = document.getElementById('desigFilterDepartment');
+  if (desigFilterDepartment) {
+    desigFilterDepartment.addEventListener('change', () => renderDesignationsTable(allDesignationsData));
+  }
+
+  window.openAddDesignationModal = function() {
+    const form = document.getElementById('formDesignation');
+    if (form) form.reset();
+    document.getElementById('desig_id').value = '';
+    document.getElementById('desig_is_active').value = '1';
+    document.getElementById('designationModalHeading').innerHTML = '<i class="fas fa-award"></i> Add New Designation';
+    openModal('modalDesignation');
+  };
+
+  window.editDesignation = async function(id) {
+    try {
+      const res = await fetch(`/api/admin/designations/${id}`);
+      const data = await res.json();
+      if (!data.success || !data.designation) {
+        alert(data.message || 'Error loading designation.');
+        return;
+      }
+      const d = data.designation;
+      document.getElementById('desig_id').value = d.id;
+      document.getElementById('desig_title_en').value = d.title_en || '';
+      document.getElementById('desig_title_ur').value = d.title_ur || '';
+      document.getElementById('desig_department_id').value = d.department_id || '';
+      document.getElementById('desig_level').value = d.level || '';
+      document.getElementById('desig_description').value = d.description || '';
+      document.getElementById('desig_is_active').value = d.is_active ? '1' : '0';
+      document.getElementById('designationModalHeading').innerHTML = `<i class="fas fa-pen-to-square"></i> Edit Designation: ${escapeHtml(d.title_en)}`;
+      openModal('modalDesignation');
+    } catch (err) {
+      alert('Error fetching designation.');
+    }
+  };
+
+  window.viewDesignation = async function(id) {
+    try {
+      const res = await fetch(`/api/admin/designations/${id}`);
+      const data = await res.json();
+      if (!data.success || !data.designation) {
+        alert(data.message || 'Error loading designation.');
+        return;
+      }
+      const d = data.designation;
+      const bodyHtml = `
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #E2E8F0; padding-bottom: 14px; margin-bottom: 16px;">
+          <div>
+            <div style="font-size: 1.3rem; font-weight: 800; color: #0F172A;">${escapeHtml(d.title_en)}</div>
+            <div style="font-family: 'Noto Nastaliq Urdu', Tahoma, sans-serif; font-size: 1.05rem; color: #475569; margin-top: 4px;" dir="rtl">${escapeHtml(d.title_ur || '')}</div>
+          </div>
+          <span class="badge" style="background: #EFF6FF; color: #1D4ED8; font-weight: 700;">${escapeHtml(d.department_name_en || 'General Foundation')}</span>
+        </div>
+        <div class="view-user-grid" style="margin-bottom: 16px;">
+          <div class="view-user-field">
+            <label class="view-user-label"><i class="fas fa-users-gear"></i> Staff Assigned</label>
+            <div class="view-user-value"><strong>${d.users_count || 0}</strong> Members</div>
+          </div>
+          <div class="view-user-field">
+            <label class="view-user-label"><i class="fas fa-handshake-angle"></i> Volunteers Assigned</label>
+            <div class="view-user-value"><strong>${d.volunteers_count || 0}</strong> Volunteers</div>
+          </div>
+          <div class="view-user-field">
+            <label class="view-user-label"><i class="fas fa-layer-group"></i> Rank / Grade Level</label>
+            <div class="view-user-value">${escapeHtml(d.level || 'Standard')}</div>
+          </div>
+          <div class="view-user-field">
+            <label class="view-user-label"><i class="fas fa-signal"></i> Status</label>
+            <div class="view-user-value">${d.is_active ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Inactive</span>'}</div>
+          </div>
+        </div>
+        <div>
+          <label class="view-user-label"><i class="fas fa-file-lines"></i> Job Description & Roles</label>
+          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 10px 14px; border-radius: 6px; font-size: 0.85rem; color: #334155;">
+            ${escapeHtml(d.description || 'Job role description')}
+          </div>
+        </div>
+      `;
+      document.getElementById('viewDesignationModalBody').innerHTML = bodyHtml;
+      const btnEdit = document.getElementById('btnEditDesignationFromView');
+      if (btnEdit) {
+        btnEdit.onclick = function() {
+          closeModal('modalViewDesignation');
+          editDesignation(id);
+        };
+      }
+      openModal('modalViewDesignation');
+    } catch (err) {
+      alert('Error fetching designation details.');
+    }
+  };
+
+  window.handleDesignationFormSubmit = async function(e) {
+    if (e) e.preventDefault();
+    const btn = document.getElementById('btnSubmitDesignation');
+    if (btn) btn.disabled = true;
+
+    const id = document.getElementById('desig_id').value;
+    const payload = {
+      title_en: document.getElementById('desig_title_en').value.trim(),
+      title_ur: document.getElementById('desig_title_ur').value.trim(),
+      department_id: document.getElementById('desig_department_id').value || null,
+      level: document.getElementById('desig_level').value.trim(),
+      description: document.getElementById('desig_description').value.trim(),
+      is_active: parseInt(document.getElementById('desig_is_active').value) || 1
+    };
+
+    const url = id ? `/api/admin/designations/${id}` : '/api/admin/designations';
+    const method = id ? 'PUT' : 'POST';
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(id ? 'Designation updated successfully!' : 'Designation created successfully!');
+        closeModal('modalDesignation');
+        loadDesignations();
+      } else {
+        alert(data.message || 'Error saving designation.');
+      }
+    } catch (err) {
+      alert('Network error while saving designation.');
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  };
+
+  window.deleteDesignation = async function(id, name) {
+    if (!confirm(`Are you sure you want to delete the designation "${name}"? This action cannot be undone.`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/admin/designations/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        alert('Designation deleted successfully!');
+        loadDesignations();
+      } else {
+        alert(data.message || 'Error deleting designation.');
+      }
+    } catch (err) {
+      alert('Network error.');
+    }
+  };
+
+  // ==================== 4. PROJECT CATEGORIES CRUD ====================
+  async function loadCategories() {
+    const tbody = document.getElementById('categoriesTableBody');
+    if (!tbody) return;
+    try {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94A3B8; padding: 24px;"><i class="fas fa-spinner fa-spin"></i> Loading categories...</td></tr>';
+      const res = await fetch('/api/admin/categories');
+      const data = await res.json();
+      if (!data.success || !Array.isArray(data.categories)) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #DC2626; padding: 24px;">Failed to load categories: ${escapeHtml(data.message || 'Error')}</td></tr>`;
+        return;
+      }
+      allCategoriesData = data.categories;
+      updateCategoryMetrics(allCategoriesData);
+      renderCategoriesTable(allCategoriesData);
+      populateCategorySelects(allCategoriesData);
+    } catch (err) {
+      console.error(err);
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #DC2626; padding: 24px;">Network error loading categories.</td></tr>';
+    }
+  }
+
+  function updateCategoryMetrics(cats) {
+    const total = cats.length;
+    const active = cats.filter(c => c.is_active == 1).length;
+    const projectsTotal = cats.reduce((acc, c) => acc + (Number(c.projects_count) || 0), 0);
+    const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setTxt('metricTotalCategories', total);
+    setTxt('metricActiveCategories', active);
+    setTxt('metricCatProjectsCount', projectsTotal);
+  }
+
+  function renderCategoriesTable(cats) {
+    const tbody = document.getElementById('categoriesTableBody');
+    if (!tbody) return;
+    const searchVal = (document.getElementById('catSearchInput')?.value || '').toLowerCase().trim();
+
+    let list = cats;
+    if (searchVal) {
+      list = list.filter(c =>
+        (c.name_en && c.name_en.toLowerCase().includes(searchVal)) ||
+        (c.name_ur && c.name_ur.toLowerCase().includes(searchVal)) ||
+        (c.slug && c.slug.toLowerCase().includes(searchVal)) ||
+        (c.description_en && c.description_en.toLowerCase().includes(searchVal))
+      );
+    }
+
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94A3B8; padding: 24px;">No categories found.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = list.map(c => {
+      const activeBadge = c.is_active == 1
+        ? '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Active</span>'
+        : '<span class="badge badge-danger"><i class="fas fa-ban"></i> Inactive</span>';
+      const iconHtml = c.icon_class
+        ? `<div style="width: 38px; height: 38px; border-radius: 8px; background: #FFF1F2; color: var(--admin-primary); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; margin: 0 auto;"><i class="${escapeHtml(c.icon_class)}"></i></div>`
+        : '<div style="width: 38px; height: 38px; border-radius: 8px; background: #F1F5F9; color: #64748B; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; margin: 0 auto;"><i class="fas fa-shapes"></i></div>';
+
+      return `
+        <tr>
+          <td style="text-align: center;">${iconHtml}</td>
+          <td>
+            <div style="font-weight: 700; color: #0F172A; font-size: 0.95rem;">${escapeHtml(c.name_en)}</div>
+            ${c.name_ur ? `<div style="font-family: 'Noto Nastaliq Urdu', Tahoma, sans-serif; font-size: 0.84rem; color: #475569; margin-top: 2px;" dir="rtl">${escapeHtml(c.name_ur)}</div>` : ''}
+          </td>
+          <td>
+            <code style="font-size: 0.82rem; color: #0284C7; background: #F0F9FF; padding: 2px 7px; border-radius: 4px;">
+              ${escapeHtml(c.slug)}
+            </code>
+          </td>
+          <td style="max-width: 240px; font-size: 0.8rem; color: #64748B;">
+            ${escapeHtml(c.description_en || 'Public category')}
+          </td>
+          <td style="text-align: center;">
+            <span style="font-weight: 700; color: #0F172A; background: #F1F5F9; padding: 2px 8px; border-radius: 9999px; font-size: 0.78rem;">
+              ${c.projects_count || 0}
+            </span>
+          </td>
+          <td>${activeBadge}</td>
+          <td style="text-align: right; white-space: nowrap;">
+            <div class="action-btn-group">
+              <button type="button" class="btn-action btn-action-view" onclick="viewCategory(${c.id})" title="View Category" aria-label="View category">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button type="button" class="btn-action btn-action-edit" onclick="editCategory(${c.id})" title="Edit Category" aria-label="Edit category">
+                <i class="fas fa-pen-to-square"></i>
+              </button>
+              <button type="button" class="btn-action btn-action-delete" onclick="deleteCategory(${c.id}, '${escapeHtml(c.name_en)}')" title="Delete Category" aria-label="Delete category">
+                <i class="fas fa-trash-can"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  const catSearchInput = document.getElementById('catSearchInput');
+  if (catSearchInput) {
+    catSearchInput.addEventListener('input', () => renderCategoriesTable(allCategoriesData));
+  }
+
+  window.openAddCategoryModal = function() {
+    const form = document.getElementById('formCategory');
+    if (form) form.reset();
+    document.getElementById('cat_id').value = '';
+    document.getElementById('cat_icon_class').value = 'fas fa-hand-holding-heart';
+    document.getElementById('cat_is_active').value = '1';
+    document.getElementById('categoryModalHeading').innerHTML = '<i class="fas fa-shapes"></i> Add New Category';
+    openModal('modalCategory');
+  };
+
+  window.editCategory = async function(id) {
+    try {
+      const res = await fetch(`/api/admin/categories/${id}`);
+      const data = await res.json();
+      if (!data.success || !data.category) {
+        alert(data.message || 'Error loading category.');
+        return;
+      }
+      const c = data.category;
+      document.getElementById('cat_id').value = c.id;
+      document.getElementById('cat_name_en').value = c.name_en || '';
+      document.getElementById('cat_name_ur').value = c.name_ur || '';
+      document.getElementById('cat_slug').value = c.slug || '';
+      document.getElementById('cat_icon_class').value = c.icon_class || 'fas fa-hand-holding-heart';
+      document.getElementById('cat_description_en').value = c.description_en || '';
+      document.getElementById('cat_description_ur').value = c.description_ur || '';
+      document.getElementById('cat_is_active').value = c.is_active ? '1' : '0';
+      document.getElementById('categoryModalHeading').innerHTML = `<i class="fas fa-pen-to-square"></i> Edit Category: ${escapeHtml(c.name_en)}`;
+      openModal('modalCategory');
+    } catch (err) {
+      alert('Error fetching category.');
+    }
+  };
+
+  window.viewCategory = async function(id) {
+    try {
+      const res = await fetch(`/api/admin/categories/${id}`);
+      const data = await res.json();
+      if (!data.success || !data.category) {
+        alert(data.message || 'Error loading category.');
+        return;
+      }
+      const c = data.category;
+      const bodyHtml = `
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #E2E8F0; padding-bottom: 14px; margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 44px; height: 44px; border-radius: 8px; background: #FFF1F2; color: var(--admin-primary); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+              <i class="${escapeHtml(c.icon_class || 'fas fa-shapes')}"></i>
+            </div>
+            <div>
+              <div style="font-size: 1.3rem; font-weight: 800; color: #0F172A;">${escapeHtml(c.name_en)}</div>
+              <div style="font-family: 'Noto Nastaliq Urdu', Tahoma, sans-serif; font-size: 1.05rem; color: #475569; margin-top: 2px;" dir="rtl">${escapeHtml(c.name_ur || '')}</div>
+            </div>
+          </div>
+          <code style="font-size: 0.9rem; color: #0284C7; background: #F0F9FF; padding: 4px 10px; border-radius: 6px;">
+            ${escapeHtml(c.slug)}
+          </code>
+        </div>
+        <div class="view-user-grid" style="margin-bottom: 16px;">
+          <div class="view-user-field">
+            <label class="view-user-label"><i class="fas fa-hand-holding-heart"></i> Welfare Projects</label>
+            <div class="view-user-value"><strong>${c.projects_count || 0}</strong> Linked Initiatives</div>
+          </div>
+          <div class="view-user-field">
+            <label class="view-user-label"><i class="fas fa-signal"></i> Public Status</label>
+            <div class="view-user-value">${c.is_active ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Inactive</span>'}</div>
+          </div>
+        </div>
+        <div style="margin-bottom: 14px;">
+          <label class="view-user-label"><i class="fas fa-file-lines"></i> Description (English)</label>
+          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 10px 14px; border-radius: 6px; font-size: 0.85rem; color: #334155;">
+            ${escapeHtml(c.description_en || 'Public category description')}
+          </div>
+        </div>
+        <div>
+          <label class="view-user-label"><i class="fas fa-file-lines"></i> Description (Urdu)</label>
+          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 10px 14px; border-radius: 6px; font-size: 0.9rem; color: #334155; font-family: 'Noto Nastaliq Urdu', Tahoma, sans-serif;" dir="rtl">
+            ${escapeHtml(c.description_ur || 'کوئی تفصیل درج نہیں ہے۔')}
+          </div>
+        </div>
+      `;
+      document.getElementById('viewCategoryModalBody').innerHTML = bodyHtml;
+      const btnEdit = document.getElementById('btnEditCategoryFromView');
+      if (btnEdit) {
+        btnEdit.onclick = function() {
+          closeModal('modalViewCategory');
+          editCategory(id);
+        };
+      }
+      openModal('modalViewCategory');
+    } catch (err) {
+      alert('Error fetching category details.');
+    }
+  };
+
+  window.handleCategoryFormSubmit = async function(e) {
+    if (e) e.preventDefault();
+    const btn = document.getElementById('btnSubmitCategory');
+    if (btn) btn.disabled = true;
+
+    const id = document.getElementById('cat_id').value;
+    const payload = {
+      name_en: document.getElementById('cat_name_en').value.trim(),
+      name_ur: document.getElementById('cat_name_ur').value.trim(),
+      slug: document.getElementById('cat_slug').value.trim().toLowerCase(),
+      icon_class: document.getElementById('cat_icon_class').value.trim(),
+      description_en: document.getElementById('cat_description_en').value.trim(),
+      description_ur: document.getElementById('cat_description_ur').value.trim(),
+      is_active: parseInt(document.getElementById('cat_is_active').value) || 1
+    };
+
+    const url = id ? `/api/admin/categories/${id}` : '/api/admin/categories';
+    const method = id ? 'PUT' : 'POST';
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(id ? 'Category updated successfully!' : 'Category created successfully!');
+        closeModal('modalCategory');
+        loadCategories();
+      } else {
+        alert(data.message || 'Error saving category.');
+      }
+    } catch (err) {
+      alert('Network error while saving category.');
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  };
+
+  window.deleteCategory = async function(id, name) {
+    if (!confirm(`Are you sure you want to delete the category "${name}"? This action cannot be undone.`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/admin/categories/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        alert('Category deleted successfully!');
+        loadCategories();
+      } else {
+        alert(data.message || 'Error deleting category.');
+      }
+    } catch (err) {
+      alert('Network error.');
+    }
+  };
+
   // ==================== VOLUNTEER & STAFF IDENTITY CARDS SYSTEM ====================
   let currentIdCardData = null;
   let currentIdCardViewMode = 'dual'; // 'dual', 'front', 'back'
@@ -5611,13 +6971,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const cardClass = isStaff ? 'id-card-staff' : 'id-card-volunteer';
     const roleBadgeClass = isStaff ? 'id-card-role-staff' : 'id-card-role-volunteer';
-    const roleBadgeTextEn = isStaff ? (subject.role_title_en || 'OFFICIAL STAFF').toUpperCase() : (subject.badge_label_en || 'HONORARY VOLUNTEER');
-    const roleBadgeTextUr = isStaff ? (subject.role_title_ur || 'ملازم و عملہ') : (subject.badge_label_ur || 'فلاحی رضاکار');
+    const roleBadgeTextEn = isStaff ? (subject.role_name_en || subject.role_title_en || 'OFFICIAL STAFF').toUpperCase() : (subject.badge_label_en || 'HONORARY VOLUNTEER');
+    const roleBadgeTextUr = isStaff ? (subject.role_name_ur || subject.role_title_ur || 'ملازم و عملہ') : (subject.badge_label_ur || 'فلاحی رضاکار');
     const idLabel = isStaff ? 'EMP ID' : 'REF ID';
     const idValue = isStaff ? subject.employee_id : subject.reference_no;
-    const deptLabel = isStaff ? 'Department' : 'Field Work';
-    const deptValue = isStaff ? (subject.role_title_en || 'Executive Administration') : (subject.areas_of_interest || 'Community Welfare & Relief');
-    const titleVal = isStaff ? (subject.designation || subject.role_title_en || 'Staff Member') : subject.role_title_en;
+    const deptValue = subject.department_name_en || subject.department || (isStaff ? 'Executive Administration' : 'Community Welfare & Relief');
+    const desigValue = subject.designation_name_en || subject.designation || (isStaff ? 'Staff Member' : 'Field Volunteer');
+    const roleValue = subject.role_name_en || (isStaff ? (subject.role_title_en || 'Staff') : 'Volunteer');
 
     const photoSrc = subject.photo_url || '';
     const initials = (subject.full_name || 'Q').charAt(0).toUpperCase();
@@ -5643,10 +7003,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }).join('');
 
     const assignedSig = currentIdCardData.signature;
-    const titleEn = subject.designation || (isStaff ? (subject.role_title_en || 'Staff Member') : 'Honorary Volunteer');
-    const titleUr = subject.designation_ur || (isStaff ? (subject.role_title_ur || 'ملازم و عملہ') : 'فلاحی رضاکار');
 
-    // FRONT CARD HTML
+    // FRONT CARD HTML (Standard CNIC-like horizontal 85.6mm x 54mm card format)
     const frontCardHtml = `
       <div class="id-card-box ${cardClass}" id="idCardFrontSide">
         ${watermarkImg}
@@ -5675,10 +7033,11 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
 
           <div class="id-card-info">
-            <div>
+            <div style="margin-bottom: 3px;">
               <div class="id-card-name">${escapeHtml(subject.full_name || 'Cardholder')}</div>
-              <div class="id-card-designation">${escapeHtml(titleEn)}</div>
-              ${titleUr ? `<div class="id-card-designation-ur">${escapeHtml(titleUr)}</div>` : ''}
+              <div class="id-card-designation" style="font-size: 0.72rem; color: var(--admin-primary); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                ${escapeHtml(desigValue)}
+              </div>
             </div>
 
             <table class="id-card-meta-table">
@@ -5687,20 +7046,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td class="id-card-meta-value mono">${escapeHtml(idValue)}</td>
               </tr>
               <tr>
-                <td class="id-card-meta-label">${deptLabel}:</td>
-                <td class="id-card-meta-value" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px;">${escapeHtml(deptValue)}</td>
+                <td class="id-card-meta-label">Department:</td>
+                <td class="id-card-meta-value" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 175px;">${escapeHtml(deptValue)}</td>
               </tr>
               <tr>
-                <td class="id-card-meta-label">Issue Date:</td>
-                <td class="id-card-meta-value">${escapeHtml(meta.issue_date || 'N/A')}</td>
+                <td class="id-card-meta-label">Role:</td>
+                <td class="id-card-meta-value" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 175px;">${escapeHtml(roleValue)}</td>
               </tr>
               <tr>
                 <td class="id-card-meta-label">Valid Thru:</td>
-                <td class="id-card-meta-value" style="color: #B91C1C;">${escapeHtml(meta.valid_thru || 'N/A')}</td>
-              </tr>
-              <tr>
-                <td class="id-card-meta-label">Phone:</td>
-                <td class="id-card-meta-value">${escapeHtml(subject.phone || 'N/A')}</td>
+                <td class="id-card-meta-value" style="color: #B91C1C;">${escapeHtml(meta.valid_thru || 'Dec 2027')}</td>
               </tr>
             </table>
           </div>

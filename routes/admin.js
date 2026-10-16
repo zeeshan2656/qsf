@@ -1592,10 +1592,17 @@ router.get('/assistance-applications/:id', requirePermission('applications'), as
 router.get('/users', requirePermission('users'), async (req, res) => {
   try {
     const [rows] = await db.query(`
-      SELECT id, username, email, full_name, role, designation, designation_ur, phone, photo_url,
-             signature_id, salary, has_salary, permissions, is_active, created_at, updated_at
-      FROM users
-      ORDER BY id ASC
+      SELECT u.id, u.username, u.email, u.full_name, u.role, u.department_id, u.role_id, u.designation_id,
+             u.designation, u.designation_ur, u.phone, u.photo_url,
+             u.signature_id, u.salary, u.has_salary, u.permissions, u.is_active, u.created_at, u.updated_at,
+             d.name_en as department_name_en, d.name_ur as department_name_ur, d.code as department_code,
+             ur.name_en as role_name_en, ur.name_ur as role_name_ur,
+             des.name_en as designation_name_en, des.name_ur as designation_name_ur
+      FROM users u
+      LEFT JOIN departments d ON u.department_id = d.id
+      LEFT JOIN user_roles ur ON u.role_id = ur.id
+      LEFT JOIN designations des ON u.designation_id = des.id
+      ORDER BY u.id ASC
     `);
 
     const users = rows.map(u => {
@@ -1611,7 +1618,11 @@ router.get('/users', requirePermission('users'), async (req, res) => {
         ...u,
         salary: parseFloat(u.salary) || 0,
         has_salary: Boolean(u.has_salary),
-        permissions: perms
+        permissions: perms,
+        department_name: u.department_name_en || '',
+        role_title: u.role_name_en || u.role,
+        designation: u.designation_name_en || u.designation || '',
+        designation_ur: u.designation_name_ur || u.designation_ur || ''
       };
     });
 
@@ -1626,9 +1637,17 @@ router.get('/users', requirePermission('users'), async (req, res) => {
 router.get('/users/:id', requirePermission('users'), async (req, res) => {
   try {
     const [rows] = await db.query(`
-      SELECT id, username, email, full_name, role, designation, designation_ur, phone, photo_url,
-             signature_id, salary, has_salary, permissions, is_active, created_at, updated_at
-      FROM users WHERE id = ?
+      SELECT u.id, u.username, u.email, u.full_name, u.role, u.department_id, u.role_id, u.designation_id,
+             u.designation, u.designation_ur, u.phone, u.photo_url,
+             u.signature_id, u.salary, u.has_salary, u.permissions, u.is_active, u.created_at, u.updated_at,
+             d.name_en as department_name_en, d.name_ur as department_name_ur, d.code as department_code,
+             ur.name_en as role_name_en, ur.name_ur as role_name_ur,
+             des.name_en as designation_name_en, des.name_ur as designation_name_ur
+      FROM users u
+      LEFT JOIN departments d ON u.department_id = d.id
+      LEFT JOIN user_roles ur ON u.role_id = ur.id
+      LEFT JOIN designations des ON u.designation_id = des.id
+      WHERE u.id = ?
     `, [req.params.id]);
 
     if (!rows.length) {
@@ -1651,7 +1670,11 @@ router.get('/users/:id', requirePermission('users'), async (req, res) => {
         ...u,
         salary: parseFloat(u.salary) || 0,
         has_salary: Boolean(u.has_salary),
-        permissions: perms
+        permissions: perms,
+        department_name: u.department_name_en || '',
+        role_title: u.role_name_en || u.role,
+        designation: u.designation_name_en || u.designation || '',
+        designation_ur: u.designation_name_ur || u.designation_ur || ''
       }
     });
   } catch (err) {
@@ -1672,7 +1695,17 @@ router.get('/users/:id/id-card', async (req, res) => {
       return res.status(403).json({ success: false, message: 'Access denied: Insufficient permissions to view staff identity card.' });
     }
 
-    const [rows] = await db.query('SELECT * FROM users WHERE id = ?', [userId]);
+    const [rows] = await db.query(`
+      SELECT u.*,
+             d.name_en as department_name_en, d.name_ur as department_name_ur, d.code as department_code,
+             ur.name_en as role_name_en, ur.name_ur as role_name_ur,
+             des.name_en as designation_name_en, des.name_ur as designation_name_ur
+      FROM users u
+      LEFT JOIN departments d ON u.department_id = d.id
+      LEFT JOIN user_roles ur ON u.role_id = ur.id
+      LEFT JOIN designations des ON u.designation_id = des.id
+      WHERE u.id = ?
+    `, [userId]);
     if (!rows.length) {
       return res.status(404).json({ success: false, message: 'Staff member not found.' });
     }
@@ -1708,22 +1741,26 @@ router.get('/users/:id/id-card', async (req, res) => {
     const empId = `EMP-QSF-${String(staff.id).padStart(3, '0')}`;
 
     const roleTitles = {
-      superadmin: 'Super Administrator / Executive Director',
+      superadmin: 'Super Administrator',
       admin: 'Administrative Officer',
       manager: 'Operations & Program Manager',
       accountant: 'Accounts & Finance Officer',
       staff: 'Field Staff / Welfare Officer'
     };
     const roleTitlesUr = {
-      superadmin: 'سپر ایڈمنسٹریٹر / ایگزیکٹو ڈائریکٹر',
+      superadmin: 'سپر ایڈمنسٹریٹر',
       admin: 'ایڈمنسٹریٹو آفیسر',
       manager: 'پروگرام مینیجر',
       accountant: 'اکاؤنٹس و فنانس آفیسر',
       staff: 'فیلڈ ویلفیئر آفیسر'
     };
 
-    const finalDesignationEn = staff.designation || roleTitles[staff.role] || 'Staff Officer';
-    const finalDesignationUr = staff.designation_ur || roleTitlesUr[staff.role] || 'ملازم و عملہ';
+    const finalDeptEn = staff.department_name_en || 'Administration & Operations';
+    const finalDeptUr = staff.department_name_ur || 'شعبہ انتظامیہ و آپریشنز';
+    const finalRoleEn = staff.role_name_en || roleTitles[staff.role] || staff.role;
+    const finalRoleUr = staff.role_name_ur || roleTitlesUr[staff.role] || 'ملازم و عملہ';
+    const finalDesignationEn = staff.designation_name_en || staff.designation || finalRoleEn;
+    const finalDesignationUr = staff.designation_name_ur || staff.designation_ur || finalRoleUr;
 
     return res.json({
       success: true,
@@ -1735,9 +1772,16 @@ router.get('/users/:id/id-card', async (req, res) => {
         full_name: staff.full_name,
         email: staff.email,
         phone: staff.phone || 'N/A',
+        department_id: staff.department_id,
+        department: finalDeptEn,
+        department_en: finalDeptEn,
+        department_ur: finalDeptUr,
+        department_code: staff.department_code || 'ADMIN',
+        role_id: staff.role_id,
         role: staff.role || 'staff',
-        role_title_en: roleTitles[staff.role] || staff.role,
-        role_title_ur: roleTitlesUr[staff.role] || 'ملازم و عملہ',
+        role_title_en: finalRoleEn,
+        role_title_ur: finalRoleUr,
+        designation_id: staff.designation_id,
         designation: finalDesignationEn,
         designation_ur: finalDesignationUr,
         signature_id: staff.signature_id,
@@ -1788,7 +1832,8 @@ router.post('/users', requirePermission('users'), (req, res, next) => {
   try {
     const {
       username, email, password, full_name, role, designation, designation_ur, phone,
-      signature_id, salary, has_salary, permissions, is_active
+      signature_id, salary, has_salary, permissions, is_active,
+      department_id, role_id, designation_id
     } = req.body;
 
     if (!username || !email || !password || !full_name) {
@@ -1836,20 +1881,43 @@ router.post('/users', requirePermission('users'), (req, res, next) => {
     const permsVal = Array.isArray(permissions) ? JSON.stringify(permissions) : (permissions ? String(permissions) : '[]');
     const isActiveVal = (is_active === false || is_active === 0 || is_active === '0' || is_active === 'false') ? 0 : 1;
     const sigIdVal = signature_id ? parseInt(signature_id, 10) : null;
+    const deptIdVal = department_id ? parseInt(department_id, 10) : null;
+    const roleIdVal = role_id ? parseInt(role_id, 10) : null;
+    const desIdVal = designation_id ? parseInt(designation_id, 10) : null;
+
+    let finalDesEn = designation ? designation.trim() : '';
+    let finalDesUr = designation_ur ? designation_ur.trim() : '';
+    if (desIdVal && (!finalDesEn || !finalDesUr)) {
+      const [desRows] = await db.query('SELECT name_en, name_ur FROM designations WHERE id = ?', [desIdVal]);
+      if (desRows.length) {
+        if (!finalDesEn) finalDesEn = desRows[0].name_en;
+        if (!finalDesUr) finalDesUr = desRows[0].name_ur;
+      }
+    }
+
+    let finalRoleKey = role || 'admin';
+    if (roleIdVal && !role) {
+      const [rRows] = await db.query('SELECT role_key FROM user_roles WHERE id = ?', [roleIdVal]);
+      if (rRows.length) finalRoleKey = rRows[0].role_key;
+    }
 
     const [result] = await db.query(`
       INSERT INTO users (
-        username, email, password_hash, full_name, role, designation, designation_ur, phone, photo_url,
+        username, email, password_hash, full_name, role, department_id, role_id, designation_id,
+        designation, designation_ur, phone, photo_url,
         signature_id, salary, has_salary, permissions, is_active
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       username.trim(),
       email.trim(),
       password_hash,
       full_name.trim(),
-      role || 'admin',
-      designation ? designation.trim() : '',
-      designation_ur ? designation_ur.trim() : '',
+      finalRoleKey,
+      deptIdVal,
+      roleIdVal,
+      desIdVal,
+      finalDesEn,
+      finalDesUr,
       phone ? phone.trim() : '',
       photoUrl,
       sigIdVal,
@@ -1866,7 +1934,7 @@ router.post('/users', requirePermission('users'), (req, res, next) => {
         'CREATE_USER',
         'user',
         String(result.insertId),
-        JSON.stringify({ username, email, full_name, role, designation, designation_ur, has_salary: hasSalaryVal, salary: salaryVal, photo_url: photoUrl })
+        JSON.stringify({ username, email, full_name, role: finalRoleKey, department_id: deptIdVal, role_id: roleIdVal, designation_id: desIdVal, photo_url: photoUrl })
       ]
     ).catch(() => {});
 
@@ -1894,7 +1962,8 @@ router.put('/users/:id', requirePermission('users'), (req, res, next) => {
     const userId = req.params.id;
     const {
       username, email, password, full_name, role, designation, designation_ur, phone,
-      signature_id, salary, has_salary, permissions, is_active
+      signature_id, salary, has_salary, permissions, is_active,
+      department_id, role_id, designation_id
     } = req.body;
 
     const [userRows] = await db.query('SELECT * FROM users WHERE id = ?', [userId]);
@@ -1930,12 +1999,34 @@ router.put('/users/:id', requirePermission('users'), (req, res, next) => {
     const permsVal = permissions !== undefined ? (Array.isArray(permissions) ? JSON.stringify(permissions) : String(permissions)) : userRows[0].permissions;
     const isActiveVal = is_active !== undefined ? ((is_active === false || is_active === 0 || is_active === '0' || is_active === 'false') ? 0 : 1) : userRows[0].is_active;
     const sigIdVal = signature_id !== undefined ? (signature_id ? parseInt(signature_id, 10) : null) : userRows[0].signature_id;
+    const deptIdVal = department_id !== undefined ? (department_id ? parseInt(department_id, 10) : null) : userRows[0].department_id;
+    const roleIdVal = role_id !== undefined ? (role_id ? parseInt(role_id, 10) : null) : userRows[0].role_id;
+    const desIdVal = designation_id !== undefined ? (designation_id ? parseInt(designation_id, 10) : null) : userRows[0].designation_id;
+
+    let finalDesEn = designation !== undefined ? designation.trim() : userRows[0].designation;
+    let finalDesUr = designation_ur !== undefined ? designation_ur.trim() : userRows[0].designation_ur;
+    if (desIdVal && (!finalDesEn || !finalDesUr)) {
+      const [desRows] = await db.query('SELECT name_en, name_ur FROM designations WHERE id = ?', [desIdVal]);
+      if (desRows.length) {
+        if (!finalDesEn) finalDesEn = desRows[0].name_en;
+        if (!finalDesUr) finalDesUr = desRows[0].name_ur;
+      }
+    }
+
+    let finalRoleKey = role || userRows[0].role;
+    if (roleIdVal && !role) {
+      const [rRows] = await db.query('SELECT role_key FROM user_roles WHERE id = ?', [roleIdVal]);
+      if (rRows.length) finalRoleKey = rRows[0].role_key;
+    }
 
     let updateFields = `
       username = COALESCE(?, username),
       email = COALESCE(?, email),
       full_name = COALESCE(?, full_name),
       role = COALESCE(?, role),
+      department_id = ?,
+      role_id = ?,
+      designation_id = ?,
       designation = ?,
       designation_ur = ?,
       phone = ?,
@@ -1950,9 +2041,12 @@ router.put('/users/:id', requirePermission('users'), (req, res, next) => {
       username ? username.trim() : null,
       email ? email.trim() : null,
       full_name ? full_name.trim() : null,
-      role || null,
-      designation !== undefined ? designation.trim() : userRows[0].designation,
-      designation_ur !== undefined ? designation_ur.trim() : userRows[0].designation_ur,
+      finalRoleKey,
+      deptIdVal,
+      roleIdVal,
+      desIdVal,
+      finalDesEn,
+      finalDesUr,
       phone !== undefined ? phone.trim() : userRows[0].phone,
       sigIdVal,
       photoUrl,
@@ -2040,26 +2134,36 @@ router.delete('/users/:id', requirePermission('users'), async (req, res) => {
 router.get('/volunteers', requirePermission('volunteers'), async (req, res) => {
   try {
     const { status, type, search } = req.query;
-    let sql = 'SELECT * FROM volunteer_applications WHERE 1=1';
+    let sql = `
+      SELECT v.*,
+             d.name_en as department_name_en, d.name_ur as department_name_ur, d.code as department_code,
+             ur.name_en as role_name_en, ur.name_ur as role_name_ur,
+             des.name_en as designation_name_en, des.name_ur as designation_name_ur
+      FROM volunteer_applications v
+      LEFT JOIN departments d ON v.department_id = d.id
+      LEFT JOIN user_roles ur ON v.role_id = ur.id
+      LEFT JOIN designations des ON v.designation_id = des.id
+      WHERE 1=1
+    `;
     const params = [];
 
     if (status && status !== 'all') {
-      sql += ' AND status = ?';
+      sql += ' AND v.status = ?';
       params.push(status);
     }
 
     if (type && type !== 'all') {
-      sql += ' AND application_type = ?';
+      sql += ' AND v.application_type = ?';
       params.push(type);
     }
 
     if (search && search.trim()) {
       const q = `%${search.trim()}%`;
-      sql += ' AND (full_name LIKE ? OR email LIKE ? OR phone LIKE ? OR city LIKE ? OR reference_no LIKE ? OR relevant_skills LIKE ?)';
+      sql += ' AND (v.full_name LIKE ? OR v.email LIKE ? OR v.phone LIKE ? OR v.city LIKE ? OR v.reference_no LIKE ? OR v.relevant_skills LIKE ?)';
       params.push(q, q, q, q, q, q);
     }
 
-    sql += ' ORDER BY created_at DESC';
+    sql += ' ORDER BY v.created_at DESC';
 
     const [rows] = await db.query(sql, params);
 
@@ -2100,9 +2204,15 @@ router.get('/volunteers', requirePermission('volunteers'), async (req, res) => {
 router.get('/volunteers/:id', requirePermission('volunteers'), async (req, res) => {
   try {
     const [rows] = await db.query(`
-      SELECT v.*, u.full_name as reviewer_name, u.username as reviewer_username
+      SELECT v.*, u.full_name as reviewer_name, u.username as reviewer_username,
+             d.name_en as department_name_en, d.name_ur as department_name_ur, d.code as department_code,
+             ur.name_en as role_name_en, ur.name_ur as role_name_ur,
+             des.name_en as designation_name_en, des.name_ur as designation_name_ur
       FROM volunteer_applications v
       LEFT JOIN users u ON v.reviewed_by = u.id
+      LEFT JOIN departments d ON v.department_id = d.id
+      LEFT JOIN user_roles ur ON v.role_id = ur.id
+      LEFT JOIN designations des ON v.designation_id = des.id
       WHERE v.id = ?
     `, [req.params.id]);
 
@@ -2193,7 +2303,17 @@ router.delete('/volunteers/:id', requirePermission('volunteers'), async (req, re
 router.get('/volunteers/:id/id-card', requirePermission('volunteers'), async (req, res) => {
   try {
     const volId = req.params.id;
-    const [rows] = await db.query('SELECT * FROM volunteer_applications WHERE id = ?', [volId]);
+    const [rows] = await db.query(`
+      SELECT v.*,
+             d.name_en as department_name_en, d.name_ur as department_name_ur, d.code as department_code,
+             ur.name_en as role_name_en, ur.name_ur as role_name_ur,
+             des.name_en as designation_name_en, des.name_ur as designation_name_ur
+      FROM volunteer_applications v
+      LEFT JOIN departments d ON v.department_id = d.id
+      LEFT JOIN user_roles ur ON v.role_id = ur.id
+      LEFT JOIN designations des ON v.designation_id = des.id
+      WHERE v.id = ?
+    `, [volId]);
     if (!rows.length) {
       return res.status(404).json({ success: false, message: 'Volunteer application not found.' });
     }
@@ -2226,17 +2346,21 @@ router.get('/volunteers/:id/id-card', requirePermission('volunteers'), async (re
     validUntil.setFullYear(validUntil.getFullYear() + 2);
 
     const isIntern = vol.application_type === 'internship';
-    const roleTitleEn = isIntern 
+    const defaultRoleTitleEn = isIntern 
       ? 'Student Intern / Research Scholar'
       : 'Honorary Volunteer / Community Ambassador';
-    const roleTitleUr = isIntern
+    const defaultRoleTitleUr = isIntern
       ? 'طالب علم انٹرن / ریسرچ اسکالر'
       : 'فلاحی رضاکار / اعزازی سفیر';
+    const roleTitleEn = vol.role_name_en || defaultRoleTitleEn;
+    const roleTitleUr = vol.role_name_ur || defaultRoleTitleUr;
     const badgeLabelEn = isIntern ? 'ACADEMIC INTERN' : 'HONORARY VOLUNTEER';
     const badgeLabelUr = isIntern ? 'طالب علم انٹرن' : 'فلاحی رضاکار';
 
-    const finalDesignationEn = vol.designation || roleTitleEn;
-    const finalDesignationUr = vol.designation_ur || roleTitleUr;
+    const finalDeptEn = vol.department_name_en || (isIntern ? 'Academic & Community Outreach' : 'Volunteer Network & Field Operations');
+    const finalDeptUr = vol.department_name_ur || (isIntern ? 'شعبہ اکیڈمک و ریسرچ انٹرنشپ' : 'شعبہ رضاکار و فیلڈ رابطہ عامہ');
+    const finalDesignationEn = vol.designation_name_en || vol.designation || roleTitleEn;
+    const finalDesignationUr = vol.designation_name_ur || vol.designation_ur || roleTitleUr;
 
     return res.json({
       success: true,
@@ -2249,10 +2373,18 @@ router.get('/volunteers/:id/id-card', requirePermission('volunteers'), async (re
         phone: vol.phone || 'N/A',
         city: vol.city || 'Parachinar / Islamabad',
         application_type: vol.application_type,
+        department_id: vol.department_id,
+        department: finalDeptEn,
+        department_en: finalDeptEn,
+        department_ur: finalDeptUr,
+        department_code: vol.department_code || 'VOLUNTEER',
+        role_id: vol.role_id,
+        role: vol.role || (isIntern ? 'intern' : 'volunteer'),
         role_title_en: roleTitleEn,
         role_title_ur: roleTitleUr,
         badge_label_en: badgeLabelEn,
         badge_label_ur: badgeLabelUr,
+        designation_id: vol.designation_id,
         designation: finalDesignationEn,
         designation_ur: finalDesignationUr,
         signature_id: vol.signature_id,
@@ -2308,7 +2440,8 @@ router.post('/volunteers', requirePermission('volunteers'), (req, res, next) => 
       full_name, email, phone, city, application_type,
       designation, designation_ur, signature_id,
       areas_of_interest, relevant_skills, availability,
-      motivation_message, status, admin_notes
+      motivation_message, status, admin_notes,
+      department_id, role_id, designation_id, role
     } = req.body;
 
     if (!full_name || !phone) {
@@ -2337,24 +2470,42 @@ router.post('/volunteers', requirePermission('volunteers'), (req, res, next) => 
     const validStatus = ['pending', 'under_review', 'accepted', 'rejected'].includes(status) ? status : 'accepted';
     const validAppType = ['volunteer', 'internship'].includes(application_type) ? application_type : 'volunteer';
     const sigIdVal = signature_id ? parseInt(signature_id, 10) : null;
+    const deptIdVal = department_id ? parseInt(department_id, 10) : null;
+    const roleIdVal = role_id ? parseInt(role_id, 10) : null;
+    const desIdVal = designation_id ? parseInt(designation_id, 10) : null;
+
+    let finalDesEn = designation ? designation.trim() : '';
+    let finalDesUr = designation_ur ? designation_ur.trim() : '';
+    if (desIdVal && (!finalDesEn || !finalDesUr)) {
+      const [desRows] = await db.query('SELECT name_en, name_ur FROM designations WHERE id = ?', [desIdVal]);
+      if (desRows.length) {
+        if (!finalDesEn) finalDesEn = desRows[0].name_en;
+        if (!finalDesUr) finalDesUr = desRows[0].name_ur;
+      }
+    }
 
     const [result] = await db.query(`
       INSERT INTO volunteer_applications (
         reference_no, full_name, email, phone, city,
+        department_id, role_id, role, designation_id,
         application_type, designation, designation_ur, signature_id,
         areas_of_interest, relevant_skills,
         availability, motivation_message, status, admin_notes,
         photo_url, reviewed_by, reviewed_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
     `, [
       refNo,
       full_name.trim(),
       email ? email.trim() : '',
       phone.trim(),
       city ? city.trim() : 'Parachinar / Islamabad',
+      deptIdVal,
+      roleIdVal,
+      role || (validAppType === 'internship' ? 'intern' : 'volunteer'),
+      desIdVal,
       validAppType,
-      designation ? designation.trim() : null,
-      designation_ur ? designation_ur.trim() : null,
+      finalDesEn || null,
+      finalDesUr || null,
       sigIdVal,
       areas_of_interest ? (Array.isArray(areas_of_interest) ? areas_of_interest.join(', ') : String(areas_of_interest)) : 'Community Welfare & Relief',
       relevant_skills ? String(relevant_skills).trim() : '',
@@ -2374,7 +2525,7 @@ router.post('/volunteers', requirePermission('volunteers'), (req, res, next) => 
         'CREATE_VOLUNTEER',
         'volunteer',
         String(result.insertId),
-        JSON.stringify({ full_name, phone, status: validStatus, refNo, photoUrl })
+        JSON.stringify({ full_name, phone, status: validStatus, refNo, photoUrl, department_id: deptIdVal, role_id: roleIdVal, designation_id: desIdVal })
       ]
     ).catch(() => {});
 
@@ -2409,7 +2560,8 @@ router.put('/volunteers/:id', requirePermission('volunteers'), (req, res, next) 
       full_name, email, phone, city, application_type,
       designation, designation_ur, signature_id,
       areas_of_interest, relevant_skills, availability,
-      motivation_message, status, admin_notes
+      motivation_message, status, admin_notes,
+      department_id, role_id, designation_id, role
     } = req.body;
 
     let photoUrl = rows[0].photo_url;
@@ -2426,6 +2578,19 @@ router.put('/volunteers/:id', requirePermission('volunteers'), (req, res, next) 
       : rows[0].areas_of_interest;
 
     const sigIdVal = signature_id !== undefined ? (signature_id ? parseInt(signature_id, 10) : null) : rows[0].signature_id;
+    const deptIdVal = department_id !== undefined ? (department_id ? parseInt(department_id, 10) : null) : rows[0].department_id;
+    const roleIdVal = role_id !== undefined ? (role_id ? parseInt(role_id, 10) : null) : rows[0].role_id;
+    const desIdVal = designation_id !== undefined ? (designation_id ? parseInt(designation_id, 10) : null) : rows[0].designation_id;
+
+    let finalDesEn = designation !== undefined ? (designation ? designation.trim() : null) : rows[0].designation;
+    let finalDesUr = designation_ur !== undefined ? (designation_ur ? designation_ur.trim() : null) : rows[0].designation_ur;
+    if (desIdVal && (!finalDesEn || !finalDesUr)) {
+      const [desRows] = await db.query('SELECT name_en, name_ur FROM designations WHERE id = ?', [desIdVal]);
+      if (desRows.length) {
+        if (!finalDesEn) finalDesEn = desRows[0].name_en;
+        if (!finalDesUr) finalDesUr = desRows[0].name_ur;
+      }
+    }
 
     await db.query(`
       UPDATE volunteer_applications SET
@@ -2433,6 +2598,10 @@ router.put('/volunteers/:id', requirePermission('volunteers'), (req, res, next) 
         email = COALESCE(?, email),
         phone = COALESCE(?, phone),
         city = COALESCE(?, city),
+        department_id = ?,
+        role_id = ?,
+        role = COALESCE(?, role),
+        designation_id = ?,
         application_type = COALESCE(?, application_type),
         designation = ?,
         designation_ur = ?,
@@ -2451,9 +2620,13 @@ router.put('/volunteers/:id', requirePermission('volunteers'), (req, res, next) 
       email ? email.trim() : null,
       phone ? phone.trim() : null,
       city ? city.trim() : null,
+      deptIdVal,
+      roleIdVal,
+      role || null,
+      desIdVal,
       application_type || null,
-      designation !== undefined ? (designation ? designation.trim() : null) : rows[0].designation,
-      designation_ur !== undefined ? (designation_ur ? designation_ur.trim() : null) : rows[0].designation_ur,
+      finalDesEn,
+      finalDesUr,
       sigIdVal,
       areasVal,
       relevant_skills !== undefined ? relevant_skills.trim() : null,
@@ -2865,5 +3038,567 @@ router.put('/accounts/donations/:id/refund', requirePermission('accounts'), asyn
   }
 });
 
+// ==================== ORGANIZATION SETUP: DEPARTMENTS ====================
+// GET /api/admin/departments
+router.get('/departments', requirePermission('settings'), async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT d.*,
+             (SELECT COUNT(*) FROM users u WHERE u.department_id = d.id) as staff_count,
+             (SELECT COUNT(*) FROM volunteer_applications v WHERE v.department_id = d.id) as volunteer_count
+      FROM departments d
+      ORDER BY d.sort_order ASC, d.id ASC
+    `);
+    return res.json({ success: true, departments: rows });
+  } catch (err) {
+    console.error('[Departments GET]', err);
+    return res.status(500).json({ success: false, message: 'Failed to fetch departments.' });
+  }
+});
+
+// GET /api/admin/departments/:id
+router.get('/departments/:id', requirePermission('settings'), async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM departments WHERE id = ?', [req.params.id]);
+    if (!rows.length) return res.status(404).json({ success: false, message: 'Department not found.' });
+    
+    // Fetch staff in this department
+    const [staff] = await db.query(`
+      SELECT id, full_name, username, role, designation, phone, photo_url, is_active 
+      FROM users WHERE department_id = ?
+    `, [req.params.id]);
+
+    return res.json({ success: true, department: rows[0], staff });
+  } catch (err) {
+    console.error('[Department GET ID]', err);
+    return res.status(500).json({ success: false, message: 'Failed to retrieve department.' });
+  }
+});
+
+// POST /api/admin/departments
+router.post('/departments', requirePermission('settings'), async (req, res) => {
+  try {
+    const { name_en, name_ur, code, description, sort_order, is_active } = req.body;
+    if (!name_en || !name_ur) {
+      return res.status(400).json({ success: false, message: 'Department name in English and Urdu are required.' });
+    }
+
+    const cleanCode = (code ? code.trim().toUpperCase() : name_en.replace(/[^a-zA-Z0-9]/g, '_').toUpperCase().slice(0, 20)) || 'DEPT';
+    
+    // Check duplicate code
+    const [dup] = await db.query('SELECT id FROM departments WHERE code = ? LIMIT 1', [cleanCode]);
+    if (dup.length > 0) {
+      return res.status(400).json({ success: false, message: `Department code '${cleanCode}' is already in use.` });
+    }
+
+    const [result] = await db.query(`
+      INSERT INTO departments (code, name_en, name_ur, description, sort_order, is_active)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [
+      cleanCode,
+      name_en.trim(),
+      name_ur.trim(),
+      description ? description.trim() : '',
+      parseInt(sort_order, 10) || 0,
+      is_active !== undefined ? (is_active ? 1 : 0) : 1
+    ]);
+
+    await db.query(
+      'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
+      [req.session.user?.id, 'CREATE_DEPARTMENT', 'department', String(result.insertId), JSON.stringify({ code: cleanCode, name_en })]
+    ).catch(() => {});
+
+    return res.json({
+      success: true,
+      id: result.insertId,
+      message: `Department '${name_en}' created successfully!`
+    });
+  } catch (err) {
+    console.error('[Department POST]', err);
+    return res.status(500).json({ success: false, message: 'Failed to create department.' });
+  }
+});
+
+// PUT /api/admin/departments/:id
+router.put('/departments/:id', requirePermission('settings'), async (req, res) => {
+  try {
+    const deptId = req.params.id;
+    const { name_en, name_ur, code, description, sort_order, is_active } = req.body;
+
+    const [rows] = await db.query('SELECT * FROM departments WHERE id = ?', [deptId]);
+    if (!rows.length) return res.status(404).json({ success: false, message: 'Department not found.' });
+
+    if (code) {
+      const cleanCode = code.trim().toUpperCase();
+      const [dup] = await db.query('SELECT id FROM departments WHERE code = ? AND id != ? LIMIT 1', [cleanCode, deptId]);
+      if (dup.length > 0) {
+        return res.status(400).json({ success: false, message: `Department code '${cleanCode}' is already used by another department.` });
+      }
+    }
+
+    await db.query(`
+      UPDATE departments SET
+        name_en = COALESCE(?, name_en),
+        name_ur = COALESCE(?, name_ur),
+        code = COALESCE(?, code),
+        description = COALESCE(?, description),
+        sort_order = COALESCE(?, sort_order),
+        is_active = COALESCE(?, is_active),
+        updated_at = NOW()
+      WHERE id = ?
+    `, [
+      name_en ? name_en.trim() : null,
+      name_ur ? name_ur.trim() : null,
+      code ? code.trim().toUpperCase() : null,
+      description !== undefined ? description.trim() : null,
+      sort_order !== undefined ? parseInt(sort_order, 10) : null,
+      is_active !== undefined ? (is_active ? 1 : 0) : null,
+      deptId
+    ]);
+
+    await db.query(
+      'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
+      [req.session.user?.id, 'UPDATE_DEPARTMENT', 'department', String(deptId), JSON.stringify({ name_en, code })]
+    ).catch(() => {});
+
+    return res.json({ success: true, message: 'Department updated successfully.' });
+  } catch (err) {
+    console.error('[Department PUT]', err);
+    return res.status(500).json({ success: false, message: 'Failed to update department.' });
+  }
+});
+
+// DELETE /api/admin/departments/:id
+router.delete('/departments/:id', requirePermission('settings'), async (req, res) => {
+  try {
+    const deptId = req.params.id;
+    const [rows] = await db.query('SELECT name_en FROM departments WHERE id = ?', [deptId]);
+    if (!rows.length) return res.status(404).json({ success: false, message: 'Department not found.' });
+
+    // Set department_id = NULL on linked users and volunteers
+    await db.query('UPDATE users SET department_id = NULL WHERE department_id = ?', [deptId]);
+    await db.query('UPDATE volunteer_applications SET department_id = NULL WHERE department_id = ?', [deptId]);
+    await db.query('UPDATE designations SET department_id = NULL WHERE department_id = ?', [deptId]);
+    await db.query('DELETE FROM departments WHERE id = ?', [deptId]);
+
+    await db.query(
+      'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
+      [req.session.user?.id, 'DELETE_DEPARTMENT', 'department', String(deptId), JSON.stringify({ name_en: rows[0].name_en })]
+    ).catch(() => {});
+
+    return res.json({ success: true, message: 'Department removed successfully.' });
+  } catch (err) {
+    console.error('[Department DELETE]', err);
+    return res.status(500).json({ success: false, message: 'Failed to delete department.' });
+  }
+});
+
+// ==================== ORGANIZATION SETUP: USER ROLES ====================
+// GET /api/admin/roles
+router.get('/roles', requirePermission('settings'), async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT ur.*,
+             (SELECT COUNT(*) FROM users u WHERE u.role_id = ur.id OR u.role = ur.role_key) as staff_count,
+             (SELECT COUNT(*) FROM volunteer_applications v WHERE v.role_id = ur.id OR v.role = ur.role_key) as volunteer_count
+      FROM user_roles ur
+      ORDER BY ur.id ASC
+    `);
+    return res.json({ success: true, roles: rows });
+  } catch (err) {
+    console.error('[Roles GET]', err);
+    return res.status(500).json({ success: false, message: 'Failed to fetch roles.' });
+  }
+});
+
+// GET /api/admin/roles/:id
+router.get('/roles/:id', requirePermission('settings'), async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM user_roles WHERE id = ?', [req.params.id]);
+    if (!rows.length) return res.status(404).json({ success: false, message: 'Role not found.' });
+    return res.json({ success: true, role: rows[0] });
+  } catch (err) {
+    console.error('[Role GET ID]', err);
+    return res.status(500).json({ success: false, message: 'Failed to retrieve role.' });
+  }
+});
+
+// POST /api/admin/roles
+router.post('/roles', requirePermission('settings'), async (req, res) => {
+  try {
+    const { role_key, name_en, name_ur, description, is_active } = req.body;
+    if (!name_en || !name_ur) {
+      return res.status(400).json({ success: false, message: 'Role name in English and Urdu are required.' });
+    }
+
+    const cleanKey = (role_key ? role_key.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_') : name_en.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_')) || 'role';
+    
+    // Check duplicates
+    const [dup] = await db.query('SELECT id FROM user_roles WHERE role_key = ? LIMIT 1', [cleanKey]);
+    if (dup.length > 0) {
+      return res.status(400).json({ success: false, message: `Role key '${cleanKey}' is already in use.` });
+    }
+
+    const [result] = await db.query(`
+      INSERT INTO user_roles (role_key, name_en, name_ur, description, is_system, is_active)
+      VALUES (?, ?, ?, ?, 0, ?)
+    `, [
+      cleanKey,
+      name_en.trim(),
+      name_ur.trim(),
+      description ? description.trim() : '',
+      is_active !== undefined ? (is_active ? 1 : 0) : 1
+    ]);
+
+    await db.query(
+      'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
+      [req.session.user?.id, 'CREATE_ROLE', 'role', String(result.insertId), JSON.stringify({ role_key: cleanKey, name_en })]
+    ).catch(() => {});
+
+    return res.json({
+      success: true,
+      id: result.insertId,
+      message: `Role '${name_en}' created successfully!`
+    });
+  } catch (err) {
+    console.error('[Role POST]', err);
+    return res.status(500).json({ success: false, message: 'Failed to create role.' });
+  }
+});
+
+// PUT /api/admin/roles/:id
+router.put('/roles/:id', requirePermission('settings'), async (req, res) => {
+  try {
+    const roleId = req.params.id;
+    const { name_en, name_ur, description, is_active } = req.body;
+
+    const [rows] = await db.query('SELECT * FROM user_roles WHERE id = ?', [roleId]);
+    if (!rows.length) return res.status(404).json({ success: false, message: 'Role not found.' });
+
+    await db.query(`
+      UPDATE user_roles SET
+        name_en = COALESCE(?, name_en),
+        name_ur = COALESCE(?, name_ur),
+        description = COALESCE(?, description),
+        is_active = COALESCE(?, is_active),
+        updated_at = NOW()
+      WHERE id = ?
+    `, [
+      name_en ? name_en.trim() : null,
+      name_ur ? name_ur.trim() : null,
+      description !== undefined ? description.trim() : null,
+      is_active !== undefined ? (is_active ? 1 : 0) : null,
+      roleId
+    ]);
+
+    return res.json({ success: true, message: 'User role updated successfully.' });
+  } catch (err) {
+    console.error('[Role PUT]', err);
+    return res.status(500).json({ success: false, message: 'Failed to update role.' });
+  }
+});
+
+// DELETE /api/admin/roles/:id
+router.delete('/roles/:id', requirePermission('settings'), async (req, res) => {
+  try {
+    const roleId = req.params.id;
+    const [rows] = await db.query('SELECT role_key, name_en, is_system FROM user_roles WHERE id = ?', [roleId]);
+    if (!rows.length) return res.status(404).json({ success: false, message: 'Role not found.' });
+
+    if (rows[0].is_system === 1) {
+      return res.status(400).json({ success: false, message: `System role '${rows[0].name_en}' cannot be deleted as it is vital for system permissions.` });
+    }
+
+    await db.query('UPDATE users SET role_id = NULL WHERE role_id = ?', [roleId]);
+    await db.query('UPDATE volunteer_applications SET role_id = NULL WHERE role_id = ?', [roleId]);
+    await db.query('DELETE FROM user_roles WHERE id = ?', [roleId]);
+
+    return res.json({ success: true, message: 'Role deleted successfully.' });
+  } catch (err) {
+    console.error('[Role DELETE]', err);
+    return res.status(500).json({ success: false, message: 'Failed to delete role.' });
+  }
+});
+
+// ==================== ORGANIZATION SETUP: DESIGNATIONS ====================
+// GET /api/admin/designations
+router.get('/designations', requirePermission('settings'), async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT des.*,
+             d.name_en as department_name_en, d.name_ur as department_name_ur, d.code as department_code,
+             (SELECT COUNT(*) FROM users u WHERE u.designation_id = des.id) as staff_count,
+             (SELECT COUNT(*) FROM volunteer_applications v WHERE v.designation_id = des.id) as volunteer_count
+      FROM designations des
+      LEFT JOIN departments d ON des.department_id = d.id
+      ORDER BY des.sort_order ASC, des.id ASC
+    `);
+    return res.json({ success: true, designations: rows });
+  } catch (err) {
+    console.error('[Designations GET]', err);
+    return res.status(500).json({ success: false, message: 'Failed to fetch designations.' });
+  }
+});
+
+// GET /api/admin/designations/:id
+router.get('/designations/:id', requirePermission('settings'), async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT des.*, d.name_en as department_name_en, d.name_ur as department_name_ur
+      FROM designations des
+      LEFT JOIN departments d ON des.department_id = d.id
+      WHERE des.id = ?
+    `, [req.params.id]);
+    if (!rows.length) return res.status(404).json({ success: false, message: 'Designation not found.' });
+    return res.json({ success: true, designation: rows[0] });
+  } catch (err) {
+    console.error('[Designation GET ID]', err);
+    return res.status(500).json({ success: false, message: 'Failed to retrieve designation.' });
+  }
+});
+
+// POST /api/admin/designations
+router.post('/designations', requirePermission('settings'), async (req, res) => {
+  try {
+    const { name_en, name_ur, department_id, description, sort_order, is_active } = req.body;
+    if (!name_en || !name_ur) {
+      return res.status(400).json({ success: false, message: 'Designation title in English and Urdu are required.' });
+    }
+
+    const deptIdVal = department_id ? parseInt(department_id, 10) : null;
+
+    const [result] = await db.query(`
+      INSERT INTO designations (name_en, name_ur, department_id, description, sort_order, is_active)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [
+      name_en.trim(),
+      name_ur.trim(),
+      deptIdVal,
+      description ? description.trim() : '',
+      parseInt(sort_order, 10) || 0,
+      is_active !== undefined ? (is_active ? 1 : 0) : 1
+    ]);
+
+    await db.query(
+      'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
+      [req.session.user?.id, 'CREATE_DESIGNATION', 'designation', String(result.insertId), JSON.stringify({ name_en, department_id: deptIdVal })]
+    ).catch(() => {});
+
+    return res.json({
+      success: true,
+      id: result.insertId,
+      message: `Designation '${name_en}' created successfully!`
+    });
+  } catch (err) {
+    console.error('[Designation POST]', err);
+    return res.status(500).json({ success: false, message: 'Failed to create designation.' });
+  }
+});
+
+// PUT /api/admin/designations/:id
+router.put('/designations/:id', requirePermission('settings'), async (req, res) => {
+  try {
+    const desId = req.params.id;
+    const { name_en, name_ur, department_id, description, sort_order, is_active } = req.body;
+
+    const [rows] = await db.query('SELECT * FROM designations WHERE id = ?', [desId]);
+    if (!rows.length) return res.status(404).json({ success: false, message: 'Designation not found.' });
+
+    const deptIdVal = department_id !== undefined ? (department_id ? parseInt(department_id, 10) : null) : rows[0].department_id;
+
+    await db.query(`
+      UPDATE designations SET
+        name_en = COALESCE(?, name_en),
+        name_ur = COALESCE(?, name_ur),
+        department_id = ?,
+        description = COALESCE(?, description),
+        sort_order = COALESCE(?, sort_order),
+        is_active = COALESCE(?, is_active),
+        updated_at = NOW()
+      WHERE id = ?
+    `, [
+      name_en ? name_en.trim() : null,
+      name_ur ? name_ur.trim() : null,
+      deptIdVal,
+      description !== undefined ? description.trim() : null,
+      sort_order !== undefined ? parseInt(sort_order, 10) : null,
+      is_active !== undefined ? (is_active ? 1 : 0) : null,
+      desId
+    ]);
+
+    return res.json({ success: true, message: 'Designation updated successfully.' });
+  } catch (err) {
+    console.error('[Designation PUT]', err);
+    return res.status(500).json({ success: false, message: 'Failed to update designation.' });
+  }
+});
+
+// DELETE /api/admin/designations/:id
+router.delete('/designations/:id', requirePermission('settings'), async (req, res) => {
+  try {
+    const desId = req.params.id;
+    const [rows] = await db.query('SELECT name_en FROM designations WHERE id = ?', [desId]);
+    if (!rows.length) return res.status(404).json({ success: false, message: 'Designation not found.' });
+
+    await db.query('UPDATE users SET designation_id = NULL WHERE designation_id = ?', [desId]);
+    await db.query('UPDATE volunteer_applications SET designation_id = NULL WHERE designation_id = ?', [desId]);
+    await db.query('DELETE FROM designations WHERE id = ?', [desId]);
+
+    return res.json({ success: true, message: 'Designation deleted successfully.' });
+  } catch (err) {
+    console.error('[Designation DELETE]', err);
+    return res.status(500).json({ success: false, message: 'Failed to delete designation.' });
+  }
+});
+
+// ==================== ORGANIZATION SETUP: PROJECT CATEGORIES ====================
+// GET /api/admin/categories
+router.get('/categories', async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT c.*,
+             (SELECT COUNT(*) FROM projects p WHERE p.category_id = c.id) as projects_count,
+             (SELECT COUNT(*) FROM articles a WHERE a.category_id = c.id) as articles_count
+      FROM categories c
+      ORDER BY c.sort_order ASC, c.id ASC
+    `);
+    return res.json({ success: true, categories: rows });
+  } catch (err) {
+    console.error('[Categories GET]', err);
+    return res.status(500).json({ success: false, message: 'Failed to fetch categories.' });
+  }
+});
+
+// GET /api/admin/categories/:id
+router.get('/categories/:id', requirePermission('settings'), async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM categories WHERE id = ?', [req.params.id]);
+    if (!rows.length) return res.status(404).json({ success: false, message: 'Category not found.' });
+    return res.json({ success: true, category: rows[0] });
+  } catch (err) {
+    console.error('[Category GET ID]', err);
+    return res.status(500).json({ success: false, message: 'Failed to retrieve category.' });
+  }
+});
+
+// POST /api/admin/categories
+router.post('/categories', requirePermission('settings'), async (req, res) => {
+  try {
+    const { name_en, name_ur, slug, icon, description_en, description_ur, sort_order, is_active } = req.body;
+    if (!name_en || !name_ur) {
+      return res.status(400).json({ success: false, message: 'Category name in English and Urdu are required.' });
+    }
+
+    let cleanSlug = (slug ? slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-') : name_en.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-')) || 'category';
+    cleanSlug = cleanSlug.replace(/-+/g, '-').replace(/^-|-$/g, '');
+
+    // Check duplicate slug
+    const [dup] = await db.query('SELECT id FROM categories WHERE slug = ? LIMIT 1', [cleanSlug]);
+    if (dup.length > 0) {
+      cleanSlug = `${cleanSlug}-${Date.now().toString().slice(-4)}`;
+    }
+
+    const [result] = await db.query(`
+      INSERT INTO categories (slug, icon, name_en, name_ur, description_en, description_ur, sort_order, is_active)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+      cleanSlug,
+      icon ? icon.trim() : 'shapes',
+      name_en.trim(),
+      name_ur.trim(),
+      description_en ? description_en.trim() : '',
+      description_ur ? description_ur.trim() : '',
+      parseInt(sort_order, 10) || 0,
+      is_active !== undefined ? (is_active ? 1 : 0) : 1
+    ]);
+
+    await db.query(
+      'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
+      [req.session.user?.id, 'CREATE_CATEGORY', 'category', String(result.insertId), JSON.stringify({ slug: cleanSlug, name_en })]
+    ).catch(() => {});
+
+    return res.json({
+      success: true,
+      id: result.insertId,
+      message: `Project Category '${name_en}' created successfully!`
+    });
+  } catch (err) {
+    console.error('[Category POST]', err);
+    return res.status(500).json({ success: false, message: 'Failed to create category.' });
+  }
+});
+
+// PUT /api/admin/categories/:id
+router.put('/categories/:id', requirePermission('settings'), async (req, res) => {
+  try {
+    const catId = req.params.id;
+    const { name_en, name_ur, slug, icon, description_en, description_ur, sort_order, is_active } = req.body;
+
+    const [rows] = await db.query('SELECT * FROM categories WHERE id = ?', [catId]);
+    if (!rows.length) return res.status(404).json({ success: false, message: 'Category not found.' });
+
+    let cleanSlug = slug ? slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-') : null;
+    if (cleanSlug) {
+      const [dup] = await db.query('SELECT id FROM categories WHERE slug = ? AND id != ? LIMIT 1', [cleanSlug, catId]);
+      if (dup.length > 0) {
+        return res.status(400).json({ success: false, message: `Category slug '${cleanSlug}' is already used by another category.` });
+      }
+    }
+
+    await db.query(`
+      UPDATE categories SET
+        name_en = COALESCE(?, name_en),
+        name_ur = COALESCE(?, name_ur),
+        slug = COALESCE(?, slug),
+        icon = COALESCE(?, icon),
+        description_en = COALESCE(?, description_en),
+        description_ur = COALESCE(?, description_ur),
+        sort_order = COALESCE(?, sort_order),
+        is_active = COALESCE(?, is_active)
+      WHERE id = ?
+    `, [
+      name_en ? name_en.trim() : null,
+      name_ur ? name_ur.trim() : null,
+      cleanSlug,
+      icon ? icon.trim() : null,
+      description_en !== undefined ? description_en.trim() : null,
+      description_ur !== undefined ? description_ur.trim() : null,
+      sort_order !== undefined ? parseInt(sort_order, 10) : null,
+      is_active !== undefined ? (is_active ? 1 : 0) : null,
+      catId
+    ]);
+
+    return res.json({ success: true, message: 'Category updated successfully.' });
+  } catch (err) {
+    console.error('[Category PUT]', err);
+    return res.status(500).json({ success: false, message: 'Failed to update category.' });
+  }
+});
+
+// DELETE /api/admin/categories/:id
+router.delete('/categories/:id', requirePermission('settings'), async (req, res) => {
+  try {
+    const catId = req.params.id;
+    const [rows] = await db.query('SELECT name_en FROM categories WHERE id = ?', [catId]);
+    if (!rows.length) return res.status(404).json({ success: false, message: 'Category not found.' });
+
+    // Set category_id = NULL on linked projects and articles to maintain referential integrity
+    await db.query('UPDATE projects SET category_id = NULL WHERE category_id = ?', [catId]);
+    await db.query('UPDATE articles SET category_id = NULL WHERE category_id = ?', [catId]);
+    await db.query('DELETE FROM categories WHERE id = ?', [catId]);
+
+    await db.query(
+      'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
+      [req.session.user?.id, 'DELETE_CATEGORY', 'category', String(catId), JSON.stringify({ name_en: rows[0].name_en })]
+    ).catch(() => {});
+
+    return res.json({ success: true, message: 'Category deleted successfully.' });
+  } catch (err) {
+    console.error('[Category DELETE]', err);
+    return res.status(500).json({ success: false, message: 'Failed to delete category.' });
+  }
+});
+
 module.exports = router;
+
 
