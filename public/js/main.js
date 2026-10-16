@@ -54,18 +54,32 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderDynamicContent(data, lang) {
     const isUrdu = lang === 'ur';
 
-    // A. Render Categories
+    // A. Render Categories (In-place update avoids CLS and layout shifts)
     const categoriesContainer = document.getElementById('categoriesGrid');
     if (categoriesContainer && data.categories && data.categories.length > 0) {
-      categoriesContainer.innerHTML = data.categories.map(cat => `
-        <div class="category-card" onclick="window.location.href='/projects?category=${cat.slug}'">
-          <div class="category-icon-wrapper">
-            <i class="fas fa-${cat.icon || 'heart'}"></i>
+      const cards = categoriesContainer.querySelectorAll('.category-card');
+      if (cards.length === data.categories.length) {
+        data.categories.forEach((cat, idx) => {
+          const card = cards[idx];
+          const titleEl = card.querySelector('.category-title');
+          const descEl = card.querySelector('.category-desc');
+          const iconI = card.querySelector('.category-icon-wrapper i');
+          if (titleEl) titleEl.textContent = isUrdu ? cat.name_ur : cat.name_en;
+          if (descEl) descEl.textContent = isUrdu ? cat.description_ur : cat.description_en;
+          if (iconI && cat.icon) iconI.className = `fas fa-${cat.icon}`;
+          card.onclick = () => window.location.href = `/projects?category=${cat.slug}`;
+        });
+      } else {
+        categoriesContainer.innerHTML = data.categories.map(cat => `
+          <div class="category-card" onclick="window.location.href='/projects?category=${cat.slug}'">
+            <div class="category-icon-wrapper">
+              <i class="fas fa-${cat.icon || 'heart'}"></i>
+            </div>
+            <h3 class="category-title">${isUrdu ? cat.name_ur : cat.name_en}</h3>
+            <p class="category-desc">${isUrdu ? cat.description_ur : cat.description_en}</p>
           </div>
-          <h4 class="category-title">${isUrdu ? cat.name_ur : cat.name_en}</h4>
-          <p class="category-desc">${isUrdu ? cat.description_ur : cat.description_en}</p>
-        </div>
-      `).join('');
+        `).join('');
+      }
     }
 
     // B. Render Featured Projects
@@ -165,22 +179,44 @@ document.addEventListener('DOMContentLoaded', () => {
     // E. Render Hero & Branding Settings if customized in Admin
     if (data.settings) {
       if (data.settings.site_logo_url) {
-        document.querySelectorAll('.header-logo-img, .footer-logo-img, .modal-logo, .sidebar-logo, .admin-login-logo, img[src*="logo"], img[alt*="Logo"], img[alt*="logo"]').forEach(img => {
-          img.src = data.settings.site_logo_url;
+        const customLogo = data.settings.site_logo_url;
+        const isOfficialEmblem = customLogo.includes('Qasr-e-Shabir') || customLogo.includes('logo_header') || customLogo.includes('logo.svg');
+        const headerLogoSrc = isOfficialEmblem ? '/media/branding/logo_header_58.webp' : customLogo;
+        
+        document.querySelectorAll('.header-logo-img, .footer-logo-img').forEach(img => {
+          if (!img.src.includes(headerLogoSrc)) {
+            img.src = headerLogoSrc;
+          }
           img.onerror = function() {
             this.onerror = null;
             this.src = '/media/branding/logo.svg';
           };
         });
+
+        document.querySelectorAll('.modal-logo, .sidebar-logo, .admin-login-logo').forEach(img => {
+          if (!img.src.includes(customLogo)) {
+            img.src = customLogo;
+          }
+          img.onerror = function() {
+            this.onerror = null;
+            this.src = '/media/branding/logo.svg';
+          };
+        });
+
         const favicon = document.querySelector('link[rel="icon"]');
-        if (favicon) {
+        if (favicon && !favicon.href.includes('favicon')) {
           favicon.removeAttribute('type');
-          favicon.href = data.settings.site_logo_url;
+          favicon.href = customLogo;
         }
       }
       if (data.settings.site_flag_url) {
+        const customFlag = data.settings.site_flag_url;
+        const isOfficialFlag = customFlag.includes('flag') && !customFlag.includes('custom');
+        const flagSrc = isOfficialFlag ? '/media/branding/flag_header_58.webp' : customFlag;
         document.querySelectorAll('.flag-svg-display, .header-flag-img, .footer-flag-img').forEach(img => {
-          img.src = data.settings.site_flag_url;
+          if (!img.src.includes(flagSrc)) {
+            img.src = flagSrc;
+          }
           img.onerror = function() {
             this.onerror = null;
             this.src = '/media/branding/flag.svg';
@@ -252,7 +288,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.settings.hero_btn2_link) heroBtn2El.href = data.settings.hero_btn2_link;
       }
       if (heroBgEl && data.settings.hero_bg_image) {
-        heroBgEl.style.backgroundImage = `url('${data.settings.hero_bg_image}')`;
+        const heroImg = heroBgEl.querySelector('img');
+        if (heroImg) {
+          if (!heroImg.src.includes(data.settings.hero_bg_image)) {
+            heroImg.src = data.settings.hero_bg_image;
+          }
+        } else {
+          const curBg = heroBgEl.style.backgroundImage || '';
+          if (!curBg.includes(data.settings.hero_bg_image)) {
+            heroBgEl.style.backgroundImage = `url('${data.settings.hero_bg_image}')`;
+          }
+        }
       }
 
       // F. Dynamic Sync of Address, Contact and Bank details from Dashboard

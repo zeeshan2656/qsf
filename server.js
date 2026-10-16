@@ -162,6 +162,33 @@ app.get('/favicon.ico', (req, res, next) => {
   next();
 });
 
+// Optimized Header Branding Endpoints with 1-Year Immutable Caching
+app.get('/media/branding/logo_header_58.webp', (req, res, next) => {
+  for (const c of [
+    path.join(mediaDir, 'branding', 'logo_header_58.webp'),
+    path.join(mediaDir, 'uploads', 'logo_header_58.webp')
+  ]) {
+    if (fs.existsSync(c)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      return res.sendFile(c, { maxAge: 31536000000, immutable: true });
+    }
+  }
+  next();
+});
+
+app.get('/media/branding/flag_header_58.webp', (req, res, next) => {
+  for (const c of [
+    path.join(mediaDir, 'branding', 'flag_header_58.webp'),
+    path.join(mediaDir, 'uploads', 'flag_header_58.webp')
+  ]) {
+    if (fs.existsSync(c)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      return res.sendFile(c, { maxAge: 31536000000, immutable: true });
+    }
+  }
+  next();
+});
+
 // Smart Logo & Flag Serving: Always serve uploaded branding assets from DB
 app.get('/media/branding/logo.svg', async (req, res, next) => {
   try {
@@ -170,7 +197,10 @@ app.get('/media/branding/logo.svg', async (req, res, next) => {
       const filename = path.basename(rows[0].setting_val);
       for (const sub of ['branding', 'uploads']) {
         const candidate = path.join(mediaDir, sub, filename);
-        if (fs.existsSync(candidate)) return res.sendFile(candidate);
+        if (fs.existsSync(candidate)) {
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+          return res.sendFile(candidate, { maxAge: 31536000000, immutable: true });
+        }
       }
     }
   } catch (e) {}
@@ -184,18 +214,22 @@ app.get('/media/branding/flag.svg', async (req, res, next) => {
       const filename = path.basename(rows[0].setting_val);
       for (const sub of ['branding', 'uploads']) {
         const candidate = path.join(mediaDir, sub, filename);
-        if (fs.existsSync(candidate)) return res.sendFile(candidate);
+        if (fs.existsSync(candidate)) {
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+          return res.sendFile(candidate, { maxAge: 31536000000, immutable: true });
+        }
       }
     }
   } catch (e) {}
   next();
 });
 
-// Serve External Media Repository outside project directory with optimal caching
+// Serve External Media Repository outside project directory with optimal 1-year caching
 app.use(
   '/media',
   express.static(mediaDir, {
-    maxAge: '7d',
+    maxAge: '365d',
+    immutable: true,
     etag: true,
     lastModified: true
   })
@@ -207,11 +241,13 @@ app.use('/media', (req, res, next) => {
   const filename = path.basename(reqPath);
   const possibleSubfolders = ['branding', 'uploads', 'hero', 'projects', 'news', 'categories'];
 
+  res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+
   // 1. Standard subfolders
   for (const sub of possibleSubfolders) {
     const candidatePath = path.join(mediaDir, sub, filename);
     if (fs.existsSync(candidatePath)) {
-      return res.sendFile(candidatePath);
+      return res.sendFile(candidatePath, { maxAge: 31536000000, immutable: true });
     }
   }
 
@@ -219,7 +255,7 @@ app.use('/media', (req, res, next) => {
   for (const sub of possibleSubfolders) {
     const candidatePath = path.join(mediaDir, 'qasreshabbir_media', sub, filename);
     if (fs.existsSync(candidatePath)) {
-      return res.sendFile(candidatePath);
+      return res.sendFile(candidatePath, { maxAge: 31536000000, immutable: true });
     }
   }
 
@@ -227,11 +263,11 @@ app.use('/media', (req, res, next) => {
   for (const sub of possibleSubfolders) {
     const candidatePath = path.join(mediaDir, `${sub}\\${filename}`);
     if (fs.existsSync(candidatePath)) {
-      return res.sendFile(candidatePath);
+      return res.sendFile(candidatePath, { maxAge: 31536000000, immutable: true });
     }
     const nestedCandidatePath = path.join(mediaDir, 'qasreshabbir_media', `${sub}\\${filename}`);
     if (fs.existsSync(nestedCandidatePath)) {
-      return res.sendFile(nestedCandidatePath);
+      return res.sendFile(nestedCandidatePath, { maxAge: 31536000000, immutable: true });
     }
   }
 
@@ -242,7 +278,7 @@ app.use('/media', (req, res, next) => {
       for (const sub of possibleSubfolders) {
         const candidatePath = path.join(root, sub, filename);
         if (fs.existsSync(candidatePath)) {
-          return res.sendFile(candidatePath);
+          return res.sendFile(candidatePath, { maxAge: 31536000000, immutable: true });
         }
       }
     }
@@ -251,24 +287,26 @@ app.use('/media', (req, res, next) => {
   // Graceful fallback for logo and flag branding images
   if (reqPath.toLowerCase().includes('logo')) {
     const fallbacks = [
+      path.join(mediaDir, 'branding', 'logo_header_58.webp'),
       path.join(mediaDir, 'branding', 'logo.svg'),
       path.join(mediaDir, 'qasreshabbir_media', 'branding', 'logo.svg'),
       path.join(mediaDir, 'qasreshabbir_media', 'branding\\logo.svg'),
       path.join(mediaDir, 'branding\\logo.svg')
     ];
     for (const fb of fallbacks) {
-      if (fs.existsSync(fb)) return res.sendFile(fb);
+      if (fs.existsSync(fb)) return res.sendFile(fb, { maxAge: 31536000000, immutable: true });
     }
   }
   if (reqPath.toLowerCase().includes('flag')) {
     const fallbacks = [
+      path.join(mediaDir, 'branding', 'flag_header_58.webp'),
       path.join(mediaDir, 'branding', 'flag.svg'),
       path.join(mediaDir, 'qasreshabbir_media', 'branding', 'flag.svg'),
       path.join(mediaDir, 'qasreshabbir_media', 'branding\\flag.svg'),
       path.join(mediaDir, 'branding\\flag.svg')
     ];
     for (const fb of fallbacks) {
-      if (fs.existsSync(fb)) return res.sendFile(fb);
+      if (fs.existsSync(fb)) return res.sendFile(fb, { maxAge: 31536000000, immutable: true });
     }
   }
 

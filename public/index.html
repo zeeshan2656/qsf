@@ -6,20 +6,31 @@
   <title>Qasr-e-Shabbir Foundation | Orphan Education & Humanitarian Welfare</title>
   <meta name="description" content="Qasr-e-Shabbir Foundation is dedicated to supporting orphaned children with education, school fees, and providing food ration and financial assistance to deserving families in Pakistan.">
   
-    <!-- Google Fonts: Inter, Outfit & Noto Nastaliq Urdu -->
+  <!-- Preload Critical LCP Assets -->
+  <link rel="preload" as="image" href="/media/branding/logo_header_58.webp" type="image/webp" fetchpriority="high">
+  <link rel="preload" as="image" href="/media/uploads/Smiling_School_Group_with_Foun_1792082807587_458986.webp" type="image/webp" media="(min-width: 641px)" fetchpriority="high">
+  <link rel="preload" as="image" href="/media/uploads/hero_bg_mobile.webp" type="image/webp" media="(max-width: 640px)" fetchpriority="high">
+
+  <!-- Google Fonts: Inter, Outfit & Noto Nastaliq Urdu (Asynchronously Loaded) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap" rel="stylesheet">
+  </noscript>
   <!-- Favicon -->
   <link rel="icon" type="image/webp" href="/media/branding/favicon-64.webp">
   <link rel="alternate icon" type="image/png" href="/media/branding/favicon-32.png">
 
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  
   <!-- Core Stylesheets -->
-  <link rel="stylesheet" href="/css/style.css?v=3">
-  <link rel="stylesheet" href="/css/rtl.css?v=3">
+  <link rel="stylesheet" href="/css/style.css?v=5">
+  <link rel="stylesheet" href="/css/rtl.css?v=5" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="/css/rtl.css?v=5"></noscript>
+
+  <!-- Non-blocking FontAwesome Icons -->
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
 </head>
 <body>
 
@@ -30,8 +41,8 @@
       <!-- Brand & Two Logos in Header (1st Main Logo, 2nd Flag Logo) -->
       <a href="/" class="header-brand">
         <div class="brand-logos-pair">
-          <img src="/media/branding/logo.svg" alt="Qasr-e-Shabbir Foundation Main Logo" class="header-brand-logo header-logo-img" width="58" height="58" style="height: 58px; width: auto; max-width: 62px; object-fit: contain; flex-shrink: 0; display: block;" onerror="this.onerror=null; this.src='/media/branding/logo.svg';" / fetchpriority="high" decoding="async">
-          <img src="/media/branding/flag.svg" alt="Foundation Flag" class="header-brand-logo header-flag-img" width="58" height="58" style="height: 58px; width: auto; max-width: 56px; object-fit: contain; flex-shrink: 0; display: block;" onerror="this.onerror=null; this.src='/media/branding/flag.svg';" />
+          <img src="/media/branding/logo_header_58.webp" alt="Qasr-e-Shabbir Foundation Main Logo" class="header-brand-logo header-logo-img" width="58" height="58" style="height: 58px; width: auto; max-width: 62px; object-fit: contain; flex-shrink: 0; display: block;" onerror="this.onerror=null; this.src='/media/branding/logo.svg';" fetchpriority="high" decoding="async">
+          <img src="/media/branding/flag_header_58.webp" alt="Foundation Flag" class="header-brand-logo header-flag-img" width="58" height="58" style="height: 58px; width: auto; max-width: 56px; object-fit: contain; flex-shrink: 0; display: block;" onerror="this.onerror=null; this.src='/media/branding/flag.svg';" decoding="async" />
         </div>
         <div class="brand-text">
           <span class="brand-name" data-i18n="foundationName">QASR-E-SHABBIR FOUNDATION</span>
@@ -95,9 +106,18 @@
     </div>
   </header>
 
+  <!-- ==================== MAIN CONTENT LANDMARK ==================== -->
+  <main id="mainContent">
+
   <!-- ==================== HERO SECTION ==================== -->
   <section class="hero-section">
-    <div class="hero-backdrop-image" id="heroBackdropImage"></div>
+    <div class="hero-backdrop-image" id="heroBackdropImage">
+      <picture>
+        <source media="(max-width: 640px)" srcset="/media/uploads/hero_bg_mobile.webp" type="image/webp">
+        <source media="(min-width: 641px)" srcset="/media/uploads/Smiling_School_Group_with_Foun_1792082807587_458986.webp" type="image/webp">
+        <img src="/media/uploads/Smiling_School_Group_with_Foun_1792082807587_458986.webp" alt="Qasr-e-Shabbir Foundation Educational & Humanitarian Services" class="hero-bg-img" width="1280" height="640" fetchpriority="high" decoding="async">
+      </picture>
+    </div>
     <div class="hero-bg-overlay"></div>
     <div class="container hero-layout">
       
@@ -127,32 +147,38 @@
   <!-- ==================== 5 WELFARE CATEGORIES STRIP ==================== -->
   <section class="categories-section">
     <div class="container">
+      <h2 class="sr-only">Welfare Categories & Core Services</h2>
       <div class="categories-grid" id="categoriesGrid">
         <!-- Rendered dynamically by main.js from MySQL API, with fallback -->
         <div class="category-card" onclick="window.location.href='/projects?category=orphan-education'">
           <div class="category-icon-wrapper"><i class="fas fa-graduation-cap"></i></div>
-          <h4 class="category-title" data-i18n="catEducationTitle">Education</h4>
+          <h3 class="category-title" data-i18n="catEducationTitle">Education</h3>
           <p class="category-desc" data-i18n="catEducationSub">For a Brighter Future</p>
         </div>
         <div class="category-card" onclick="window.location.href='/projects?category=school-fees-healthcare'">
           <div class="category-icon-wrapper"><i class="fas fa-heartbeat"></i></div>
-          <h4 class="category-title" data-i18n="catHealthcareTitle">Healthcare</h4>
+          <h3 class="category-title" data-i18n="catHealthcareTitle">Healthcare</h3>
           <p class="category-desc" data-i18n="catHealthcareSub">For Healthy Lives</p>
         </div>
         <div class="category-card" onclick="window.location.href='/projects?category=food-ration-support'">
           <div class="category-icon-wrapper"><i class="fas fa-utensils"></i></div>
-          <h4 class="category-title" data-i18n="catFoodTitle">Food Support</h4>
+          <h3 class="category-title" data-i18n="catFoodTitle">Food Support</h3>
           <p class="category-desc" data-i18n="catFoodSub">For Needy Families</p>
         </div>
         <div class="category-card" onclick="window.location.href='/projects?category=financial-assistance'">
           <div class="category-icon-wrapper"><i class="fas fa-hands-helping"></i></div>
-          <h4 class="category-title" data-i18n="catWaterTitle">Clean Water</h4>
+          <h3 class="category-title" data-i18n="catWaterTitle">Clean Water</h3>
           <p class="category-desc" data-i18n="catWaterSub">For Better Tomorrow</p>
         </div>
         <div class="category-card" onclick="window.location.href='/projects?category=community-welfare'">
           <div class="category-icon-wrapper"><i class="fas fa-users"></i></div>
-          <h4 class="category-title" data-i18n="catCommunityTitle">Community Care</h4>
+          <h3 class="category-title" data-i18n="catCommunityTitle">Community Care</h3>
           <p class="category-desc" data-i18n="catCommunitySub">For Stronger Society</p>
+        </div>
+        <div class="category-card" onclick="window.location.href='/projects?category=flood-relief'">
+          <div class="category-icon-wrapper"><i class="fas fa-house-flood-water"></i></div>
+          <h3 class="category-title" data-i18n="catFloodTitle">Flood Relief</h3>
+          <p class="category-desc" data-i18n="catFloodSub">Emergency Assistance</p>
         </div>
       </div>
     </div>
@@ -238,6 +264,8 @@
     </div>
   </section>
 
+  </main>
+
   <!-- ==================== FOOTER ==================== -->
   <footer class="site-footer">
     <div class="container">
@@ -246,7 +274,7 @@
         <!-- Foundation Brand & Mission -->
         <div class="footer-brand-col">
           <div class="footer-logo-wrap">
-            <img src="/media/branding/logo.svg" alt="Qasr-e-Shabbir Foundation" class="footer-logo-img" onerror="this.onerror=null; this.src='/media/branding/logo.svg';" />
+            <img src="/media/branding/logo_header_58.webp" alt="Qasr-e-Shabbir Foundation" class="footer-logo-img" width="58" height="58" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='/media/branding/logo.svg';" />
             <div>
               <h3 class="footer-brand-title" data-i18n="foundationName">QASR-E-SHABBIR FOUNDATION</h3>
               <span class="footer-tagline" data-i18n="tagline">Together for a Brighter Tomorrow</span>
@@ -282,7 +310,7 @@
             <a href="https://linkedin.com" target="_blank" rel="noopener" class="social-icon-btn" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
           </div>
           <div style="margin-top: 24px;">
-            <a href="/admin" style="font-size: 0.78rem; color: #64748B; display: inline-flex; align-items: center; gap: 5px;">
+            <a href="/admin" style="font-size: 0.78rem; color: #CBD5E1; display: inline-flex; align-items: center; gap: 5px;">
               <i class="fas fa-lock"></i> Staff Admin Portal
             </a>
           </div>
