@@ -166,35 +166,44 @@ router.get('/sync-media', (req, res) => {
     } catch (e) {}
   }
 
-  const zipCandidates = [
-    '/home/u434697879/qasreshabbir_media.zip',
-    '/home/u434697879/qasreshabbir_media/qasreshabbir_media.zip',
-    path.join(targetMediaDir, 'qasreshabbir_media.zip'),
-    path.resolve(process.cwd(), '../qasreshabbir_media.zip'),
-    path.resolve(process.cwd(), 'qasreshabbir_media.zip')
-  ];
-
   const extractionLogs = [];
-  for (const z of zipCandidates) {
-    if (fs.existsSync(z)) {
+
+  // 1. Scan /home/u434697879 for any .zip file or media folder regardless of spelling
+  const searchDirs = ['/home/u434697879', targetMediaDir, path.resolve(process.cwd(), '..')];
+  for (const dir of searchDirs) {
+    if (fs.existsSync(dir)) {
       try {
-        const out = execSync(`unzip -o "${z}" -d "${targetMediaDir}"`, { encoding: 'utf8' });
-        extractionLogs.push({ zip: z, status: 'extracted', output: out.slice(0, 300) });
-      } catch (err) {
-        extractionLogs.push({ zip: z, status: 'error', message: err.message });
+        const entries = fs.readdirSync(dir);
+        const zips = entries.filter(e => e.toLowerCase().endsWith('.zip'));
+        for (const z of zips) {
+          const fullZip = path.join(dir, z);
+          try {
+            const out = execSync(`unzip -o "${fullZip}" -d "${targetMediaDir}"`, { encoding: 'utf8' });
+            extractionLogs.push({ autoFoundZip: fullZip, status: 'extracted', files: out.split('\n').length });
+          } catch (err) {
+            extractionLogs.push({ autoFoundZip: fullZip, status: 'error', message: err.message });
+          }
+        }
+      } catch (e) {
+        extractionLogs.push({ dirScanError: dir, message: e.message });
       }
     }
   }
 
-  // Check if files were nested inside qasreshabbir_media subfolder
-  const nestedFolder = path.join(targetMediaDir, 'qasreshabbir_media');
-  if (fs.existsSync(nestedFolder)) {
-    try {
-      execSync(`cp -rn "${nestedFolder}"/* "${targetMediaDir}"/ 2>/dev/null || true`);
-      extractionLogs.push({ nestedFolderPromotion: 'success' });
-    } catch (e) {
-      extractionLogs.push({ nestedFolderPromotion: 'error', message: e.message });
+  // 2. Also check if files were nested inside any subfolder in targetMediaDir
+  try {
+    const subDirs = fs.readdirSync(targetMediaDir);
+    for (const sub of subDirs) {
+      const fullSub = path.join(targetMediaDir, sub);
+      if (fs.statSync(fullSub).isDirectory() && !['branding', 'hero', 'projects', 'news', 'uploads', 'categories'].includes(sub)) {
+        try {
+          execSync(`cp -rn "${fullSub}"/* "${targetMediaDir}"/ 2>/dev/null || true`);
+          extractionLogs.push({ nestedFolderPromotion: fullSub });
+        } catch (e) {}
+      }
     }
+  } catch (e) {
+    extractionLogs.push({ nestedFolderPromotion: 'error', message: e.message });
   }
 
   // Count current files in subfolders
