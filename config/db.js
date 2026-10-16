@@ -8,7 +8,11 @@ const pool = mysql.createPool({
   password: process.env.DB_PASS || '',
   database: process.env.DB_NAME || 'qasreshabbir',
   waitForConnections: true,
-  connectionLimit: 15,
+  connectionLimit: 20,
+  maxIdle: 10,
+  idleTimeout: 60000,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 10000,
   queueLimit: 0,
   charset: 'utf8mb4'
 });

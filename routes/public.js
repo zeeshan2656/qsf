@@ -1,11 +1,20 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
+const cache = require('../config/cache');
 const { upload, processProfilePhoto } = require('../middleware/upload');
 
-// GET /api/public/bootstrap
+// GET /api/public/bootstrap (Cached with stale-while-revalidate for maximum speed)
 router.get('/bootstrap', async (req, res) => {
   try {
+    const cacheKey = 'public:bootstrap';
+    const cached = cache.get(cacheKey);
+    if (cached) {
+      res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=600');
+      res.setHeader('X-Cache', 'HIT');
+      return res.json(cached);
+    }
+
     // 1. Settings
     const [settingsRows] = await db.query('SELECT setting_key, setting_val, setting_group FROM site_settings');
     const settings = {};
@@ -43,7 +52,7 @@ router.get('/bootstrap', async (req, res) => {
       'SELECT stat_key, number_val, suffix, label_en, label_ur, icon FROM impact_stats WHERE is_active = 1 ORDER BY sort_order ASC'
     );
 
-    return res.json({
+    const payload = {
       success: true,
       data: {
         settings,
@@ -52,7 +61,13 @@ router.get('/bootstrap', async (req, res) => {
         news,
         stats
       }
-    });
+    };
+
+    cache.set(cacheKey, payload, 10 * 60 * 1000); // 10 min TTL
+
+    res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=600');
+    res.setHeader('X-Cache', 'MISS');
+    return res.json(payload);
   } catch (err) {
     console.error('[Public Bootstrap Error]', err);
     return res.status(500).json({ success: false, message: 'Error retrieving foundation data.' });
@@ -212,6 +227,18 @@ router.get('/sync-media', (req, res) => {
 router.get('/projects', async (req, res) => {
   try {
     const { category, search } = req.query;
+    const isCacheable = !search && (!category || category === 'all');
+    const cacheKey = isCacheable ? 'public:projects:all' : null;
+
+    if (cacheKey) {
+      const cached = cache.get(cacheKey);
+      if (cached) {
+        res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=600');
+        res.setHeader('X-Cache', 'HIT');
+        return res.json(cached);
+      }
+    }
+
     let sql = `
       SELECT p.*, c.slug as category_slug, c.name_en as category_name_en, c.name_ur as category_name_ur
       FROM projects p
@@ -234,7 +261,15 @@ router.get('/projects', async (req, res) => {
     sql += ' ORDER BY p.sort_order ASC, p.id ASC';
 
     const [rows] = await db.query(sql, params);
-    return res.json({ success: true, projects: rows });
+    const responsePayload = { success: true, projects: rows };
+
+    if (cacheKey) {
+      cache.set(cacheKey, responsePayload, 5 * 60 * 1000);
+      res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=600');
+      res.setHeader('X-Cache', 'MISS');
+    }
+
+    return res.json(responsePayload);
   } catch (err) {
     console.error('[Public Projects Error]', err);
     return res.status(500).json({ success: false, message: 'Could not load projects.' });
@@ -275,6 +310,14 @@ router.get('/projects/:slug', async (req, res) => {
 // GET /api/public/news
 router.get('/news', async (req, res) => {
   try {
+    const cacheKey = 'public:news:all';
+    const cached = cache.get(cacheKey);
+    if (cached) {
+      res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=600');
+      res.setHeader('X-Cache', 'HIT');
+      return res.json(cached);
+    }
+
     const [rows] = await db.query(`
       SELECT a.*, c.slug as category_slug, c.name_en as category_name_en, c.name_ur as category_name_ur
       FROM articles a
@@ -282,7 +325,13 @@ router.get('/news', async (req, res) => {
       WHERE a.status = 'published'
       ORDER BY a.published_at DESC, a.id DESC
     `);
-    return res.json({ success: true, articles: rows });
+
+    const responsePayload = { success: true, articles: rows };
+    cache.set(cacheKey, responsePayload, 5 * 60 * 1000);
+    res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=600');
+    res.setHeader('X-Cache', 'MISS');
+
+    return res.json(responsePayload);
   } catch (err) {
     console.error('[Public News Error]', err);
     return res.status(500).json({ success: false, message: 'Could not load news.' });

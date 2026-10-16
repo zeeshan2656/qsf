@@ -4,10 +4,24 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
 const { requireAuth, requirePermission } = require('../middleware/auth');
-const { upload, processProfilePhoto } = require('../middleware/upload');
+const { upload, processProfilePhoto, optimizeUploadedImage } = require('../middleware/upload');
+
+const cache = require('../config/cache');
 
 // Apply auth middleware to all admin endpoints
 router.use(requireAuth);
+
+// Automatically invalidate public cache on any mutating admin action (POST/PUT/DELETE/PATCH)
+router.use((req, res, next) => {
+  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
+    res.on('finish', () => {
+      if (res.statusCode >= 200 && res.statusCode < 400) {
+        cache.invalidateGroup('public');
+      }
+    });
+  }
+  next();
+});
 
 // GET /api/admin/overview
 router.get('/overview', requirePermission('overview'), async (req, res) => {
@@ -1167,21 +1181,23 @@ router.post('/assistance-applications', requirePermission('applications'), async
   }
 });
 
-// POST /api/admin/upload (Stores image directly in external MEDIA_DIR)
-router.post('/upload', upload.single('image'), (req, res) => {
+// POST /api/admin/upload (Stores image directly in external MEDIA_DIR and optimizes to WebP)
+router.post('/upload', upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No image file uploaded.' });
     }
 
-    const subfolder = req.query.folder || req.body.folder || 'uploads';
-    const relativeUrl = `/media/${subfolder}/${req.file.filename}`;
+    await optimizeUploadedImage(req.file);
+    const subfolder = req.query.folder || req.body.folder || req.file.subfolder || 'uploads';
+    const relativeUrl = req.file.publicUrl || `/media/${subfolder}/${req.file.filename}`;
 
     return res.json({
       success: true,
-      message: 'Image uploaded successfully to external media repository.',
+      message: 'Image uploaded and optimized to WebP successfully.',
       url: relativeUrl,
-      filename: req.file.filename
+      filename: req.file.filename,
+      thumbnailUrl: req.file.thumbnailUrl || relativeUrl
     });
   } catch (err) {
     console.error('[Upload Error]', err);
@@ -1264,11 +1280,14 @@ router.post('/branding-assets/logo', requirePermission('settings'), upload.singl
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'Please select a logo image file to upload.' });
     }
+    await optimizeUploadedImage(req.file);
     const logoUrl = req.file.publicUrl || `/media/branding/${req.file.filename}`;
 
     try {
       const defaultLogoPath = path.join(mediaDir, 'branding', 'logo.svg');
-      fs.copyFileSync(req.file.path, defaultLogoPath);
+      if (req.file.path.endsWith('.svg')) {
+        fs.copyFileSync(req.file.path, defaultLogoPath);
+      }
     } catch (e) {}
 
     await db.query(`
@@ -1300,11 +1319,14 @@ router.post('/branding-assets/flag', requirePermission('settings'), upload.singl
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'Please select a flag image file to upload.' });
     }
+    await optimizeUploadedImage(req.file);
     const flagUrl = req.file.publicUrl || `/media/branding/${req.file.filename}`;
 
     try {
       const defaultFlagPath = path.join(mediaDir, 'branding', 'flag.svg');
-      fs.copyFileSync(req.file.path, defaultFlagPath);
+      if (req.file.path.endsWith('.svg')) {
+        fs.copyFileSync(req.file.path, defaultFlagPath);
+      }
     } catch (e) {}
 
     await db.query(`
@@ -1346,6 +1368,7 @@ router.post('/branding-assets/stamps', requirePermission('settings'), upload.sin
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'Please select an official stamp image file to upload.' });
     }
+    await optimizeUploadedImage(req.file);
     const stampName = req.body.name && req.body.name.trim() ? req.body.name.trim() : 'Official Foundation Stamp';
     const stampUrl = req.file.publicUrl || `/media/branding/${req.file.filename}`;
     const isDefault = req.body.is_default === '1' || req.body.is_default === 'true' || req.body.is_default === true ? 1 : 0;

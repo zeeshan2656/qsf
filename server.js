@@ -100,10 +100,36 @@ app.use(
   })
 );
 
-app.use(compression());
-app.use(morgan('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Production HTTP compression with threshold and optimal ratio
+app.use(
+  compression({
+    threshold: 1024,
+    level: 6,
+    filter: (req, res) => {
+      if (req.headers['x-no-compression']) return false;
+      return compression.filter(req, res);
+    }
+  })
+);
+
+// High-efficiency logging: minimal logging for static assets in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(
+    morgan('combined', {
+      skip: (req) =>
+        req.url.startsWith('/media') ||
+        req.url.startsWith('/css') ||
+        req.url.startsWith('/js') ||
+        req.url.startsWith('/dist') ||
+        req.url.startsWith('/images')
+    })
+  );
+} else {
+  app.use(morgan('dev'));
+}
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Session Configuration
 app.use(
@@ -120,18 +146,19 @@ app.use(
   })
 );
 
-// Serve site logo as browser icon / favicon
-app.get('/favicon.ico', async (req, res, next) => {
-  try {
-    const [rows] = await query("SELECT setting_val FROM site_settings WHERE setting_key = 'site_logo_url'");
-    if (rows.length && rows[0].setting_val) {
-      const filename = path.basename(rows[0].setting_val);
-      for (const sub of ['branding', 'uploads']) {
-        const candidate = path.join(mediaDir, sub, filename);
-        if (fs.existsSync(candidate)) return res.sendFile(candidate);
-      }
+// Serve lightweight browser favicon with caching
+app.get('/favicon.ico', (req, res, next) => {
+  const iconCandidates = [
+    path.join(mediaDir, 'branding', 'favicon-32.png'),
+    path.join(__dirname, 'public/images/branding', 'favicon-32.png'),
+    path.join(mediaDir, 'branding', 'favicon-64.webp')
+  ];
+  for (const c of iconCandidates) {
+    if (fs.existsSync(c)) {
+      res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+      return res.sendFile(c);
     }
-  } catch (e) {}
+  }
   next();
 });
 
@@ -164,8 +191,15 @@ app.get('/media/branding/flag.svg', async (req, res, next) => {
   next();
 });
 
-// Serve External Media Repository outside project directory
-app.use('/media', express.static(mediaDir, { maxAge: '7d' }));
+// Serve External Media Repository outside project directory with optimal caching
+app.use(
+  '/media',
+  express.static(mediaDir, {
+    maxAge: '7d',
+    etag: true,
+    lastModified: true
+  })
+);
 
 // Media Fallback: If a media file was stored in a different subfolder (e.g. /branding vs /uploads)
 app.use('/media', (req, res, next) => {
@@ -241,8 +275,46 @@ app.use('/media', (req, res, next) => {
   next();
 });
 
-// Serve Public Static Assets
-app.use(express.static(path.join(__dirname, 'public')));
+// Smart Asset Optimizer: Automatically serve production minified CSS/JS with aggressive cache
+const minifiedAssetMap = {
+  '/css/style.css': path.join(__dirname, 'public/dist/css/style.min.css'),
+  '/css/rtl.css': path.join(__dirname, 'public/dist/css/rtl.min.css'),
+  '/css/admin.css': path.join(__dirname, 'public/dist/css/admin.min.css'),
+  '/js/translations.js': path.join(__dirname, 'public/dist/js/translations.min.js'),
+  '/js/main.js': path.join(__dirname, 'public/dist/js/main.min.js'),
+  '/js/admin.js': path.join(__dirname, 'public/dist/js/admin.min.js')
+};
+
+app.use((req, res, next) => {
+  const minPath = minifiedAssetMap[req.path];
+  if (minPath && fs.existsSync(minPath)) {
+    const isCss = req.path.endsWith('.css');
+    res.setHeader('Content-Type', isCss ? 'text/css; charset=UTF-8' : 'application/javascript; charset=UTF-8');
+    res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
+    return res.sendFile(minPath);
+  }
+  next();
+});
+
+// Serve Pre-minified Dist Assets with 30-day immutable caching
+app.use(
+  '/dist',
+  express.static(path.join(__dirname, 'public/dist'), {
+    maxAge: '30d',
+    immutable: true,
+    etag: true,
+    lastModified: true
+  })
+);
+
+// Serve Public Static Assets with 1-day caching and ETag revalidation
+app.use(
+  express.static(path.join(__dirname, 'public'), {
+    maxAge: '1d',
+    etag: true,
+    lastModified: true
+  })
+);
 
 // API Routes
 app.use('/api/auth', authRoutes);
@@ -302,13 +374,43 @@ async function startServer() {
     console.warn('[Warning] Running server without confirmed MySQL connection. Verify .env settings.');
   }
 
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`=======================================================`);
     console.log(`🕌 QASR-E-SHABBIR FOUNDATION PLATFORM IS RUNNING`);
     console.log(`🔗 Public Portal:     http://localhost:${PORT}`);
     console.log(`🔐 Admin Dashboard:   http://localhost:${PORT}/admin`);
     console.log(`📁 External Media:    ${mediaDir}`);
     console.log(`=======================================================`);
+  });
+
+  // Graceful Shutdown Handler
+  let isShuttingDown = false;
+  function gracefulShutdown(signal) {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
+    console.log(`[Server] Received ${signal}. Shutting down gracefully...`);
+    server.close(() => {
+      console.log('[Server] HTTP connections closed.');
+      const { pool } = require('./config/db');
+      pool.end().then(() => {
+        console.log('[Database] MySQL connection pool closed.');
+        process.exit(0);
+      }).catch(() => process.exit(0));
+    });
+    setTimeout(() => {
+      console.error('[Server] Forced shutdown after timeout.');
+      process.exit(1);
+    }, 10000);
+  }
+
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+  process.on('uncaughtException', (err) => {
+    console.error('[Server Uncaught Exception]', err);
+  });
+  process.on('unhandledRejection', (reason) => {
+    console.error('[Server Unhandled Rejection]', reason);
   });
 }
 

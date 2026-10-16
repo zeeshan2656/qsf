@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return `
           <div class="project-card">
             <div class="project-image-wrapper">
-              <img src="${p.image_url || '/media/projects/orphan_education.jpg'}" alt="${title}" class="project-image" loading="lazy" />
+              <img src="${p.image_url || '/media/projects/orphan_education.webp'}" alt="${title}" class="project-image" loading="lazy" decoding="async" width="400" height="250" />
             </div>
             <div class="project-content">
               <span class="project-category-tag">${catName || (isUrdu ? 'تعلیمی کفالت' : 'Education')}</span>
@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return `
           <div class="news-card">
             <div class="news-thumb-wrapper">
-              <img src="${article.image_url || '/media/news/news_1.png'}" alt="${title}" class="news-thumb" loading="lazy" />
+              <img src="${article.image_url || '/media/news/news_1.webp'}" alt="${title}" class="news-thumb" loading="lazy" decoding="async" width="400" height="220" />
             </div>
             <div class="news-content">
               <div class="news-meta">

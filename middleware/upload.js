@@ -152,9 +152,77 @@ async function processProfilePhoto(file, prefix = 'photo') {
   return `/media/uploads/${webpFilename}`;
 }
 
+/**
+ * Automatically optimizes any uploaded image (PNG/JPG/SVG/WEBP) to WebP format.
+ * Preserves transparency for branding, stamps, and signatures.
+ * Updates file.path, file.filename, and file.publicUrl so downstream routes
+ * seamlessly receive the optimized WebP asset!
+ */
+async function optimizeUploadedImage(file, options = {}) {
+  if (!file || !file.path) return file;
+  const ext = path.extname(file.path).toLowerCase();
+  
+  // If SVG, keep as vector
+  if (ext === '.svg') return file;
+
+  try {
+    const metadata = await sharp(file.path).metadata();
+    if (!metadata || !metadata.format) return file;
+
+    const dir = path.dirname(file.path);
+    const baseName = path.basename(file.path, ext);
+    const webpFilename = `${baseName}.webp`;
+    const targetPath = path.join(dir, webpFilename);
+
+    const isTransparent = metadata.hasAlpha || metadata.channels === 4;
+    const isBranding = (file.subfolder === 'branding') || file.fieldname === 'logo' || file.fieldname === 'stamp' || file.fieldname === 'signature' || file.fieldname === 'flag';
+
+    let pipeline = sharp(file.path).rotate();
+    const maxDim = options.maxWidth || (isBranding ? 1600 : 1400);
+    if (metadata.width > maxDim || metadata.height > maxDim) {
+      pipeline = pipeline.resize(maxDim, maxDim, { fit: 'inside', withoutEnlargement: true });
+    }
+
+    if (isTransparent || isBranding) {
+      pipeline = pipeline.webp({ quality: 90, nearLossless: true, effort: 5 });
+    } else {
+      pipeline = pipeline.webp({ quality: 84, effort: 5 });
+    }
+
+    await pipeline.toFile(targetPath);
+
+    // If destination is different, safely remove unoptimized original
+    if (file.path !== targetPath && fs.existsSync(file.path)) {
+      try { fs.unlinkSync(file.path); } catch (e) {}
+    }
+
+    file.path = targetPath;
+    file.filename = webpFilename;
+    const subfolder = file.subfolder || 'uploads';
+    file.publicUrl = `/media/${subfolder}/${webpFilename}`;
+
+    // Generate thumbnail if project or news
+    if (subfolder === 'projects' || subfolder === 'news') {
+      try {
+        const thumbPath = path.join(dir, `${baseName}-thumb.webp`);
+        await sharp(targetPath)
+          .resize(480, 320, { fit: 'cover', position: 'center' })
+          .webp({ quality: 80 })
+          .toFile(thumbPath);
+        file.thumbnailUrl = `/media/${subfolder}/${baseName}-thumb.webp`;
+      } catch (e) {}
+    }
+  } catch (err) {
+    console.warn('[Upload Optimization Warning]', err.message);
+  }
+
+  return file;
+}
+
 module.exports = {
   upload,
   mediaRoot,
-  processProfilePhoto
+  processProfilePhoto,
+  optimizeUploadedImage
 };
 
