@@ -127,6 +127,7 @@ app.use('/media', (req, res, next) => {
   const filename = path.basename(reqPath);
   const possibleSubfolders = ['branding', 'uploads', 'hero', 'projects', 'news', 'categories'];
 
+  // 1. Standard subfolders
   for (const sub of possibleSubfolders) {
     const candidatePath = path.join(mediaDir, sub, filename);
     if (fs.existsSync(candidatePath)) {
@@ -134,14 +135,48 @@ app.use('/media', (req, res, next) => {
     }
   }
 
+  // 2. Nested qasreshabbir_media directory
+  for (const sub of possibleSubfolders) {
+    const candidatePath = path.join(mediaDir, 'qasreshabbir_media', sub, filename);
+    if (fs.existsSync(candidatePath)) {
+      return res.sendFile(candidatePath);
+    }
+  }
+
+  // 3. Flat filenames with backslash created by Windows zip on Linux
+  for (const sub of possibleSubfolders) {
+    const candidatePath = path.join(mediaDir, `${sub}\\${filename}`);
+    if (fs.existsSync(candidatePath)) {
+      return res.sendFile(candidatePath);
+    }
+    const nestedCandidatePath = path.join(mediaDir, 'qasreshabbir_media', `${sub}\\${filename}`);
+    if (fs.existsSync(nestedCandidatePath)) {
+      return res.sendFile(nestedCandidatePath);
+    }
+  }
+
   // Graceful fallback for logo and flag branding images
   if (reqPath.toLowerCase().includes('logo')) {
-    const fallbackLogo = path.join(mediaDir, 'branding', 'logo.svg');
-    if (fs.existsSync(fallbackLogo)) return res.sendFile(fallbackLogo);
+    const fallbacks = [
+      path.join(mediaDir, 'branding', 'logo.svg'),
+      path.join(mediaDir, 'qasreshabbir_media', 'branding', 'logo.svg'),
+      path.join(mediaDir, 'qasreshabbir_media', 'branding\\logo.svg'),
+      path.join(mediaDir, 'branding\\logo.svg')
+    ];
+    for (const fb of fallbacks) {
+      if (fs.existsSync(fb)) return res.sendFile(fb);
+    }
   }
   if (reqPath.toLowerCase().includes('flag')) {
-    const fallbackFlag = path.join(mediaDir, 'branding', 'flag.svg');
-    if (fs.existsSync(fallbackFlag)) return res.sendFile(fallbackFlag);
+    const fallbacks = [
+      path.join(mediaDir, 'branding', 'flag.svg'),
+      path.join(mediaDir, 'qasreshabbir_media', 'branding', 'flag.svg'),
+      path.join(mediaDir, 'qasreshabbir_media', 'branding\\flag.svg'),
+      path.join(mediaDir, 'branding\\flag.svg')
+    ];
+    for (const fb of fallbacks) {
+      if (fs.existsSync(fb)) return res.sendFile(fb);
+    }
   }
 
   next();
