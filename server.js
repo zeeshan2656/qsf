@@ -16,11 +16,13 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Resolve External Media Directory (located outside project root)
-function resolveMediaDir() {
-  if (process.env.MEDIA_DIR && fs.existsSync(path.resolve(process.env.MEDIA_DIR))) {
-    return path.resolve(process.env.MEDIA_DIR);
-  }
-  const candidates = [
+function getMediaCandidates() {
+  return [
+    path.resolve(__dirname, '../../../qasreshabbir_media'),
+    path.resolve(__dirname, '../../../../qasreshabbir_media'),
+    path.resolve(process.cwd(), '../../../qasreshabbir_media'),
+    path.resolve(process.cwd(), '../../qasreshabbir_media'),
+    '/home/u434697879/domains/freehub.live/qasreshabbir_media',
     process.env.MEDIA_DIR ? path.resolve(process.env.MEDIA_DIR) : null,
     '/home/u434697879/qasreshabbir_media',
     path.resolve(__dirname, '../../qasreshabbir_media'),
@@ -28,12 +30,34 @@ function resolveMediaDir() {
     path.resolve(process.cwd(), '../qasreshabbir_media'),
     path.resolve(process.cwd(), 'qasreshabbir_media')
   ].filter(Boolean);
+}
 
+function resolveMediaDir() {
+  const candidates = getMediaCandidates();
+
+  // First priority: pick the directory that actually has files in it!
   for (const c of candidates) {
     if (fs.existsSync(c)) {
-      return c;
+      for (const sub of ['projects', 'uploads', 'branding', 'news', 'hero']) {
+        const testP = path.join(c, sub);
+        if (fs.existsSync(testP)) {
+          try {
+            const files = fs.readdirSync(testP);
+            if (files.length > 0) {
+              console.log(`[Storage] Selected active media directory with ${files.length} ${sub} files: ${c}`);
+              return c;
+            }
+          } catch (e) {}
+        }
+      }
     }
   }
+
+  // Second priority: first existing directory
+  for (const c of candidates) {
+    if (fs.existsSync(c)) return c;
+  }
+
   return process.env.MEDIA_DIR ? path.resolve(process.env.MEDIA_DIR) : path.resolve(__dirname, '../qasreshabbir_media');
 }
 
@@ -174,6 +198,19 @@ app.use('/media', (req, res, next) => {
     const nestedCandidatePath = path.join(mediaDir, 'qasreshabbir_media', `${sub}\\${filename}`);
     if (fs.existsSync(nestedCandidatePath)) {
       return res.sendFile(nestedCandidatePath);
+    }
+  }
+
+  // 4. Search across all candidate root directories
+  const allCandidates = getMediaCandidates();
+  for (const root of allCandidates) {
+    if (root !== mediaDir && fs.existsSync(root)) {
+      for (const sub of possibleSubfolders) {
+        const candidatePath = path.join(root, sub, filename);
+        if (fs.existsSync(candidatePath)) {
+          return res.sendFile(candidatePath);
+        }
+      }
     }
   }
 

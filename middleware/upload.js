@@ -3,10 +3,12 @@ const path = require('path');
 const fs = require('fs');
 
 function resolveMediaRoot() {
-  if (process.env.MEDIA_DIR && fs.existsSync(path.resolve(process.env.MEDIA_DIR))) {
-    return path.resolve(process.env.MEDIA_DIR);
-  }
   const candidates = [
+    path.resolve(__dirname, '../../../../qasreshabbir_media'),
+    path.resolve(__dirname, '../../../../../qasreshabbir_media'),
+    path.resolve(process.cwd(), '../../../qasreshabbir_media'),
+    path.resolve(process.cwd(), '../../qasreshabbir_media'),
+    '/home/u434697879/domains/freehub.live/qasreshabbir_media',
     process.env.MEDIA_DIR ? path.resolve(process.env.MEDIA_DIR) : null,
     '/home/u434697879/qasreshabbir_media',
     path.resolve(__dirname, '../../qasreshabbir_media'),
@@ -17,8 +19,22 @@ function resolveMediaRoot() {
 
   for (const c of candidates) {
     if (fs.existsSync(c)) {
-      return c;
+      for (const sub of ['projects', 'uploads', 'branding', 'news', 'hero']) {
+        const testP = path.join(c, sub);
+        if (fs.existsSync(testP)) {
+          try {
+            const files = fs.readdirSync(testP);
+            if (files.length > 0) {
+              return c;
+            }
+          } catch (e) {}
+        }
+      }
     }
+  }
+
+  for (const c of candidates) {
+    if (fs.existsSync(c)) return c;
   }
   return process.env.MEDIA_DIR ? path.resolve(process.env.MEDIA_DIR) : path.resolve(__dirname, '../../qasreshabbir_media');
 }
