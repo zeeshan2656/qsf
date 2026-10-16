@@ -7483,11 +7483,11 @@ document.addEventListener('DOMContentLoaded', () => {
               </tr>
               <tr>
                 <td class="id-card-meta-label">Department:</td>
-                <td class="id-card-meta-value" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 175px;">${escapeHtml(deptValue)}</td>
+                <td class="id-card-meta-value" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; font-size: 0.65rem;" title="${escapeHtml(deptValue)}">${escapeHtml(deptValue)}</td>
               </tr>
               <tr>
                 <td class="id-card-meta-label">Role:</td>
-                <td class="id-card-meta-value" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 175px;">${escapeHtml(roleValue)}</td>
+                <td class="id-card-meta-value" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; font-size: 0.65rem;" title="${escapeHtml(roleValue)}">${escapeHtml(roleValue)}</td>
               </tr>
               <tr>
                 <td class="id-card-meta-label">Valid Thru:</td>
@@ -7526,11 +7526,11 @@ document.addEventListener('DOMContentLoaded', () => {
         ${watermarkImg}
 
         <!-- Header -->
-        <div class="id-card-header" style="padding: 7px 14px 5px;">
-          <img src="${escapeHtml(b.logo_url || '/media/branding/logo.svg')}" alt="Logo" class="id-card-header-logo" style="width: 32px; height: 32px;" onerror="this.src='/media/branding/logo.svg';" />
+        <div class="id-card-header" style="padding: 5px 14px 4px;">
+          <img src="${escapeHtml(b.logo_url || '/media/branding/logo.svg')}" alt="Logo" class="id-card-header-logo" style="width: 30px; height: 30px;" onerror="this.src='/media/branding/logo.svg';" />
           <div class="id-card-header-titles">
-            <div class="id-card-foundation-name-en" style="font-size: 0.78rem;">${escapeHtml(b.foundation_name_en || 'QASR-E-SHABBIR FOUNDATION')}</div>
-            <div class="id-card-foundation-tagline" style="font-size: 0.58rem; color: #FECDD3;">${escapeHtml(b.tagline_en || 'EMPOWERING COMMUNITIES • RESTORING HOPE')}</div>
+            <div class="id-card-foundation-name-en" style="font-size: 0.76rem;">${escapeHtml(b.foundation_name_en || 'QASR-E-SHABBIR FOUNDATION')}</div>
+            <div class="id-card-foundation-tagline" style="font-size: 0.54rem; color: #FECDD3;">${escapeHtml(b.tagline_en || 'EMPOWERING COMMUNITIES • RESTORING HOPE')}</div>
           </div>
         </div>
 
@@ -7547,7 +7547,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           <div class="id-card-contact-box">
             <div><strong>Central Office:</strong> ${escapeHtml(b.address_en || 'Anjuman-e-Hussainia Anwaria Town Jalandhar Parachinar')}</div>
-            <div style="direction: rtl; font-family: 'Noto Nastaliq Urdu', Tahoma, sans-serif; font-size: 0.62rem; color: #475569; margin: 2px 0;">
+            <div style="direction: rtl; font-family: 'Noto Nastaliq Urdu', Tahoma, sans-serif; font-size: 0.60rem; color: #475569; margin: 2px 0;">
               ${escapeHtml(b.address_ur || 'انجمن حسینیہ انواریہ ٹاؤن جالندھر پاراچنار')}
             </div>
             <div style="display: flex; justify-content: space-between; margin-top: 3px; font-weight: 600;">
@@ -7562,21 +7562,25 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div style="text-align: right;">
               <div class="id-card-security-hash">${escapeHtml(meta.security_hash || 'QSF-SECURE')}</div>
-              <div style="font-size: 0.55rem; color: #94A3B8;">CR80 Standard ID Specification</div>
+              <div style="font-size: 0.52rem; color: #94A3B8;">CR80 Standard ID Specification</div>
             </div>
           </div>
         </div>
       </div>
     `;
 
+    // Wrap each card in print container to maintain exact CR80 physical proportions
+    const frontCardWrapped = `<div class="id-card-print-container">${frontCardHtml}</div>`;
+    const backCardWrapped = `<div class="id-card-print-container">${backCardHtml}</div>`;
+
     // Render based on view mode
     let contentHtml = '<div class="id-card-display-grid id-card-printable-area">';
     if (currentIdCardViewMode === 'dual') {
-      contentHtml += frontCardHtml + backCardHtml;
+      contentHtml += frontCardWrapped + backCardWrapped;
     } else if (currentIdCardViewMode === 'front') {
-      contentHtml += frontCardHtml;
+      contentHtml += frontCardWrapped;
     } else if (currentIdCardViewMode === 'back') {
-      contentHtml += backCardHtml;
+      contentHtml += backCardWrapped;
     }
     contentHtml += '</div>';
 
@@ -7590,22 +7594,11 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     document.body.classList.add('printing-id-card');
-    
-    // Ensure both sides are rendered for printing if in single view
-    const savedMode = currentIdCardViewMode;
-    if (savedMode !== 'dual') {
-      currentIdCardViewMode = 'dual';
-      renderIdCardCards();
-    }
 
     setTimeout(() => {
       window.print();
       setTimeout(() => {
         document.body.classList.remove('printing-id-card');
-        if (savedMode !== 'dual') {
-          currentIdCardViewMode = savedMode;
-          renderIdCardCards();
-        }
       }, 500);
     }, 150);
   };
@@ -7618,6 +7611,75 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     alert('PDF Export Instructions:\n\n1. The system print preview will open now.\n2. In the "Destination" dropdown, choose "Save as PDF".\n3. Set Margins to "None" or "Default" and ensure "Background graphics" is checked.\n4. Click "Save" to save your official CR80 Identity Card in high-resolution PDF format.');
     printIdCard();
+  };
+
+  // Save Card as High-Resolution Image (PNG)
+  window.downloadIdCardImage = async function(side = 'both') {
+    if (!currentIdCardData) {
+      alert('No identity card loaded to save.');
+      return;
+    }
+
+    if (typeof html2canvas !== 'function') {
+      alert('Image generation engine is initializing. Please try again in a few moments, or use Print / Download PDF.');
+      return;
+    }
+
+    const subject = currentIdCardData.subject || {};
+    const isStaff = currentIdCardData.type === 'staff';
+    const idValue = isStaff ? (subject.employee_id || 'STAFF') : (subject.reference_no || 'VOL');
+    const safeName = (subject.full_name || 'Cardholder').replace(/[^a-zA-Z0-9_-]/g, '_');
+
+    // Ensure both cards exist in DOM if user wants both or back
+    const originalViewMode = currentIdCardViewMode;
+    if (side === 'both' && originalViewMode !== 'dual') {
+      currentIdCardViewMode = 'dual';
+      renderIdCardCards();
+    }
+
+    const captureElement = async (el, sideLabel) => {
+      if (!el) return;
+      try {
+        const canvas = await html2canvas(el, {
+          scale: 3, // 300+ DPI high resolution
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#FFFFFF',
+          logging: false
+        });
+        const dataUrl = canvas.toDataURL('image/png', 1.0);
+        const link = document.createElement('a');
+        link.download = `QSF_${sideLabel}_${safeName}_${idValue}.png`;
+        link.href = dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (err) {
+        console.error('Error saving image:', err);
+        alert('Could not save ' + sideLabel + ' image: ' + err.message);
+      }
+    };
+
+    const frontEl = document.getElementById('idCardFrontSide');
+    const backEl = document.getElementById('idCardBackSide');
+
+    if (side === 'front') {
+      if (frontEl) await captureElement(frontEl, 'Front');
+    } else if (side === 'back') {
+      if (backEl) await captureElement(backEl, 'Back');
+    } else {
+      // Both sides
+      if (frontEl) await captureElement(frontEl, 'Front');
+      if (backEl) {
+        setTimeout(async () => {
+          await captureElement(backEl, 'Back');
+          if (originalViewMode !== 'dual') {
+            currentIdCardViewMode = originalViewMode;
+            renderIdCardCards();
+          }
+        }, 350);
+      }
+    }
   };
 
   // ==================== UNIVERSAL MEDIA LIBRARY & ASSET PICKER ====================

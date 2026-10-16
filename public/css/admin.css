@@ -2766,11 +2766,23 @@ select.form-control[dir="rtl"] {
   padding: 10px 0;
 }
 
-/* CR80 Standard ID Card Box (Screen: 430px x 270px; Print: 85.6mm x 54mm) */
+/* Print Container Wrapper: Maintains standard flex flow on screen, exact CR80 85.6mm x 54mm bounds in print */
+.id-card-print-container {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  background: transparent;
+}
+
+/* CR80 Standard ID Card Box (Screen: 430px x 270px; Print: 85.6mm x 54mm via 0.7524 vector scale) */
 .id-card-box {
   width: 430px;
   height: 270px;
-  max-width: 100%;
+  min-width: 430px;
+  min-height: 270px;
+  max-width: 430px;
+  max-height: 270px;
   border-radius: 12px;
   background: #FFFFFF;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
@@ -2794,13 +2806,14 @@ select.form-control[dir="rtl"] {
 
 /* Card Header */
 .id-card-header {
-  padding: 8px 14px 6px;
+  padding: 6px 14px 5px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   color: #FFFFFF;
   position: relative;
   z-index: 2;
+  flex-shrink: 0;
 }
 .id-card-staff .id-card-header {
   background: linear-gradient(135deg, #450A0A 0%, #7F1D1D 55%, #991B1B 100%);
@@ -2812,13 +2825,13 @@ select.form-control[dir="rtl"] {
 }
 
 .id-card-header-logo {
-  width: 48px;
-  height: 48px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   object-fit: contain;
   background: #FFFFFF;
-  padding: 2.5px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+  padding: 2px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
   flex-shrink: 0;
 }
 .id-card-header-titles {
@@ -2828,9 +2841,9 @@ select.form-control[dir="rtl"] {
 }
 .id-card-foundation-name-en {
   font-family: 'Outfit', sans-serif;
-  font-size: 0.86rem;
+  font-size: 0.82rem;
   font-weight: 800;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
   color: #FFFFFF;
   white-space: nowrap;
@@ -2839,14 +2852,15 @@ select.form-control[dir="rtl"] {
 }
 .id-card-foundation-name-ur {
   font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', Tahoma, sans-serif;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: #FEF08A;
   direction: rtl;
   display: block;
+  line-height: 1.25;
 }
 .id-card-foundation-tagline {
-  font-size: 0.58rem;
+  font-size: 0.54rem;
   font-weight: 600;
   color: #FDE68A;
   letter-spacing: 0.3px;
@@ -2862,12 +2876,13 @@ select.form-control[dir="rtl"] {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 3px 14px;
-  font-size: 0.68rem;
+  padding: 2.5px 14px;
+  font-size: 0.65rem;
   font-weight: 800;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
   z-index: 2;
+  flex-shrink: 0;
 }
 .id-card-staff .id-card-role-ribbon {
   background: #FFF1F2;
@@ -2883,19 +2898,20 @@ select.form-control[dir="rtl"] {
 /* Card Body */
 .id-card-body {
   flex: 1;
-  padding: 8px 14px;
+  padding: 6px 14px;
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: stretch;
   position: relative;
   z-index: 2;
+  min-height: 0;
 }
 
 /* Photo Box */
 .id-card-photo-wrapper {
-  width: 86px;
-  height: 104px;
-  min-height: 104px;
+  width: 82px;
+  height: 98px;
+  min-height: 98px;
   border-radius: 6px;
   overflow: hidden;
   border: 2px solid #CBD5E1;
@@ -2938,35 +2954,36 @@ select.form-control[dir="rtl"] {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 104px;
+  height: 98px;
 }
 .id-card-name {
   font-family: 'Outfit', sans-serif;
-  font-size: 0.94rem;
+  font-size: 0.90rem;
   font-weight: 800;
   color: #0F172A;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   margin-bottom: 1px;
+  line-height: 1.15;
 }
 .id-card-designation-box {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 .id-card-designation {
-  font-size: 0.70rem;
+  font-size: 0.68rem;
   font-weight: 700;
   color: #475569;
 }
 .id-card-designation-ur {
   font-family: 'Noto Nastaliq Urdu', Tahoma, sans-serif;
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   font-weight: 700;
   color: #64748B;
   direction: rtl;
@@ -2974,23 +2991,24 @@ select.form-control[dir="rtl"] {
 .id-card-meta-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.67rem;
-  line-height: 1.35;
+  font-size: 0.65rem;
+  line-height: 1.25;
 }
 .id-card-meta-label {
   color: #64748B;
   font-weight: 600;
-  width: 32%;
-  padding: 1px 0;
+  width: 28%;
+  padding: 0.5px 0;
+  white-space: nowrap;
 }
 .id-card-meta-value {
   color: #0F172A;
   font-weight: 700;
-  padding: 1px 0;
+  padding: 0.5px 0;
 }
 .id-card-meta-value.mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   letter-spacing: 0.5px;
 }
 .id-card-staff .id-card-meta-value.mono {
@@ -3000,47 +3018,48 @@ select.form-control[dir="rtl"] {
   color: #047857;
 }
 
-/* Watermark Seal - Centered and Enlarged on Both Front & Back */
+/* Watermark Seal - Centered on Both Front & Back */
 .id-card-watermark-seal {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 185px;
-  height: 185px;
-  opacity: 0.085;
+  width: 170px;
+  height: 170px;
+  opacity: 0.08;
   pointer-events: none;
   z-index: 1;
   object-fit: contain;
 }
 
-/* Official Stamp on Card - Moved slightly upward & enlarged */
+/* Official Stamp on Card */
 .id-card-official-stamp {
   position: absolute;
-  right: 18px;
-  bottom: 26px;
-  width: 72px;
-  height: 72px;
-  opacity: 0.78;
+  right: 12px;
+  bottom: 28px;
+  width: 62px;
+  height: 62px;
+  opacity: 0.72;
   pointer-events: none;
   z-index: 3;
   transform: rotate(-6deg);
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.12));
 }
 
 /* Card Footer */
 .id-card-footer {
-  padding: 4px 14px;
+  padding: 3px 14px;
   background: #F1F5F9;
   border-top: 1px solid #E2E8F0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.62rem;
+  font-size: 0.60rem;
   color: #64748B;
   position: relative;
   z-index: 2;
-  min-height: 38px;
+  min-height: 32px;
+  flex-shrink: 0;
 }
 
 /* Official Signatory Display */
@@ -3052,10 +3071,9 @@ select.form-control[dir="rtl"] {
   z-index: 4;
 }
 .id-card-assigned-signature {
-  height: 26px;
-  max-width: 110px;
+  height: 24px;
+  max-width: 100px;
   object-fit: contain;
-  /* Display in signature green */
   filter: invert(34%) sepia(85%) saturate(740%) hue-rotate(115deg) brightness(88%) contrast(105%);
   margin-bottom: 1px;
   display: block;
@@ -3065,46 +3083,47 @@ select.form-control[dir="rtl"] {
   line-height: 1.1;
 }
 .id-card-signer-title {
-  font-size: 0.55rem;
+  font-size: 0.54rem;
   font-weight: 700;
   color: #065F46;
 }
 .id-card-signer-sub {
-  font-size: 0.50rem;
+  font-size: 0.48rem;
   color: #64748B;
 }
 
 /* ==================== BACK OF ID CARD ==================== */
 .id-card-back-body {
-  padding: 10px 14px;
+  padding: 6px 14px 5px;
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   position: relative;
   z-index: 2;
+  min-height: 0;
 }
 .id-card-terms-text {
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   color: #475569;
-  line-height: 1.35;
-  margin-bottom: 6px;
+  line-height: 1.25;
+  margin-bottom: 3px;
 }
 .id-card-terms-text-ur {
   font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', Tahoma, sans-serif;
-  font-size: 0.66rem;
+  font-size: 0.60rem;
   color: #334155;
   direction: rtl;
-  line-height: 1.5;
-  margin-bottom: 8px;
+  line-height: 1.35;
+  margin-bottom: 4px;
 }
 .id-card-contact-box {
   background: #F8FAFC;
   border: 1px solid #E2E8F0;
   border-radius: 6px;
-  padding: 6px 10px;
-  font-size: 0.62rem;
-  line-height: 1.35;
+  padding: 4px 8px;
+  font-size: 0.58rem;
+  line-height: 1.25;
   color: #334155;
 }
 .id-card-contact-box strong {
@@ -3115,14 +3134,14 @@ select.form-control[dir="rtl"] {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 6px;
+  padding-top: 3px;
   border-top: 1px dashed #CBD5E1;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 .id-card-barcode-lines {
   display: flex;
   gap: 1.5px;
-  height: 22px;
+  height: 18px;
   align-items: flex-end;
 }
 .barcode-bar {
@@ -3131,7 +3150,7 @@ select.form-control[dir="rtl"] {
 }
 .id-card-security-hash {
   font-family: monospace;
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   font-weight: 700;
   color: #64748B;
   letter-spacing: 0.5px;
@@ -3139,11 +3158,17 @@ select.form-control[dir="rtl"] {
 
 /* ==================== PRINT & PDF OPTIMIZATION ==================== */
 @media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm;
+  }
+
   body.printing-id-card {
     background: #FFFFFF !important;
     color: #000000 !important;
     margin: 0 !important;
     padding: 0 !important;
+    width: 100% !important;
   }
 
   body.printing-id-card * {
@@ -3158,7 +3183,11 @@ select.form-control[dir="rtl"] {
   body.printing-id-card .id-card-controls-bar,
   body.printing-id-card .modal-close-btn,
   body.printing-id-card #sidebarCloseBtn,
-  body.printing-id-card .btn-admin {
+  body.printing-id-card .btn-admin,
+  body.printing-id-card .modal-header-compact,
+  body.printing-id-card #idCardModalTitle,
+  body.printing-id-card #idCardModalSubtitle,
+  body.printing-id-card div[style*="Official Cryptographic Ref"] {
     display: none !important;
   }
 
@@ -3170,6 +3199,7 @@ select.form-control[dir="rtl"] {
     margin: 0 !important;
     width: 100% !important;
     height: auto !important;
+    overflow: visible !important;
   }
 
   body.printing-id-card .id-card-modal-card {
@@ -3179,6 +3209,15 @@ select.form-control[dir="rtl"] {
     padding: 0 !important;
     max-width: 100% !important;
     width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  body.printing-id-card #idCardModalBody {
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
   body.printing-id-card .id-card-display-grid {
@@ -3187,19 +3226,46 @@ select.form-control[dir="rtl"] {
     flex-wrap: wrap !important;
     justify-content: center !important;
     align-items: center !important;
-    gap: 10mm !important;
-    margin: 15mm auto !important;
+    gap: 8mm !important;
+    margin: 8mm auto !important;
     padding: 0 !important;
     page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  body.printing-id-card .id-card-print-container {
+    width: 85.6mm !important;
+    height: 54mm !important;
+    max-width: 85.6mm !important;
+    max-height: 54mm !important;
+    overflow: hidden !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    display: inline-block !important;
+    position: relative !important;
+    box-sizing: border-box !important;
+    border-radius: 3.18mm !important;
+    border: 1px solid #94A3B8 !important;
+    background: #FFFFFF !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 
   body.printing-id-card .id-card-box {
-    width: 85.6mm !important;
-    height: 54mm !important;
-    border-radius: 3.18mm !important;
+    width: 430px !important;
+    height: 270px !important;
+    min-width: 430px !important;
+    min-height: 270px !important;
+    max-width: 430px !important;
+    max-height: 270px !important;
+    box-sizing: border-box !important;
+    transform: scale(0.7524) !important;
+    transform-origin: top left !important;
+    border: none !important;
+    border-radius: 0 !important;
     box-shadow: none !important;
-    border: 1px solid #94A3B8 !important;
-    page-break-inside: avoid !important;
     margin: 0 !important;
     overflow: hidden !important;
   }

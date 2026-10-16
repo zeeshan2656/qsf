@@ -2874,11 +2874,14 @@
           </div>
         </div>
 
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <button type="button" class="btn-admin btn-admin-secondary" onclick="downloadIdCardPdf()" style="padding: 6px 14px; font-size: 0.82rem; font-weight: 600;">
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <button type="button" class="btn-admin btn-admin-secondary" onclick="downloadIdCardImage('both')" style="padding: 6px 14px; font-size: 0.82rem; font-weight: 600;" title="Save high-resolution PNG image (Front & Back)">
+            <i class="fas fa-file-image" style="color: #0284C7;"></i> Save Image (PNG)
+          </button>
+          <button type="button" class="btn-admin btn-admin-secondary" onclick="downloadIdCardPdf()" style="padding: 6px 14px; font-size: 0.82rem; font-weight: 600;" title="Export standard CR80 PDF">
             <i class="fas fa-file-pdf" style="color: #DC2626;"></i> Download PDF
           </button>
-          <button type="button" class="btn-admin btn-admin-primary" onclick="printIdCard()" style="padding: 6px 16px; font-size: 0.82rem; font-weight: 700;">
+          <button type="button" class="btn-admin btn-admin-primary" onclick="printIdCard()" style="padding: 6px 16px; font-size: 0.82rem; font-weight: 700;" title="Print on standard printer or PVC card machine">
             <i class="fas fa-print"></i> Print Card
           </button>
         </div>
@@ -3304,6 +3307,7 @@
     </div>
   </div>
 
+  <script src="/js/html2canvas.min.js"></script>
   <script src="/js/admin.js" defer></script>
 </body>
 </html>
