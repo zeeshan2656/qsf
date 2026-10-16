@@ -16,9 +16,28 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Resolve External Media Directory (located outside project root)
-const mediaDir = process.env.MEDIA_DIR
-  ? path.resolve(process.env.MEDIA_DIR)
-  : path.resolve(__dirname, '../qasreshabbir_media');
+function resolveMediaDir() {
+  if (process.env.MEDIA_DIR && fs.existsSync(path.resolve(process.env.MEDIA_DIR))) {
+    return path.resolve(process.env.MEDIA_DIR);
+  }
+  const candidates = [
+    process.env.MEDIA_DIR ? path.resolve(process.env.MEDIA_DIR) : null,
+    '/home/u434697879/qasreshabbir_media',
+    path.resolve(__dirname, '../../qasreshabbir_media'),
+    path.resolve(__dirname, '../qasreshabbir_media'),
+    path.resolve(process.cwd(), '../qasreshabbir_media'),
+    path.resolve(process.cwd(), 'qasreshabbir_media')
+  ].filter(Boolean);
+
+  for (const c of candidates) {
+    if (fs.existsSync(c)) {
+      return c;
+    }
+  }
+  return process.env.MEDIA_DIR ? path.resolve(process.env.MEDIA_DIR) : path.resolve(__dirname, '../qasreshabbir_media');
+}
+
+const mediaDir = resolveMediaDir();
 
 // Ensure media directory exists
 if (!fs.existsSync(mediaDir)) {

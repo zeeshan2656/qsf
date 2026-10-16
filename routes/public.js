@@ -59,6 +59,58 @@ router.get('/bootstrap', async (req, res) => {
   }
 });
 
+// GET /api/public/media-status (Diagnostic endpoint to verify media storage)
+router.get('/media-status', (req, res) => {
+  const fs = require('fs');
+  const path = require('path');
+
+  const candidates = [
+    process.env.MEDIA_DIR ? path.resolve(process.env.MEDIA_DIR) : null,
+    '/home/u434697879/qasreshabbir_media',
+    path.resolve(__dirname, '../../qasreshabbir_media'),
+    path.resolve(__dirname, '../qasreshabbir_media'),
+    path.resolve(process.cwd(), '../qasreshabbir_media'),
+    path.resolve(process.cwd(), 'qasreshabbir_media')
+  ].filter(Boolean);
+
+  let activeDir = null;
+  for (const c of candidates) {
+    if (fs.existsSync(c)) {
+      activeDir = c;
+      break;
+    }
+  }
+
+  const resolvedDir = activeDir || (process.env.MEDIA_DIR ? path.resolve(process.env.MEDIA_DIR) : path.resolve(__dirname, '../../qasreshabbir_media'));
+  const exists = fs.existsSync(resolvedDir);
+  const subfolders = ['branding', 'hero', 'projects', 'news', 'uploads'];
+  const folderDetails = {};
+
+  if (exists) {
+    subfolders.forEach(sub => {
+      const p = path.join(resolvedDir, sub);
+      if (fs.existsSync(p)) {
+        try {
+          const files = fs.readdirSync(p);
+          folderDetails[sub] = { exists: true, count: files.length, sample: files.slice(0, 5) };
+        } catch (e) {
+          folderDetails[sub] = { exists: true, error: e.message };
+        }
+      } else {
+        folderDetails[sub] = { exists: false };
+      }
+    });
+  }
+
+  return res.json({
+    status: 'ok',
+    envMediaDir: process.env.MEDIA_DIR || null,
+    activeDir: resolvedDir,
+    exists,
+    folderDetails
+  });
+});
+
 // GET /api/public/projects
 router.get('/projects', async (req, res) => {
   try {
