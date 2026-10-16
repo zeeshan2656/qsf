@@ -2821,8 +2821,9 @@ document.addEventListener('DOMContentLoaded', () => {
           </td>
           <td>
             <div>
-              <span class="role-badge ${roleClass}">${roleName}</span>
-              ${user.designation ? `<div style="font-size: 0.78rem; color: #475569; font-weight: 600; margin-top: 4px;">${escapeHtml(user.designation)}</div>` : ''}
+              <span class="role-badge ${roleClass}">${escapeHtml(user.role_name_en || roleName)}</span>
+              ${user.department_name_en ? `<div style="font-size: 0.74rem; color: #0284C7; font-weight: 600; margin-top: 3px;"><i class="fas fa-sitemap"></i> ${escapeHtml(user.department_name_en)}</div>` : ''}
+              ${(user.designation_name_en || user.designation) ? `<div style="font-size: 0.78rem; color: #475569; font-weight: 600; margin-top: 2px;">${escapeHtml(user.designation_name_en || user.designation)}</div>` : ''}
             </div>
           </td>
           <td style="max-width: 220px;">
@@ -2985,6 +2986,17 @@ document.addEventListener('DOMContentLoaded', () => {
     loadOfficialSignatures();
     const sigSelect = document.getElementById('user_signature_id');
     if (sigSelect) sigSelect.value = '';
+
+    const deptSelect = document.getElementById('user_department_id');
+    if (deptSelect) deptSelect.value = '';
+    const roleSelect = document.getElementById('user_role_id');
+    if (roleSelect) roleSelect.value = '';
+    const desigSelect = document.getElementById('user_designation_id');
+    if (desigSelect) desigSelect.value = '';
+    const desInput = document.getElementById('user_designation');
+    if (desInput) desInput.value = '';
+    const roleHidden = document.getElementById('user_role');
+    if (roleHidden) roleHidden.value = 'staff';
     
     // Photo reset for new user (mandatory)
     if (userPhotoInput) userPhotoInput.value = '';
@@ -3113,8 +3125,16 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="view-user-value">${escapeHtml(u.phone || 'Not provided')}</div>
           </div>
           <div class="view-user-field">
-            <label class="view-user-label"><i class="fas fa-briefcase"></i> Designation / Title</label>
-            <div class="view-user-value">${escapeHtml(u.designation || 'General Staff')}</div>
+            <label class="view-user-label"><i class="fas fa-sitemap"></i> Department / Wing</label>
+            <div class="view-user-value" style="font-weight: 600; color: #0284C7;">${escapeHtml(u.department_name_en || 'General Administration')}</div>
+          </div>
+          <div class="view-user-field">
+            <label class="view-user-label"><i class="fas fa-award"></i> Official Designation</label>
+            <div class="view-user-value" style="font-weight: 600; color: #1E293B;">${escapeHtml(u.designation_name_en || u.designation || 'Staff Member')}</div>
+          </div>
+          <div class="view-user-field">
+            <label class="view-user-label"><i class="fas fa-user-shield"></i> User Role</label>
+            <div class="view-user-value"><span class="role-badge ${roleClass}">${escapeHtml(u.role_name_en || roleName)}</span></div>
           </div>
           <div class="view-user-field">
             <label class="view-user-label"><i class="fas fa-calendar-check"></i> Account Created</label>
@@ -3176,8 +3196,13 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('user_password').value = '';
       document.getElementById('user_password').required = false;
       document.getElementById('userPasswordLabel').innerHTML = 'New Password (Optional)';
-      document.getElementById('userPasswordHint').style.display = 'block';
-      document.getElementById('user_role').value = user.role || 'admin';
+      document.getElementById('user_role').value = user.role || 'staff';
+      const deptSelect = document.getElementById('user_department_id');
+      if (deptSelect) deptSelect.value = user.department_id || '';
+      const roleSelect = document.getElementById('user_role_id');
+      if (roleSelect) roleSelect.value = user.role_id || '';
+      const desigSelect = document.getElementById('user_designation_id');
+      if (desigSelect) desigSelect.value = user.designation_id || '';
       document.getElementById('user_designation').value = user.designation || '';
       const desUrInput = document.getElementById('user_designation_ur');
       if (desUrInput) desUrInput.value = user.designation_ur || '';
@@ -3302,6 +3327,9 @@ document.addEventListener('DOMContentLoaded', () => {
       formData.append('username', document.getElementById('user_username').value.trim());
       formData.append('email', document.getElementById('user_email').value.trim());
       formData.append('role', document.getElementById('user_role').value);
+      formData.append('department_id', document.getElementById('user_department_id')?.value || '');
+      formData.append('role_id', document.getElementById('user_role_id')?.value || '');
+      formData.append('designation_id', document.getElementById('user_designation_id')?.value || '');
       formData.append('designation', document.getElementById('user_designation').value.trim());
       formData.append('designation_ur', (document.getElementById('user_designation_ur')?.value || '').trim());
       formData.append('signature_id', document.getElementById('user_signature_id')?.value || '');
@@ -3642,10 +3670,18 @@ document.addEventListener('DOMContentLoaded', () => {
                   <span><i class="fas fa-location-dot"></i> ${escapeHtml(v.city || 'N/A')}</span> • 
                   <span><i class="fas fa-envelope"></i> ${escapeHtml(v.email || '')}</span>
                 </div>
+                ${(v.department_name_en || v.designation_name_en) ? `
+                  <div style="font-size: 0.74rem; color: #0284C7; font-weight: 600; margin-top: 2px;">
+                    <i class="fas fa-sitemap"></i> ${escapeHtml(v.department_name_en || 'Welfare')}${v.designation_name_en ? ' • ' + escapeHtml(v.designation_name_en) : ''}
+                  </div>
+                ` : ''}
               </div>
             </div>
           </td>
-          <td>${typeBadge}</td>
+          <td>
+            ${typeBadge}
+            ${v.role_name_en ? `<div style="font-size: 0.74rem; color: #475569; font-weight: 600; margin-top: 3px;">${escapeHtml(v.role_name_en)}</div>` : ''}
+          </td>
           <td style="max-width: 180px; font-size: 0.8rem; color: #334155;">
             ${escapeHtml(v.areas_of_interest || 'General')}
           </td>
@@ -3761,6 +3797,18 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="view-user-item">
             <span class="view-user-label"><i class="fas fa-calendar-check"></i> Availability</span>
             <span class="view-user-val">${escapeHtml(v.availability || 'Flexible')}</span>
+          </div>
+          <div class="view-user-item">
+            <span class="view-user-label"><i class="fas fa-sitemap"></i> Department / Wing</span>
+            <span class="view-user-val" style="font-weight: 600; color: #0284C7;">${escapeHtml(v.department_name_en || 'Community Welfare & Relief')}</span>
+          </div>
+          <div class="view-user-item">
+            <span class="view-user-label"><i class="fas fa-id-badge"></i> Assigned Role</span>
+            <span class="view-user-val" style="font-weight: 600;">${escapeHtml(v.role_name_en || v.role || 'Volunteer')}</span>
+          </div>
+          <div class="view-user-item" style="grid-column: span 2;">
+            <span class="view-user-label"><i class="fas fa-briefcase"></i> Official Designation</span>
+            <span class="view-user-val" style="font-weight: 600; color: #1E293B;">${escapeHtml(v.designation_name_en || v.designation || 'Field Volunteer')}</span>
           </div>
           <div class="view-user-item" style="grid-column: span 2;">
             <span class="view-user-label"><i class="fas fa-heart"></i> Areas of Interest</span>
@@ -5418,6 +5466,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const desEn = document.getElementById('man_vol_designation'); if (desEn) desEn.value = '';
     const desUr = document.getElementById('man_vol_designation_ur'); if (desUr) desUr.value = '';
+    const rSel = document.getElementById('man_vol_role_id'); if (rSel) rSel.value = '';
+    const dSel = document.getElementById('man_vol_department_id'); if (dSel) dSel.value = '';
+    const dgSel = document.getElementById('man_vol_designation_id'); if (dgSel) dgSel.value = '';
     loadOfficialSignatures();
     const sigSel = document.getElementById('man_vol_signature_id'); if (sigSel) sigSel.value = '';
 
@@ -5451,6 +5502,9 @@ document.addEventListener('DOMContentLoaded', () => {
     formData.append('availability', document.getElementById('man_vol_availability').value);
     formData.append('status', document.getElementById('man_vol_status').value);
     formData.append('admin_notes', document.getElementById('man_vol_notes').value.trim());
+    formData.append('department_id', document.getElementById('man_vol_department_id')?.value || '');
+    formData.append('role_id', document.getElementById('man_vol_role_id')?.value || '');
+    formData.append('designation_id', document.getElementById('man_vol_designation_id')?.value || '');
     formData.append('designation', (document.getElementById('man_vol_designation')?.value || '').trim());
     formData.append('designation_ur', (document.getElementById('man_vol_designation_ur')?.value || '').trim());
     formData.append('signature_id', document.getElementById('man_vol_signature_id')?.value || '');
@@ -5567,6 +5621,12 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('edit_vol_notes').value = v.admin_notes || '';
       document.getElementById('edit_vol_designation').value = v.designation || '';
       document.getElementById('edit_vol_designation_ur').value = v.designation_ur || '';
+      const deptSel = document.getElementById('edit_vol_department_id');
+      if (deptSel) deptSel.value = v.department_id || '';
+      const roleSel = document.getElementById('edit_vol_role_id');
+      if (roleSel) roleSel.value = v.role_id || '';
+      const desigSel = document.getElementById('edit_vol_designation_id');
+      if (desigSel) desigSel.value = v.designation_id || '';
 
       loadOfficialSignatures();
       setTimeout(() => {
@@ -5624,6 +5684,9 @@ document.addEventListener('DOMContentLoaded', () => {
     formData.append('availability', document.getElementById('edit_vol_availability').value);
     formData.append('status', document.getElementById('edit_vol_status').value);
     formData.append('admin_notes', document.getElementById('edit_vol_notes').value.trim());
+    formData.append('department_id', document.getElementById('edit_vol_department_id')?.value || '');
+    formData.append('role_id', document.getElementById('edit_vol_role_id')?.value || '');
+    formData.append('designation_id', document.getElementById('edit_vol_designation_id')?.value || '');
     formData.append('designation', document.getElementById('edit_vol_designation').value.trim());
     formData.append('designation_ur', document.getElementById('edit_vol_designation_ur').value.trim());
     formData.append('signature_id', document.getElementById('edit_vol_signature_id').value);
@@ -5730,15 +5793,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function populateDesignationSelects(designations, filterDeptId = null) {
+  function populateDesignationSelects(designations, targetId = null, filterDeptId = null) {
     let list = designations.filter(d => d.is_active == 1);
     if (filterDeptId) {
       list = list.filter(d => !d.department_id || String(d.department_id) === String(filterDeptId));
     }
     const optionsHtml = '<option value="">Select Official Designation</option>' +
-      list.map(d => `<option value="${d.id}" data-en="${escapeHtml(d.title_en)}" data-ur="${escapeHtml(d.title_ur || '')}" data-dept="${d.department_id || ''}">${escapeHtml(d.title_en)}${d.department_name_en ? ` — ${escapeHtml(d.department_name_en)}` : ''}</option>`).join('');
+      list.map(d => {
+        const titleEn = d.title_en || d.name_en || '';
+        const titleUr = d.title_ur || d.name_ur || '';
+        return `<option value="${d.id}" data-en="${escapeHtml(titleEn)}" data-ur="${escapeHtml(titleUr)}" data-dept="${d.department_id || ''}">${escapeHtml(titleEn)}${d.department_name_en ? ` — ${escapeHtml(d.department_name_en)}` : ''}</option>`;
+      }).join('');
 
-    ['user_designation_id', 'man_vol_designation_id', 'edit_vol_designation_id'].forEach(id => {
+    const targetIds = targetId ? [targetId] : ['user_designation_id', 'man_vol_designation_id', 'edit_vol_designation_id'];
+    targetIds.forEach(id => {
       const el = document.getElementById(id);
       if (el) {
         const val = el.value;
@@ -5774,7 +5842,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Sync Dropdown change listeners
   window.onUserDepartmentSelect = function(deptId) {
-    populateDesignationSelects(allDesignationsData, deptId);
+    populateDesignationSelects(allDesignationsData, 'user_designation_id', deptId);
   };
 
   window.onUserRoleSelect = function(roleId) {
@@ -5800,7 +5868,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   window.onManVolDepartmentSelect = function(deptId) {
-    populateDesignationSelects(allDesignationsData, deptId);
+    populateDesignationSelects(allDesignationsData, 'man_vol_designation_id', deptId);
   };
 
   window.onManVolDesignationSelect = function(desigId) {
@@ -5814,7 +5882,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   window.onEditVolDepartmentSelect = function(deptId) {
-    populateDesignationSelects(allDesignationsData, deptId);
+    populateDesignationSelects(allDesignationsData, 'edit_vol_designation_id', deptId);
   };
 
   window.onEditVolDesignationSelect = function(desigId) {

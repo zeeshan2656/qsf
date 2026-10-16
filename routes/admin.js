@@ -1774,15 +1774,18 @@ router.get('/users/:id/id-card', async (req, res) => {
         phone: staff.phone || 'N/A',
         department_id: staff.department_id,
         department: finalDeptEn,
+        department_name_en: finalDeptEn,
         department_en: finalDeptEn,
         department_ur: finalDeptUr,
         department_code: staff.department_code || 'ADMIN',
         role_id: staff.role_id,
         role: staff.role || 'staff',
+        role_name_en: finalRoleEn,
         role_title_en: finalRoleEn,
         role_title_ur: finalRoleUr,
         designation_id: staff.designation_id,
         designation: finalDesignationEn,
+        designation_name_en: finalDesignationEn,
         designation_ur: finalDesignationUr,
         signature_id: staff.signature_id,
         photo_url: staff.photo_url || null,
@@ -2375,17 +2378,20 @@ router.get('/volunteers/:id/id-card', requirePermission('volunteers'), async (re
         application_type: vol.application_type,
         department_id: vol.department_id,
         department: finalDeptEn,
+        department_name_en: finalDeptEn,
         department_en: finalDeptEn,
         department_ur: finalDeptUr,
         department_code: vol.department_code || 'VOLUNTEER',
         role_id: vol.role_id,
         role: vol.role || (isIntern ? 'intern' : 'volunteer'),
+        role_name_en: roleTitleEn,
         role_title_en: roleTitleEn,
         role_title_ur: roleTitleUr,
         badge_label_en: badgeLabelEn,
         badge_label_ur: badgeLabelUr,
         designation_id: vol.designation_id,
         designation: finalDesignationEn,
+        designation_name_en: finalDesignationEn,
         designation_ur: finalDesignationUr,
         signature_id: vol.signature_id,
         areas_of_interest: vol.areas_of_interest || 'Community Welfare & Relief',
@@ -3326,6 +3332,7 @@ router.get('/designations', requirePermission('settings'), async (req, res) => {
   try {
     const [rows] = await db.query(`
       SELECT des.*,
+             des.name_en as title_en, des.name_ur as title_ur,
              d.name_en as department_name_en, d.name_ur as department_name_ur, d.code as department_code,
              (SELECT COUNT(*) FROM users u WHERE u.designation_id = des.id) as staff_count,
              (SELECT COUNT(*) FROM volunteer_applications v WHERE v.designation_id = des.id) as volunteer_count
@@ -3344,7 +3351,9 @@ router.get('/designations', requirePermission('settings'), async (req, res) => {
 router.get('/designations/:id', requirePermission('settings'), async (req, res) => {
   try {
     const [rows] = await db.query(`
-      SELECT des.*, d.name_en as department_name_en, d.name_ur as department_name_ur
+      SELECT des.*,
+             des.name_en as title_en, des.name_ur as title_ur,
+             d.name_en as department_name_en, d.name_ur as department_name_ur
       FROM designations des
       LEFT JOIN departments d ON des.department_id = d.id
       WHERE des.id = ?
@@ -3360,8 +3369,10 @@ router.get('/designations/:id', requirePermission('settings'), async (req, res) 
 // POST /api/admin/designations
 router.post('/designations', requirePermission('settings'), async (req, res) => {
   try {
-    const { name_en, name_ur, department_id, description, sort_order, is_active } = req.body;
-    if (!name_en || !name_ur) {
+    const { name_en, name_ur, title_en, title_ur, department_id, description, sort_order, is_active } = req.body;
+    const finalNameEn = (name_en || title_en || '').trim();
+    const finalNameUr = (name_ur || title_ur || '').trim();
+    if (!finalNameEn || !finalNameUr) {
       return res.status(400).json({ success: false, message: 'Designation title in English and Urdu are required.' });
     }
 
@@ -3371,8 +3382,8 @@ router.post('/designations', requirePermission('settings'), async (req, res) => 
       INSERT INTO designations (name_en, name_ur, department_id, description, sort_order, is_active)
       VALUES (?, ?, ?, ?, ?, ?)
     `, [
-      name_en.trim(),
-      name_ur.trim(),
+      finalNameEn,
+      finalNameUr,
       deptIdVal,
       description ? description.trim() : '',
       parseInt(sort_order, 10) || 0,
@@ -3381,13 +3392,13 @@ router.post('/designations', requirePermission('settings'), async (req, res) => 
 
     await db.query(
       'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
-      [req.session.user?.id, 'CREATE_DESIGNATION', 'designation', String(result.insertId), JSON.stringify({ name_en, department_id: deptIdVal })]
+      [req.session.user?.id, 'CREATE_DESIGNATION', 'designation', String(result.insertId), JSON.stringify({ name_en: finalNameEn, department_id: deptIdVal })]
     ).catch(() => {});
 
     return res.json({
       success: true,
       id: result.insertId,
-      message: `Designation '${name_en}' created successfully!`
+      message: `Designation '${finalNameEn}' created successfully!`
     });
   } catch (err) {
     console.error('[Designation POST]', err);
@@ -3399,7 +3410,9 @@ router.post('/designations', requirePermission('settings'), async (req, res) => 
 router.put('/designations/:id', requirePermission('settings'), async (req, res) => {
   try {
     const desId = req.params.id;
-    const { name_en, name_ur, department_id, description, sort_order, is_active } = req.body;
+    const { name_en, name_ur, title_en, title_ur, department_id, description, sort_order, is_active } = req.body;
+    const finalNameEn = (name_en !== undefined ? name_en : title_en);
+    const finalNameUr = (name_ur !== undefined ? name_ur : title_ur);
 
     const [rows] = await db.query('SELECT * FROM designations WHERE id = ?', [desId]);
     if (!rows.length) return res.status(404).json({ success: false, message: 'Designation not found.' });
@@ -3417,8 +3430,8 @@ router.put('/designations/:id', requirePermission('settings'), async (req, res) 
         updated_at = NOW()
       WHERE id = ?
     `, [
-      name_en ? name_en.trim() : null,
-      name_ur ? name_ur.trim() : null,
+      finalNameEn ? String(finalNameEn).trim() : null,
+      finalNameUr ? String(finalNameUr).trim() : null,
       deptIdVal,
       description !== undefined ? description.trim() : null,
       sort_order !== undefined ? parseInt(sort_order, 10) : null,
@@ -3457,6 +3470,7 @@ router.get('/categories', async (req, res) => {
   try {
     const [rows] = await db.query(`
       SELECT c.*,
+             c.icon as icon_class,
              (SELECT COUNT(*) FROM projects p WHERE p.category_id = c.id) as projects_count,
              (SELECT COUNT(*) FROM articles a WHERE a.category_id = c.id) as articles_count
       FROM categories c
@@ -3472,7 +3486,7 @@ router.get('/categories', async (req, res) => {
 // GET /api/admin/categories/:id
 router.get('/categories/:id', requirePermission('settings'), async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM categories WHERE id = ?', [req.params.id]);
+    const [rows] = await db.query('SELECT c.*, c.icon as icon_class FROM categories c WHERE c.id = ?', [req.params.id]);
     if (!rows.length) return res.status(404).json({ success: false, message: 'Category not found.' });
     return res.json({ success: true, category: rows[0] });
   } catch (err) {
@@ -3484,10 +3498,12 @@ router.get('/categories/:id', requirePermission('settings'), async (req, res) =>
 // POST /api/admin/categories
 router.post('/categories', requirePermission('settings'), async (req, res) => {
   try {
-    const { name_en, name_ur, slug, icon, description_en, description_ur, sort_order, is_active } = req.body;
+    const { name_en, name_ur, slug, icon, icon_class, description_en, description_ur, sort_order, is_active } = req.body;
     if (!name_en || !name_ur) {
       return res.status(400).json({ success: false, message: 'Category name in English and Urdu are required.' });
     }
+
+    const finalIcon = (icon || icon_class || 'shapes').trim();
 
     let cleanSlug = (slug ? slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-') : name_en.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-')) || 'category';
     cleanSlug = cleanSlug.replace(/-+/g, '-').replace(/^-|-$/g, '');
@@ -3503,7 +3519,7 @@ router.post('/categories', requirePermission('settings'), async (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       cleanSlug,
-      icon ? icon.trim() : 'shapes',
+      finalIcon,
       name_en.trim(),
       name_ur.trim(),
       description_en ? description_en.trim() : '',
