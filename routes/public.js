@@ -89,6 +89,7 @@ router.get('/media-status', (req, res) => {
   if (exists) {
     subfolders.forEach(sub => {
       const p = path.join(resolvedDir, sub);
+      const nestedP = path.join(resolvedDir, 'qasreshabbir_media', sub);
       if (fs.existsSync(p)) {
         try {
           const files = fs.readdirSync(p);
@@ -96,8 +97,34 @@ router.get('/media-status', (req, res) => {
         } catch (e) {
           folderDetails[sub] = { exists: true, error: e.message };
         }
+      } else if (fs.existsSync(nestedP)) {
+        try {
+          const files = fs.readdirSync(nestedP);
+          folderDetails[sub] = { exists: true, nested: true, count: files.length, sample: files.slice(0, 5) };
+        } catch (e) {
+          folderDetails[sub] = { exists: true, nested: true, error: e.message };
+        }
       } else {
-        folderDetails[sub] = { exists: false };
+        // Check if there are flat backslash files in resolvedDir or resolvedDir/qasreshabbir_media
+        try {
+          const allFiles = fs.readdirSync(resolvedDir);
+          const matched = allFiles.filter(f => f.startsWith(`${sub}\\`));
+          if (matched.length > 0) {
+            folderDetails[sub] = { exists: true, flatBackslash: true, count: matched.length, sample: matched.slice(0, 5) };
+          } else if (fs.existsSync(path.join(resolvedDir, 'qasreshabbir_media'))) {
+            const nestedFiles = fs.readdirSync(path.join(resolvedDir, 'qasreshabbir_media'));
+            const nestedMatched = nestedFiles.filter(f => f.startsWith(`${sub}\\`));
+            if (nestedMatched.length > 0) {
+              folderDetails[sub] = { exists: true, flatBackslashNested: true, count: nestedMatched.length, sample: nestedMatched.slice(0, 5) };
+            } else {
+              folderDetails[sub] = { exists: false };
+            }
+          } else {
+            folderDetails[sub] = { exists: false };
+          }
+        } catch (e) {
+          folderDetails[sub] = { exists: false };
+        }
       }
     });
   }
