@@ -138,6 +138,90 @@ router.get('/media-status', (req, res) => {
   });
 });
 
+// GET /api/public/sync-media (Auto-extracts zip and syncs media on Hostinger)
+router.get('/sync-media', (req, res) => {
+  const { execSync } = require('child_process');
+  const fs = require('fs');
+  const path = require('path');
+
+  const candidates = [
+    process.env.MEDIA_DIR ? path.resolve(process.env.MEDIA_DIR) : null,
+    '/home/u434697879/qasreshabbir_media',
+    path.resolve(__dirname, '../../qasreshabbir_media'),
+    path.resolve(__dirname, '../qasreshabbir_media'),
+    path.resolve(process.cwd(), '../qasreshabbir_media')
+  ].filter(Boolean);
+
+  let targetMediaDir = '/home/u434697879/qasreshabbir_media';
+  for (const c of candidates) {
+    if (fs.existsSync(c)) {
+      targetMediaDir = c;
+      break;
+    }
+  }
+
+  if (!fs.existsSync(targetMediaDir)) {
+    try {
+      fs.mkdirSync(targetMediaDir, { recursive: true });
+    } catch (e) {}
+  }
+
+  const zipCandidates = [
+    '/home/u434697879/qasreshabbir_media.zip',
+    '/home/u434697879/qasreshabbir_media/qasreshabbir_media.zip',
+    path.join(targetMediaDir, 'qasreshabbir_media.zip'),
+    path.resolve(process.cwd(), '../qasreshabbir_media.zip'),
+    path.resolve(process.cwd(), 'qasreshabbir_media.zip')
+  ];
+
+  const extractionLogs = [];
+  for (const z of zipCandidates) {
+    if (fs.existsSync(z)) {
+      try {
+        const out = execSync(`unzip -o "${z}" -d "${targetMediaDir}"`, { encoding: 'utf8' });
+        extractionLogs.push({ zip: z, status: 'extracted', output: out.slice(0, 300) });
+      } catch (err) {
+        extractionLogs.push({ zip: z, status: 'error', message: err.message });
+      }
+    }
+  }
+
+  // Check if files were nested inside qasreshabbir_media subfolder
+  const nestedFolder = path.join(targetMediaDir, 'qasreshabbir_media');
+  if (fs.existsSync(nestedFolder)) {
+    try {
+      execSync(`cp -rn "${nestedFolder}"/* "${targetMediaDir}"/ 2>/dev/null || true`);
+      extractionLogs.push({ nestedFolderPromotion: 'success' });
+    } catch (e) {
+      extractionLogs.push({ nestedFolderPromotion: 'error', message: e.message });
+    }
+  }
+
+  // Count current files in subfolders
+  const subfolders = ['branding', 'hero', 'projects', 'news', 'uploads'];
+  const folderCounts = {};
+  subfolders.forEach(s => {
+    const p = path.join(targetMediaDir, s);
+    if (fs.existsSync(p)) {
+      try {
+        const list = fs.readdirSync(p);
+        folderCounts[s] = { count: list.length, sample: list.slice(0, 3) };
+      } catch (e) {
+        folderCounts[s] = { error: e.message };
+      }
+    } else {
+      folderCounts[s] = { count: 0, exists: false };
+    }
+  });
+
+  return res.json({
+    status: 'ok',
+    targetMediaDir,
+    extractionLogs,
+    folderCounts
+  });
+});
+
 // GET /api/public/projects
 router.get('/projects', async (req, res) => {
   try {

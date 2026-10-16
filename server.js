@@ -46,6 +46,28 @@ if (!fs.existsSync(mediaDir)) {
 
 console.log(`[Storage] External Media Directory mounted at: ${mediaDir}`);
 
+// Auto-extract media zip if present on hostinger server
+try {
+  const { exec } = require('child_process');
+  const zipCandidates = [
+    '/home/u434697879/qasreshabbir_media.zip',
+    '/home/u434697879/qasreshabbir_media/qasreshabbir_media.zip',
+    path.join(mediaDir, 'qasreshabbir_media.zip')
+  ];
+  for (const z of zipCandidates) {
+    if (fs.existsSync(z)) {
+      console.log(`[Storage] Auto-extracting media archive: ${z} to ${mediaDir}`);
+      exec(`unzip -o "${z}" -d "${mediaDir}"`, () => {
+        const nested = path.join(mediaDir, 'qasreshabbir_media');
+        if (fs.existsSync(nested)) {
+          exec(`cp -rn "${nested}"/* "${mediaDir}"/ 2>/dev/null || true`);
+        }
+      });
+      break;
+    }
+  }
+} catch (e) {}
+
 // Security Headers (Configured for local assets & fonts)
 app.use(
   helmet({
