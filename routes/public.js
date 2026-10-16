@@ -63,78 +63,55 @@ router.get('/bootstrap', async (req, res) => {
 router.get('/media-status', (req, res) => {
   const fs = require('fs');
   const path = require('path');
+  const { execSync } = require('child_process');
 
-  const candidates = [
-    process.env.MEDIA_DIR ? path.resolve(process.env.MEDIA_DIR) : null,
+  let findOutput = '';
+  try {
+    findOutput = execSync('find /home -name "clean_water_project.png" 2>/dev/null || true', { encoding: 'utf8' }).trim();
+  } catch (e) {
+    findOutput = e.message;
+  }
+
+  const checkPaths = [
+    process.env.MEDIA_DIR,
+    path.resolve(__dirname, '../../../qasreshabbir_media'),
+    path.resolve(__dirname, '../../../../qasreshabbir_media'),
+    path.resolve(process.cwd(), '../../../qasreshabbir_media'),
     '/home/u434697879/qasreshabbir_media',
-    path.resolve(__dirname, '../../qasreshabbir_media'),
-    path.resolve(__dirname, '../qasreshabbir_media'),
-    path.resolve(process.cwd(), '../qasreshabbir_media'),
-    path.resolve(process.cwd(), 'qasreshabbir_media')
+    '/home/u434697879/domains/freehub.live/qasreshabbir_media'
   ].filter(Boolean);
 
-  let activeDir = null;
-  for (const c of candidates) {
-    if (fs.existsSync(c)) {
-      activeDir = c;
-      break;
-    }
-  }
-
-  const resolvedDir = activeDir || (process.env.MEDIA_DIR ? path.resolve(process.env.MEDIA_DIR) : path.resolve(__dirname, '../../qasreshabbir_media'));
-  const exists = fs.existsSync(resolvedDir);
-  const subfolders = ['branding', 'hero', 'projects', 'news', 'uploads'];
-  const folderDetails = {};
-
-  if (exists) {
-    subfolders.forEach(sub => {
-      const p = path.join(resolvedDir, sub);
-      const nestedP = path.join(resolvedDir, 'qasreshabbir_media', sub);
-      if (fs.existsSync(p)) {
-        try {
-          const files = fs.readdirSync(p);
-          folderDetails[sub] = { exists: true, count: files.length, sample: files.slice(0, 5) };
-        } catch (e) {
-          folderDetails[sub] = { exists: true, error: e.message };
-        }
-      } else if (fs.existsSync(nestedP)) {
-        try {
-          const files = fs.readdirSync(nestedP);
-          folderDetails[sub] = { exists: true, nested: true, count: files.length, sample: files.slice(0, 5) };
-        } catch (e) {
-          folderDetails[sub] = { exists: true, nested: true, error: e.message };
-        }
-      } else {
-        // Check if there are flat backslash files in resolvedDir or resolvedDir/qasreshabbir_media
-        try {
-          const allFiles = fs.readdirSync(resolvedDir);
-          const matched = allFiles.filter(f => f.startsWith(`${sub}\\`));
-          if (matched.length > 0) {
-            folderDetails[sub] = { exists: true, flatBackslash: true, count: matched.length, sample: matched.slice(0, 5) };
-          } else if (fs.existsSync(path.join(resolvedDir, 'qasreshabbir_media'))) {
-            const nestedFiles = fs.readdirSync(path.join(resolvedDir, 'qasreshabbir_media'));
-            const nestedMatched = nestedFiles.filter(f => f.startsWith(`${sub}\\`));
-            if (nestedMatched.length > 0) {
-              folderDetails[sub] = { exists: true, flatBackslashNested: true, count: nestedMatched.length, sample: nestedMatched.slice(0, 5) };
-            } else {
-              folderDetails[sub] = { exists: false };
-            }
+  const scannedCandidates = {};
+  checkPaths.forEach(p => {
+    const full = path.resolve(p);
+    if (fs.existsSync(full)) {
+      try {
+        const items = fs.readdirSync(full);
+        const details = {};
+        items.forEach(it => {
+          const itP = path.join(full, it);
+          if (fs.statSync(itP).isDirectory()) {
+            details[it] = fs.readdirSync(itP).slice(0, 5);
           } else {
-            folderDetails[sub] = { exists: false };
+            details[it] = 'file';
           }
-        } catch (e) {
-          folderDetails[sub] = { exists: false };
-        }
+        });
+        scannedCandidates[full] = details;
+      } catch (e) {
+        scannedCandidates[full] = e.message;
       }
-    });
-  }
+    } else {
+      scannedCandidates[full] = 'does not exist';
+    }
+  });
 
   return res.json({
     status: 'ok',
+    cwd: process.cwd(),
+    dirname: __dirname,
     envMediaDir: process.env.MEDIA_DIR || null,
-    activeDir: resolvedDir,
-    exists,
-    folderDetails
+    findOutput,
+    scannedCandidates
   });
 });
 
