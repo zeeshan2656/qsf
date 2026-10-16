@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const path = require('path');
+const fs = require('fs');
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
 const { requireAuth, requirePermission } = require('../middleware/auth');
-const { upload, processProfilePhoto, optimizeUploadedImage } = require('../middleware/upload');
+const { upload, mediaRoot, processProfilePhoto, optimizeUploadedImage } = require('../middleware/upload');
 
 const cache = require('../config/cache');
 
@@ -1202,6 +1203,71 @@ router.post('/upload', upload.single('image'), async (req, res) => {
   } catch (err) {
     console.error('[Upload Error]', err);
     return res.status(500).json({ success: false, message: 'Error processing upload.' });
+  }
+});
+
+// GET /api/admin/media-library (Scans media directory by folder and returns list of image assets)
+router.get('/media-library', async (req, res) => {
+  try {
+    const { folder, search } = req.query;
+    const subfolders = ['projects', 'news', 'branding', 'hero', 'uploads', 'categories'];
+    const targetFolders = (folder && folder !== 'all' && subfolders.includes(folder))
+      ? [folder]
+      : subfolders;
+
+    const allowedExts = ['.webp', '.png', '.jpg', '.jpeg', '.svg', '.gif'];
+    const filesList = [];
+
+    for (const sub of targetFolders) {
+      const folderPath = path.join(mediaRoot, sub);
+      if (fs.existsSync(folderPath)) {
+        try {
+          const files = fs.readdirSync(folderPath);
+          for (const f of files) {
+            if (f.endsWith('.bak')) continue;
+            const ext = path.extname(f).toLowerCase();
+            if (allowedExts.includes(ext)) {
+              try {
+                const stat = fs.statSync(path.join(folderPath, f));
+                if (stat.isFile()) {
+                  let sizeStr = '';
+                  if (stat.size < 1024) sizeStr = `${stat.size} B`;
+                  else if (stat.size < 1024 * 1024) sizeStr = `${(stat.size / 1024).toFixed(1)} KB`;
+                  else sizeStr = `${(stat.size / (1024 * 1024)).toFixed(1)} MB`;
+
+                  filesList.push({
+                    filename: f,
+                    folder: sub,
+                    url: `/media/${sub}/${f}`,
+                    size: stat.size,
+                    size_formatted: sizeStr,
+                    mtime: stat.mtimeMs,
+                    is_thumb: f.includes('-thumb.')
+                  });
+                }
+              } catch (e) {}
+            }
+          }
+        } catch (e) {}
+      }
+    }
+
+    filesList.sort((a, b) => b.mtime - a.mtime);
+
+    let filtered = filesList;
+    if (search && search.trim()) {
+      const q = search.trim().toLowerCase();
+      filtered = filesList.filter(f => f.filename.toLowerCase().includes(q) || f.folder.toLowerCase().includes(q));
+    }
+
+    return res.json({
+      success: true,
+      files: filtered,
+      total: filtered.length
+    });
+  } catch (err) {
+    console.error('[Media Library Error]', err);
+    return res.status(500).json({ success: false, message: 'Could not load media library files.' });
   }
 });
 
@@ -3093,13 +3159,30 @@ router.get('/departments/:id', requirePermission('settings'), async (req, res) =
     const [rows] = await db.query('SELECT * FROM departments WHERE id = ?', [req.params.id]);
     if (!rows.length) return res.status(404).json({ success: false, message: 'Department not found.' });
     
-    // Fetch staff in this department
+    // Fetch assigned staff in this department
     const [staff] = await db.query(`
-      SELECT id, full_name, username, role, designation, phone, photo_url, is_active 
+      SELECT id, full_name, username, email, role, designation, phone, photo_url, is_active 
       FROM users WHERE department_id = ?
+      ORDER BY id ASC
     `, [req.params.id]);
 
-    return res.json({ success: true, department: rows[0], staff });
+    // Fetch assigned volunteers in this department
+    const [volunteers] = await db.query(`
+      SELECT id, full_name, email, phone, role, designation, photo_url, status 
+      FROM volunteer_applications WHERE department_id = ?
+      ORDER BY id ASC
+    `, [req.params.id]);
+
+    return res.json({
+      success: true,
+      department: {
+        ...rows[0],
+        staff_count: staff.length,
+        volunteer_count: volunteers.length
+      },
+      staff,
+      volunteers
+    });
   } catch (err) {
     console.error('[Department GET ID]', err);
     return res.status(500).json({ success: false, message: 'Failed to retrieve department.' });
@@ -3247,7 +3330,34 @@ router.get('/roles/:id', requirePermission('settings'), async (req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM user_roles WHERE id = ?', [req.params.id]);
     if (!rows.length) return res.status(404).json({ success: false, message: 'Role not found.' });
-    return res.json({ success: true, role: rows[0] });
+
+    const roleObj = rows[0];
+
+    // Fetch assigned staff
+    const [staff] = await db.query(`
+      SELECT id, full_name, username, email, role, designation, phone, photo_url, is_active 
+      FROM users WHERE role_id = ? OR role = ?
+      ORDER BY id ASC
+    `, [req.params.id, roleObj.role_key]);
+
+    // Fetch assigned volunteers
+    const [volunteers] = await db.query(`
+      SELECT id, full_name, email, phone, role, designation, photo_url, status 
+      FROM volunteer_applications WHERE role_id = ? OR role = ?
+      ORDER BY id ASC
+    `, [req.params.id, roleObj.role_key]);
+
+    return res.json({
+      success: true,
+      role: {
+        ...roleObj,
+        staff_count: staff.length,
+        volunteer_count: volunteers.length,
+        users_count: staff.length + volunteers.length
+      },
+      staff,
+      volunteers
+    });
   } catch (err) {
     console.error('[Role GET ID]', err);
     return res.status(500).json({ success: false, message: 'Failed to retrieve role.' });
@@ -3384,7 +3494,34 @@ router.get('/designations/:id', requirePermission('settings'), async (req, res) 
       WHERE des.id = ?
     `, [req.params.id]);
     if (!rows.length) return res.status(404).json({ success: false, message: 'Designation not found.' });
-    return res.json({ success: true, designation: rows[0] });
+
+    const desObj = rows[0];
+
+    // Fetch assigned staff
+    const [staff] = await db.query(`
+      SELECT id, full_name, username, email, role, designation, phone, photo_url, is_active 
+      FROM users WHERE designation_id = ? OR designation = ?
+      ORDER BY id ASC
+    `, [req.params.id, desObj.name_en]);
+
+    // Fetch assigned volunteers
+    const [volunteers] = await db.query(`
+      SELECT id, full_name, email, phone, role, designation, photo_url, status 
+      FROM volunteer_applications WHERE designation_id = ? OR designation = ?
+      ORDER BY id ASC
+    `, [req.params.id, desObj.name_en]);
+
+    return res.json({
+      success: true,
+      designation: {
+        ...desObj,
+        users_count: staff.length,
+        volunteers_count: volunteers.length,
+        members_count: staff.length + volunteers.length
+      },
+      staff,
+      volunteers
+    });
   } catch (err) {
     console.error('[Designation GET ID]', err);
     return res.status(500).json({ success: false, message: 'Failed to retrieve designation.' });
@@ -3511,9 +3648,30 @@ router.get('/categories', async (req, res) => {
 // GET /api/admin/categories/:id
 router.get('/categories/:id', requirePermission('settings'), async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT c.*, c.icon as icon_class FROM categories c WHERE c.id = ?', [req.params.id]);
+    const [rows] = await db.query(`
+      SELECT c.*, c.icon as icon_class,
+             (SELECT COUNT(*) FROM projects p WHERE p.category_id = c.id) as projects_count,
+             (SELECT COUNT(*) FROM articles a WHERE a.category_id = c.id) as articles_count
+      FROM categories c WHERE c.id = ?
+    `, [req.params.id]);
     if (!rows.length) return res.status(404).json({ success: false, message: 'Category not found.' });
-    return res.json({ success: true, category: rows[0] });
+
+    // Fetch all linked projects
+    const [projects] = await db.query(`
+      SELECT p.id, p.title_en, p.title_ur, p.slug, p.status, p.goal_amount, p.raised_amount, p.image_url, p.created_at
+      FROM projects p
+      WHERE p.category_id = ?
+      ORDER BY p.id DESC
+    `, [req.params.id]);
+
+    return res.json({
+      success: true,
+      category: {
+        ...rows[0],
+        projects_count: projects.length
+      },
+      projects
+    });
   } catch (err) {
     console.error('[Category GET ID]', err);
     return res.status(500).json({ success: false, message: 'Failed to retrieve category.' });
@@ -3523,7 +3681,7 @@ router.get('/categories/:id', requirePermission('settings'), async (req, res) =>
 // POST /api/admin/categories
 router.post('/categories', requirePermission('settings'), async (req, res) => {
   try {
-    const { name_en, name_ur, slug, icon, icon_class, description_en, description_ur, sort_order, is_active } = req.body;
+    const { name_en, name_ur, slug, icon, icon_class, image_url, description_en, description_ur, sort_order, is_active } = req.body;
     if (!name_en || !name_ur) {
       return res.status(400).json({ success: false, message: 'Category name in English and Urdu are required.' });
     }
@@ -3540,11 +3698,12 @@ router.post('/categories', requirePermission('settings'), async (req, res) => {
     }
 
     const [result] = await db.query(`
-      INSERT INTO categories (slug, icon, name_en, name_ur, description_en, description_ur, sort_order, is_active)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO categories (slug, icon, image_url, name_en, name_ur, description_en, description_ur, sort_order, is_active)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       cleanSlug,
       finalIcon,
+      image_url ? image_url.trim() : null,
       name_en.trim(),
       name_ur.trim(),
       description_en ? description_en.trim() : '',
@@ -3573,7 +3732,7 @@ router.post('/categories', requirePermission('settings'), async (req, res) => {
 router.put('/categories/:id', requirePermission('settings'), async (req, res) => {
   try {
     const catId = req.params.id;
-    const { name_en, name_ur, slug, icon, description_en, description_ur, sort_order, is_active } = req.body;
+    const { name_en, name_ur, slug, icon, image_url, description_en, description_ur, sort_order, is_active } = req.body;
 
     const [rows] = await db.query('SELECT * FROM categories WHERE id = ?', [catId]);
     if (!rows.length) return res.status(404).json({ success: false, message: 'Category not found.' });
@@ -3592,6 +3751,7 @@ router.put('/categories/:id', requirePermission('settings'), async (req, res) =>
         name_ur = COALESCE(?, name_ur),
         slug = COALESCE(?, slug),
         icon = COALESCE(?, icon),
+        image_url = COALESCE(?, image_url),
         description_en = COALESCE(?, description_en),
         description_ur = COALESCE(?, description_ur),
         sort_order = COALESCE(?, sort_order),
@@ -3602,6 +3762,7 @@ router.put('/categories/:id', requirePermission('settings'), async (req, res) =>
       name_ur ? name_ur.trim() : null,
       cleanSlug,
       icon ? icon.trim() : null,
+      image_url !== undefined ? (image_url ? image_url.trim() : null) : null,
       description_en !== undefined ? description_en.trim() : null,
       description_ur !== undefined ? description_ur.trim() : null,
       sort_order !== undefined ? parseInt(sort_order, 10) : null,

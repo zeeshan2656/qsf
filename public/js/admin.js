@@ -250,8 +250,8 @@ document.addEventListener('DOMContentLoaded', () => {
           onClick: "exportTablePDF('users')"
         },
         {
-          textEn: 'Add User or Staff',
-          textUr: 'نیا صارف شامل کریں',
+          textEn: 'Add New Staff / User',
+          textUr: 'نیا صارف / عملہ شامل کریں',
           icon: 'fas fa-user-plus',
           type: 'primary',
           permission: 'can_manage_users',
@@ -272,12 +272,12 @@ document.addEventListener('DOMContentLoaded', () => {
           onClick: "exportTablePDF('accounts')"
         },
         {
-          textEn: 'Record Donation',
-          textUr: 'عطیہ درج کریں',
+          textEn: 'Add New Donation / Receipt',
+          textUr: 'عطیہ / رسید درج کریں',
           icon: 'fas fa-plus-circle',
           type: 'primary',
           permission: 'can_manage_finance',
-          onClick: 'openManualDonationModal()'
+          onClick: 'openAddDonationModal()'
         }
       ]
     },
@@ -323,12 +323,12 @@ document.addEventListener('DOMContentLoaded', () => {
           onClick: "exportTablePDF('articles')"
         },
         {
-          textEn: 'Add News Article',
-          textUr: 'نیا آرٹیکل شامل کریں',
+          textEn: 'Add New News / Update',
+          textUr: 'نیا آرٹیکل / خبر شامل کریں',
           icon: 'fas fa-plus-circle',
           type: 'primary',
           permission: 'can_manage_news',
-          onClick: "openModal('modalArticle')"
+          onClick: 'openAddArticleModal()'
         }
       ]
     },
@@ -345,12 +345,12 @@ document.addEventListener('DOMContentLoaded', () => {
           onClick: "exportTablePDF('applications')"
         },
         {
-          textEn: 'Add Assistance Request',
+          textEn: 'Add New Assistance Request',
           textUr: 'درخواست درج کریں',
           icon: 'fas fa-plus-circle',
           type: 'primary',
           permission: 'can_manage_applications',
-          onClick: "openModal('modalApplication')"
+          onClick: 'openAddApplicationModal()'
         }
       ]
     },
@@ -367,12 +367,12 @@ document.addEventListener('DOMContentLoaded', () => {
           onClick: "exportTablePDF('donations')"
         },
         {
-          textEn: 'Record Donation',
-          textUr: 'عطیہ درج کریں',
+          textEn: 'Add New Donation / Receipt',
+          textUr: 'عطیہ / رسید درج کریں',
           icon: 'fas fa-plus-circle',
           type: 'primary',
           permission: 'can_manage_finance',
-          onClick: "openModal('modalDonation')"
+          onClick: 'openAddDonationModal()'
         }
       ]
     },
@@ -435,7 +435,7 @@ document.addEventListener('DOMContentLoaded', () => {
           onClick: "exportTablePDF('org-departments')"
         },
         {
-          textEn: 'Add Department',
+          textEn: 'Add New Department',
           textUr: 'نیا شعبہ شامل کریں',
           icon: 'fas fa-plus-circle',
           type: 'primary',
@@ -457,7 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
           onClick: "exportTablePDF('org-roles')"
         },
         {
-          textEn: 'Add User Role',
+          textEn: 'Add New User Role',
           textUr: 'نیا رول شامل کریں',
           icon: 'fas fa-plus-circle',
           type: 'primary',
@@ -479,7 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
           onClick: "exportTablePDF('org-designations')"
         },
         {
-          textEn: 'Add Designation',
+          textEn: 'Add New Designation',
           textUr: 'نیا عہدہ شامل کریں',
           icon: 'fas fa-plus-circle',
           type: 'primary',
@@ -501,7 +501,7 @@ document.addEventListener('DOMContentLoaded', () => {
           onClick: "exportTablePDF('org-categories')"
         },
         {
-          textEn: 'Add Category',
+          textEn: 'Add New Project Category',
           textUr: 'نیا زمرہ شامل کریں',
           icon: 'fas fa-plus-circle',
           type: 'primary',
@@ -549,7 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <i class="fas fa-print"></i> <span>${isUrdu ? 'پرنٹ / پی ڈی ایف' : 'Print / PDF'}</span>
           </button>
           <button type="button" class="btn-admin btn-admin-primary topbar-action-btn" onclick="openAddProjectModal()">
-            <i class="fas fa-plus-circle"></i> <span>${isUrdu ? 'نیا منصوبہ' : 'Add Project'}</span>
+            <i class="fas fa-plus-circle"></i> <span>${isUrdu ? 'نیا منصوبہ' : 'Add New Welfare Project'}</span>
           </button>
         `;
         return;
@@ -557,10 +557,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (cfg.actions && cfg.actions.length > 0) {
         cfg.actions.forEach(act => {
-          const canExecute = !act.permission || !currentUser ||
+          const isSuper = !currentUser ||
+            currentUser.role === 'superadmin' ||
             currentUser.role === 'admin' ||
-            currentUser.is_admin === 1 ||
             currentUser.is_super_admin === 1 ||
+            currentUser.is_admin === 1;
+
+          let userPerms = currentUser && currentUser.permissions;
+          if (typeof userPerms === 'string') {
+            try { userPerms = JSON.parse(userPerms); } catch (e) { userPerms = [userPerms]; }
+          }
+          if (!Array.isArray(userPerms)) userPerms = [];
+
+          const permRaw = act.permission || '';
+          const permKey = permRaw.replace(/^can_manage_/, '').replace(/^can_view_/, '');
+
+          const canExecute = !act.permission || isSuper ||
+            userPerms.includes(permRaw) ||
+            userPerms.includes(permKey) ||
+            (permKey === 'finance' && (userPerms.includes('accounts') || userPerms.includes('donations'))) ||
+            (permKey === 'news' && userPerms.includes('articles')) ||
+            (permKey === 'users' && userPerms.includes('users')) ||
+            (permKey === 'projects' && userPerms.includes('projects')) ||
+            (permKey === 'volunteers' && userPerms.includes('volunteers')) ||
+            (permKey === 'applications' && userPerms.includes('applications')) ||
             currentUser[act.permission] === 1 ||
             currentUser[act.permission] === true;
 
@@ -1580,7 +1600,10 @@ document.addEventListener('DOMContentLoaded', () => {
     loadProjects(1);
   };
 
-  window.openAddProjectModal = function() {
+  window.openAddProjectModal = async function() {
+    if (!allCategoriesData || !allCategoriesData.length) {
+      await populateOrgDropdowns();
+    }
     const form = document.getElementById('formAddProject');
     if (form) form.reset();
 
@@ -1589,6 +1612,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const statusField = document.getElementById('proj_status');
     if (statusField) statusField.value = 'active';
+
+    const catSelect = document.getElementById('proj_category_id');
+    if (catSelect && allCategoriesData.length > 0) {
+      populateCategorySelects(allCategoriesData);
+      if (!catSelect.value && allCategoriesData.length > 0) {
+        catSelect.value = allCategoriesData[0].id;
+      }
+    }
+
+    setProjectImage('/media/projects/orphan_education.webp');
 
     const heading = document.getElementById('projectModalHeading');
     if (heading) heading.innerHTML = '<i class="fas fa-hand-holding-heart"></i> Add New Welfare Project';
@@ -1602,6 +1635,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.editProject = async function(id) {
     try {
+      if (!allCategoriesData || !allCategoriesData.length) {
+        await populateOrgDropdowns();
+      }
       const res = await fetch(`/api/admin/projects/${id}`);
       const data = await res.json();
       if (!data.success || !data.project) return alert('Failed to retrieve project details.');
@@ -1610,8 +1646,12 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('projectEditId').value = p.id;
       document.getElementById('proj_title_en').value = p.title_en || '';
       document.getElementById('proj_title_ur').value = p.title_ur || '';
-      document.getElementById('proj_category_id').value = p.category_id || '1';
-      document.getElementById('proj_image_url').value = p.image_url || '';
+      const catSelect = document.getElementById('proj_category_id');
+      if (catSelect) {
+        populateCategorySelects(allCategoriesData);
+        catSelect.value = p.category_id || '1';
+      }
+      setProjectImage(p.image_url || '/media/projects/orphan_education.webp');
       document.getElementById('proj_goal_amount').value = p.goal_amount || 0;
       document.getElementById('proj_raised_amount').value = p.raised_amount || 0;
       document.getElementById('proj_beneficiaries_count').value = p.beneficiaries_count || 0;
@@ -2108,10 +2148,29 @@ document.addEventListener('DOMContentLoaded', () => {
     if (heading) heading.innerHTML = '<i class="fas fa-newspaper"></i> Publish News & Update Article';
     const submitBtn = document.getElementById('articleSubmitBtn');
     if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-check"></i> Publish Article';
+    setArticleImage('/media/news/news_1.png');
+  };
+
+  window.openAddArticleModal = async function() {
+    if (!allCategoriesData || !allCategoriesData.length) {
+      await populateOrgDropdowns();
+    }
+    window.resetArticleForm();
+    const catSelect = document.getElementById('art_category_id');
+    if (catSelect && allCategoriesData.length > 0) {
+      populateCategorySelects(allCategoriesData);
+      if (!catSelect.value && allCategoriesData.length > 0) {
+        catSelect.value = allCategoriesData[0].id;
+      }
+    }
+    openModal('modalArticle');
   };
 
   window.editArticle = async function(id) {
     try {
+      if (!allCategoriesData || !allCategoriesData.length) {
+        await populateOrgDropdowns();
+      }
       const res = await fetch(`/api/admin/articles/${id}`);
       const data = await res.json();
       if (!data.success || !data.article) return alert('Failed to retrieve article details.');
@@ -2120,8 +2179,12 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('articleEditId').value = a.id;
       document.getElementById('art_title_en').value = a.title_en || '';
       document.getElementById('art_title_ur').value = a.title_ur || '';
-      document.getElementById('art_category_id').value = a.category_id || '1';
-      document.getElementById('art_image_url').value = a.image_url || '';
+      const catSelect = document.getElementById('art_category_id');
+      if (catSelect) {
+        populateCategorySelects(allCategoriesData);
+        catSelect.value = a.category_id || '1';
+      }
+      setArticleImage(a.image_url || '/media/news/news_1.png');
       document.getElementById('art_short_desc_en').value = a.short_desc_en || '';
       document.getElementById('art_short_desc_ur').value = a.short_desc_ur || '';
       document.getElementById('art_content_en').value = a.content_en || '';
@@ -2292,11 +2355,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const editId = document.getElementById('applicationEditId');
     if (editId) editId.value = '';
     const heading = document.getElementById('applicationModalHeading');
-    if (heading) heading.innerHTML = '<i class="fas fa-file-signature"></i> Add New Assistance Application';
+    if (heading) heading.innerHTML = '<i class="fas fa-plus-circle"></i> Add New Assistance Request (Walk-in / Physical Intake)';
     const submitBtn = document.getElementById('applicationSubmitBtn');
-    if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-check"></i> Save Application Changes';
+    if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-check"></i> Register Assistance Request';
     const printBtn = document.getElementById('btnPrintAppFromModal');
     if (printBtn) printBtn.style.display = 'none';
+  };
+
+  window.openAddApplicationModal = function() {
+    window.resetApplicationForm();
+    const statusSelect = document.getElementById('app_status');
+    if (statusSelect) statusSelect.value = 'pending';
+    openModal('modalApplication');
   };
 
   window.editApplication = async function(id) {
@@ -2386,6 +2456,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  async function populateDonationProjectSelect(selectedId = '') {
+    const projSelect = document.getElementById('don_project_id');
+    if (!projSelect) return;
+    try {
+      const res = await fetch('/api/admin/projects?limit=100');
+      const data = await res.json();
+      let html = '<option value="">General Donation / Core Foundation Fund</option>';
+      if (data.success && Array.isArray(data.projects)) {
+        html += data.projects.map(p => `<option value="${p.id}">${escapeHtml(p.title_en)} (PKR Goal: ${Number(p.goal_amount || 0).toLocaleString()})</option>`).join('');
+      }
+      projSelect.innerHTML = html;
+      if (selectedId) projSelect.value = String(selectedId);
+    } catch (e) {
+      projSelect.innerHTML = '<option value="">General Donation / Core Foundation Fund</option>';
+    }
+  }
+
   window.resetDonationForm = function() {
     const form = document.getElementById('formAddDonation');
     if (form) form.reset();
@@ -2395,6 +2482,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (heading) heading.innerHTML = '<i class="fas fa-receipt"></i> Record Direct / Offline Donation';
     const submitBtn = document.getElementById('donationSubmitBtn');
     if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-check"></i> Record & Save Donation';
+  };
+
+  window.openAddDonationModal = async function() {
+    window.resetDonationForm();
+    await populateDonationProjectSelect('');
+    openModal('modalDonation');
   };
 
   window.editDonation = async function(id) {
@@ -2412,6 +2505,8 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('don_transaction_reference').value = d.transaction_reference || '';
       document.getElementById('don_status').value = d.status || 'verified';
       document.getElementById('don_notes').value = d.notes || '';
+
+      await populateDonationProjectSelect(d.project_id || '');
 
       document.getElementById('donationModalHeading').innerHTML = `<i class="fas fa-pen-to-square"></i> Edit Donation #${d.id}`;
       document.getElementById('donationSubmitBtn').innerHTML = `<i class="fas fa-save"></i> Update Donation Details`;
@@ -2996,7 +3091,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Open Add User Modal
-  window.openAddUserModal = function() {
+  window.openAddUserModal = async function() {
+    if (!allDepartmentsData || !allDepartmentsData.length) {
+      await populateOrgDropdowns();
+    }
     const form = document.getElementById('formUser');
     if (form) form.reset();
     document.getElementById('userEditId').value = '';
@@ -3057,10 +3155,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Salary toggle reset
     if (hasSalaryCheckbox) {
       hasSalaryCheckbox.checked = false;
-      salaryInputContainer.style.display = 'none';
-      salaryToggleBox.classList.remove('active');
+      if (salaryInputContainer) salaryInputContainer.style.display = 'none';
+      if (salaryToggleBox) salaryToggleBox.classList.remove('active');
     }
-    document.getElementById('user_salary').value = '0';
+    const salEl = document.getElementById('user_salary');
+    if (salEl) salEl.value = '0';
 
     openModal('modalUser');
   };
@@ -3085,6 +3184,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const u = data.user;
+      window._currentViewedUser = u;
       const initials = (u.full_name || u.username || 'U')
         .split(' ')
         .map(n => n[0])
@@ -3179,7 +3279,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <label class="view-user-label"><i class="fas fa-key"></i> System Login Password</label>
             <div class="view-user-value" style="display: flex; align-items: center; justify-content: space-between; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 6px 12px; border-radius: 6px;">
               <span id="viewUserPasswordText" data-revealed="false" style="font-family: monospace; font-size: 0.95rem; font-weight: 700; color: #0F172A; letter-spacing: 2px;">••••••••</span>
-              <button type="button" class="btn-action" onclick="toggleViewUserPassword('${escapeHtml(u.password_plain || '')}')" title="Unhide / Hide Password" style="color: var(--admin-primary); background: transparent; border: none; cursor: pointer; padding: 4px 8px; font-size: 0.95rem; display: inline-flex; align-items: center;">
+              <button type="button" class="btn-action" onclick="toggleViewUserPassword()" title="Unhide / Hide Password" style="color: var(--admin-primary); background: transparent; border: none; cursor: pointer; padding: 4px 8px; font-size: 0.95rem; display: inline-flex; align-items: center;">
                 <i class="fas fa-eye" id="iconViewUserPassword"></i> <span style="font-size: 0.75rem; font-weight: 600; margin-left: 4px;">Unhide</span>
               </button>
             </div>
@@ -3223,11 +3323,12 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Toggle Password Visibility in View User Modal
-  window.toggleViewUserPassword = function(plainPassword) {
+  window.toggleViewUserPassword = function() {
     const textEl = document.getElementById('viewUserPasswordText');
     const iconEl = document.getElementById('iconViewUserPassword');
     const btn = iconEl ? iconEl.closest('button') : null;
     if (!textEl) return;
+    const plainPassword = (window._currentViewedUser && window._currentViewedUser.password_plain) || '';
     if (textEl.getAttribute('data-revealed') === 'true') {
       textEl.textContent = '••••••••';
       textEl.style.letterSpacing = '2px';
@@ -3246,6 +3347,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Edit User
   window.editUser = async function(userId) {
     try {
+      if (!allDepartmentsData || !allDepartmentsData.length) {
+        await populateOrgDropdowns();
+      }
       const res = await fetch(`/api/admin/users/${userId}`);
       const data = await res.json();
       if (!data.success || !data.user) {
@@ -3332,13 +3436,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (hasSalaryCheckbox) {
         hasSalaryCheckbox.checked = Boolean(user.has_salary);
         if (user.has_salary) {
-          salaryInputContainer.style.display = 'block';
-          salaryToggleBox.classList.add('active');
-          document.getElementById('user_salary').value = user.salary || 0;
+          if (salaryInputContainer) salaryInputContainer.style.display = 'block';
+          if (salaryToggleBox) salaryToggleBox.classList.add('active');
+          const salEl = document.getElementById('user_salary');
+          if (salEl) salEl.value = user.salary || 0;
         } else {
-          salaryInputContainer.style.display = 'none';
-          salaryToggleBox.classList.remove('active');
-          document.getElementById('user_salary').value = 0;
+          if (salaryInputContainer) salaryInputContainer.style.display = 'none';
+          if (salaryToggleBox) salaryToggleBox.classList.remove('active');
+          const salEl = document.getElementById('user_salary');
+          if (salEl) salEl.value = 0;
         }
       }
 
@@ -3593,6 +3699,14 @@ document.addEventListener('DOMContentLoaded', () => {
           closeModal('modalDonation');
           loadDonations();
           loadOverview();
+          if (!editId && (result.id || result.insertId)) {
+            const donId = result.id || result.insertId;
+            setTimeout(() => {
+              if (confirm('Donation recorded successfully! Would you like to view and print the bilingual official receipt slip now?')) {
+                viewDonationReceipt(donId);
+              }
+            }, 250);
+          }
         } else {
           alert(result.message || 'Error saving donation.');
         }
@@ -6134,6 +6248,106 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  function renderPersonnelMemberList(staff = [], volunteers = [], currentModalId = '') {
+    let html = '';
+    
+    // Staff section
+    html += `
+      <div style="margin-top: 18px; border-top: 1px solid #E2E8F0; padding-top: 14px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+          <label class="view-user-label" style="font-size: 0.88rem; font-weight: 700; color: #0F172A; margin: 0;">
+            <i class="fas fa-users-gear" style="color: var(--admin-primary); margin-right: 6px;"></i> Assigned Staff Members (${staff.length})
+          </label>
+        </div>
+    `;
+
+    if (staff.length > 0) {
+      html += '<div style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 4px;">';
+      staff.forEach(s => {
+        const initials = (s.full_name || s.username || 'S').slice(0, 2).toUpperCase();
+        const avatar = s.photo_url 
+          ? `<img src="${escapeHtml(s.photo_url)}" alt="${escapeHtml(s.full_name || s.username)}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.outerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#7F1D1D;color:#FFF;font-size:0.8rem;font-weight:700;\\'>${initials}</div>';" />`
+          : `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #7F1D1D; color: #FFF; font-size: 0.8rem; font-weight: 700;">${initials}</div>`;
+
+        html += `
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+            <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+              <div style="width: 36px; height: 36px; border-radius: 6px; overflow: hidden; flex-shrink: 0; border: 1px solid #CBD5E1;">
+                ${avatar}
+              </div>
+              <div style="min-width: 0;">
+                <div style="font-weight: 700; color: #0F172A; font-size: 0.88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  ${escapeHtml(s.full_name || s.username)}
+                </div>
+                <div style="font-size: 0.74rem; color: #64748B; display: flex; gap: 8px; flex-wrap: wrap;">
+                  <span style="color: #0284C7; font-weight: 600;">${escapeHtml(s.designation_name_en || s.designation || 'Staff')}</span>
+                  <span><i class="fas fa-user-shield"></i> ${escapeHtml(s.role_name_en || s.role || 'Staff')}</span>
+                  ${s.phone ? `<span><i class="fas fa-phone"></i> ${escapeHtml(s.phone)}</span>` : ''}
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('${currentModalId}'); viewUser(${s.id});" style="font-size: 0.74rem; padding: 4px 10px; white-space: nowrap;">
+              <i class="fas fa-user"></i> View Profile
+            </button>
+          </div>
+        `;
+      });
+      html += '</div>';
+    } else {
+      html += '<div style="font-size: 0.82rem; color: #64748B; font-style: italic; background: #F8FAFC; border: 1px dashed #CBD5E1; padding: 10px 14px; border-radius: 6px;">No registered staff members currently assigned.</div>';
+    }
+    html += '</div>';
+
+    // Volunteers section
+    html += `
+      <div style="margin-top: 16px; border-top: 1px solid #E2E8F0; padding-top: 14px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+          <label class="view-user-label" style="font-size: 0.88rem; font-weight: 700; color: #0F172A; margin: 0;">
+            <i class="fas fa-handshake-angle" style="color: #059669; margin-right: 6px;"></i> Assigned Volunteers (${volunteers.length})
+          </label>
+        </div>
+    `;
+
+    if (volunteers.length > 0) {
+      html += '<div style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 4px;">';
+      volunteers.forEach(v => {
+        const initials = (v.full_name || 'V').slice(0, 2).toUpperCase();
+        const avatar = v.photo_url
+          ? `<img src="${escapeHtml(v.photo_url)}" alt="${escapeHtml(v.full_name)}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.outerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#047857;color:#FFF;font-size:0.8rem;font-weight:700;\\'>${initials}</div>';" />`
+          : `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #047857; color: #FFF; font-size: 0.8rem; font-weight: 700;">${initials}</div>`;
+
+        html += `
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+            <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+              <div style="width: 36px; height: 36px; border-radius: 6px; overflow: hidden; flex-shrink: 0; border: 1px solid #CBD5E1;">
+                ${avatar}
+              </div>
+              <div style="min-width: 0;">
+                <div style="font-weight: 700; color: #0F172A; font-size: 0.88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  ${escapeHtml(v.full_name)}
+                </div>
+                <div style="font-size: 0.74rem; color: #64748B; display: flex; gap: 8px; flex-wrap: wrap;">
+                  <span style="color: #047857; font-weight: 600;">${escapeHtml(v.designation_name_en || v.designation || 'Volunteer')}</span>
+                  <span><i class="fas fa-tag"></i> ${escapeHtml(v.status || 'Active')}</span>
+                  ${v.phone ? `<span><i class="fas fa-phone"></i> ${escapeHtml(v.phone)}</span>` : ''}
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('${currentModalId}'); viewVolunteer(${v.id});" style="font-size: 0.74rem; padding: 4px 10px; white-space: nowrap;">
+              <i class="fas fa-handshake-angle"></i> View Volunteer
+            </button>
+          </div>
+        `;
+      });
+      html += '</div>';
+    } else {
+      html += '<div style="font-size: 0.82rem; color: #64748B; font-style: italic; background: #F8FAFC; border: 1px dashed #CBD5E1; padding: 10px 14px; border-radius: 6px;">No volunteers currently assigned.</div>';
+    }
+    html += '</div>';
+
+    return html;
+  }
+
   window.viewDepartment = async function(id) {
     try {
       const res = await fetch(`/api/admin/departments/${id}`);
@@ -6143,6 +6357,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       const d = data.department;
+      const staffList = Array.isArray(data.staff) ? data.staff : [];
+      const volunteerList = Array.isArray(data.volunteers) ? data.volunteers : [];
+      const staffCount = data.staff_count !== undefined ? data.staff_count : staffList.length;
+      const volunteerCount = data.volunteer_count !== undefined ? data.volunteer_count : volunteerList.length;
+
       const bodyHtml = `
         <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #E2E8F0; padding-bottom: 14px; margin-bottom: 16px;">
           <div>
@@ -6154,11 +6373,11 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="view-user-grid" style="margin-bottom: 16px;">
           <div class="view-user-field">
             <label class="view-user-label"><i class="fas fa-users-gear"></i> Assigned Staff</label>
-            <div class="view-user-value"><strong>${d.staff_count || 0}</strong> Registered Staff</div>
+            <div class="view-user-value"><strong>${staffCount}</strong> Registered Staff</div>
           </div>
           <div class="view-user-field">
             <label class="view-user-label"><i class="fas fa-handshake-angle"></i> Assigned Volunteers</label>
-            <div class="view-user-value"><strong>${d.volunteer_count || 0}</strong> Volunteers</div>
+            <div class="view-user-value"><strong>${volunteerCount}</strong> Volunteers</div>
           </div>
           <div class="view-user-field">
             <label class="view-user-label"><i class="fas fa-arrow-down-1-9"></i> Sort Order</label>
@@ -6181,6 +6400,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ${escapeHtml(d.description_ur || 'کوئی تفصیل درج نہیں ہے۔')}
           </div>
         </div>
+        ${renderPersonnelMemberList(staffList, volunteerList, 'modalViewDepartment')}
       `;
       document.getElementById('viewDepartmentModalBody').innerHTML = bodyHtml;
       const btnEdit = document.getElementById('btnEditDepartmentFromView');
@@ -6416,6 +6636,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       const r = data.role;
+      const staffList = Array.isArray(data.staff) ? data.staff : [];
+      const volunteerList = Array.isArray(data.volunteers) ? data.volunteers : [];
+      const totalPersonnel = data.users_count !== undefined ? data.users_count : (staffList.length + volunteerList.length);
+
       const bodyHtml = `
         <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #E2E8F0; padding-bottom: 14px; margin-bottom: 16px;">
           <div>
@@ -6428,8 +6652,8 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="view-user-grid" style="margin-bottom: 16px;">
           <div class="view-user-field">
-            <label class="view-user-label"><i class="fas fa-users"></i> Users Assigned</label>
-            <div class="view-user-value"><strong>${r.users_count || 0}</strong> Registered Personnel</div>
+            <label class="view-user-label"><i class="fas fa-users"></i> Total Assigned Members</label>
+            <div class="view-user-value"><strong>${totalPersonnel}</strong> Assigned Personnel (${staffList.length} Staff, ${volunteerList.length} Volunteers)</div>
           </div>
           <div class="view-user-field">
             <label class="view-user-label"><i class="fas fa-shield"></i> Role Classification</label>
@@ -6446,6 +6670,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ${escapeHtml(r.description || 'System access role')}
           </div>
         </div>
+        ${renderPersonnelMemberList(staffList, volunteerList, 'modalViewRole')}
       `;
       document.getElementById('viewRoleModalBody').innerHTML = bodyHtml;
       const btnEdit = document.getElementById('btnEditRoleFromView');
@@ -6670,6 +6895,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       const d = data.designation;
+      const staffList = Array.isArray(data.staff) ? data.staff : [];
+      const volunteerList = Array.isArray(data.volunteers) ? data.volunteers : [];
+      const staffCount = data.users_count !== undefined ? data.users_count : staffList.length;
+      const volunteerCount = data.volunteers_count !== undefined ? data.volunteers_count : volunteerList.length;
+
       const bodyHtml = `
         <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #E2E8F0; padding-bottom: 14px; margin-bottom: 16px;">
           <div>
@@ -6681,11 +6911,11 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="view-user-grid" style="margin-bottom: 16px;">
           <div class="view-user-field">
             <label class="view-user-label"><i class="fas fa-users-gear"></i> Staff Assigned</label>
-            <div class="view-user-value"><strong>${d.users_count || 0}</strong> Members</div>
+            <div class="view-user-value"><strong>${staffCount}</strong> Members</div>
           </div>
           <div class="view-user-field">
             <label class="view-user-label"><i class="fas fa-handshake-angle"></i> Volunteers Assigned</label>
-            <div class="view-user-value"><strong>${d.volunteers_count || 0}</strong> Volunteers</div>
+            <div class="view-user-value"><strong>${volunteerCount}</strong> Volunteers</div>
           </div>
           <div class="view-user-field">
             <label class="view-user-label"><i class="fas fa-layer-group"></i> Rank / Grade Level</label>
@@ -6702,6 +6932,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ${escapeHtml(d.description || 'Job role description')}
           </div>
         </div>
+        ${renderPersonnelMemberList(staffList, volunteerList, 'modalViewDesignation')}
       `;
       document.getElementById('viewDesignationModalBody').innerHTML = bodyHtml;
       const btnEdit = document.getElementById('btnEditDesignationFromView');
@@ -6884,6 +7115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('cat_id').value = '';
     document.getElementById('cat_icon_class').value = 'fas fa-hand-holding-heart';
     document.getElementById('cat_is_active').value = '1';
+    setCategoryImage('');
     document.getElementById('categoryModalHeading').innerHTML = '<i class="fas fa-shapes"></i> Add New Category';
     openModal('modalCategory');
   };
@@ -6902,6 +7134,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('cat_name_ur').value = c.name_ur || '';
       document.getElementById('cat_slug').value = c.slug || '';
       document.getElementById('cat_icon_class').value = c.icon_class || 'fas fa-hand-holding-heart';
+      setCategoryImage(c.image_url || '');
       document.getElementById('cat_description_en').value = c.description_en || '';
       document.getElementById('cat_description_ur').value = c.description_ur || '';
       document.getElementById('cat_is_active').value = c.is_active ? '1' : '0';
@@ -6921,7 +7154,59 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       const c = data.category;
+      const projList = Array.isArray(data.projects) ? data.projects : [];
+      const projectsCount = data.projects_count !== undefined ? data.projects_count : projList.length;
+
+      let projectsHtml = `
+        <div style="margin-top: 18px; border-top: 1px solid #E2E8F0; padding-top: 14px;">
+          <label class="view-user-label" style="font-size: 0.88rem; font-weight: 700; color: #0F172A; margin-bottom: 10px; display: block;">
+            <i class="fas fa-hand-holding-heart" style="color: var(--admin-primary); margin-right: 6px;"></i> Linked Welfare Projects (${projList.length})
+          </label>
+      `;
+
+      if (projList.length > 0) {
+        projectsHtml += '<div style="display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; padding-right: 4px;">';
+        projList.forEach(p => {
+          const pct = (p.goal_amount > 0) ? Math.min(100, Math.round((p.raised_amount / p.goal_amount) * 100)) : 0;
+          projectsHtml += `
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+              <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+                <div style="width: 50px; height: 38px; border-radius: 6px; overflow: hidden; flex-shrink: 0; border: 1px solid #CBD5E1; background: #F8FAFC;">
+                  <img src="${escapeHtml(p.image_url || '/media/projects/orphan_education.webp')}" alt="${escapeHtml(p.title_en)}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='/media/projects/orphan_education.webp'" />
+                </div>
+                <div style="min-width: 0;">
+                  <div style="font-weight: 700; color: #0F172A; font-size: 0.88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    ${escapeHtml(p.title_en)}
+                  </div>
+                  <div style="font-size: 0.74rem; color: #64748B; display: flex; gap: 8px; flex-wrap: wrap;">
+                    <span>Goal: PKR ${Number(p.goal_amount || 0).toLocaleString()}</span>
+                    <span>&bull;</span>
+                    <span style="color: #047857; font-weight: 600;">Raised: PKR ${Number(p.raised_amount || 0).toLocaleString()} (${pct}%)</span>
+                    <span>&bull;</span>
+                    <span class="badge" style="font-size: 0.68rem; padding: 1px 6px;">${escapeHtml(p.status || 'active')}</span>
+                  </div>
+                </div>
+              </div>
+              <button type="button" class="btn-admin btn-admin-secondary" onclick="closeModal('modalViewCategory'); viewProjectDetails(${p.id});" style="font-size: 0.74rem; padding: 4px 10px; white-space: nowrap;">
+                <i class="fas fa-eye"></i> View Details
+              </button>
+            </div>
+          `;
+        });
+        projectsHtml += '</div>';
+      } else {
+        projectsHtml += '<div style="font-size: 0.82rem; color: #64748B; font-style: italic; background: #F8FAFC; border: 1px dashed #CBD5E1; padding: 10px 14px; border-radius: 6px;">No welfare projects linked to this category yet.</div>';
+      }
+      projectsHtml += '</div>';
+
+      const bannerHtml = c.image_url ? `
+        <div style="width: 100%; height: 130px; border-radius: 8px; overflow: hidden; margin-bottom: 14px; border: 1px solid #CBD5E1; background: #F1F5F9;">
+          <img src="${escapeHtml(c.image_url)}" alt="${escapeHtml(c.name_en)}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'" />
+        </div>
+      ` : '';
+
       const bodyHtml = `
+        ${bannerHtml}
         <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #E2E8F0; padding-bottom: 14px; margin-bottom: 16px;">
           <div style="display: flex; align-items: center; gap: 12px;">
             <div style="width: 44px; height: 44px; border-radius: 8px; background: #FFF1F2; color: var(--admin-primary); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
@@ -6939,7 +7224,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="view-user-grid" style="margin-bottom: 16px;">
           <div class="view-user-field">
             <label class="view-user-label"><i class="fas fa-hand-holding-heart"></i> Welfare Projects</label>
-            <div class="view-user-value"><strong>${c.projects_count || 0}</strong> Linked Initiatives</div>
+            <div class="view-user-value"><strong>${projectsCount}</strong> Linked Initiatives</div>
           </div>
           <div class="view-user-field">
             <label class="view-user-label"><i class="fas fa-signal"></i> Public Status</label>
@@ -6958,6 +7243,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ${escapeHtml(c.description_ur || 'کوئی تفصیل درج نہیں ہے۔')}
           </div>
         </div>
+        ${projectsHtml}
       `;
       document.getElementById('viewCategoryModalBody').innerHTML = bodyHtml;
       const btnEdit = document.getElementById('btnEditCategoryFromView');
@@ -6984,6 +7270,7 @@ document.addEventListener('DOMContentLoaded', () => {
       name_ur: document.getElementById('cat_name_ur').value.trim(),
       slug: document.getElementById('cat_slug').value.trim().toLowerCase(),
       icon_class: document.getElementById('cat_icon_class').value.trim(),
+      image_url: (document.getElementById('cat_image_url')?.value || '').trim(),
       description_en: document.getElementById('cat_description_en').value.trim(),
       description_ur: document.getElementById('cat_description_ur').value.trim(),
       is_active: parseInt(document.getElementById('cat_is_active').value) || 1
@@ -7332,5 +7619,214 @@ document.addEventListener('DOMContentLoaded', () => {
     alert('PDF Export Instructions:\n\n1. The system print preview will open now.\n2. In the "Destination" dropdown, choose "Save as PDF".\n3. Set Margins to "None" or "Default" and ensure "Background graphics" is checked.\n4. Click "Save" to save your official CR80 Identity Card in high-resolution PDF format.');
     printIdCard();
   };
+
+  // ==================== UNIVERSAL MEDIA LIBRARY & ASSET PICKER ====================
+  let currentMediaPickerOptions = {
+    folder: 'all',
+    onSelect: null
+  };
+  let allMediaLibraryItems = [];
+
+  window.openMediaPicker = async function(options = {}) {
+    currentMediaPickerOptions = {
+      folder: options.folder || 'all',
+      onSelect: typeof options.onSelect === 'function' ? options.onSelect : null
+    };
+
+    // Set active tab in modal
+    const folderTabs = document.querySelectorAll('#mediaLibraryFolderTabs button');
+    folderTabs.forEach(btn => {
+      if (btn.dataset.folder === currentMediaPickerOptions.folder) {
+        btn.className = 'btn-admin btn-admin-primary';
+      } else {
+        btn.className = 'btn-admin btn-admin-secondary';
+      }
+    });
+
+    const searchInput = document.getElementById('mediaLibrarySearchInput');
+    if (searchInput) searchInput.value = '';
+
+    openModal('modalMediaLibrary');
+    await loadMediaLibraryAssets(currentMediaPickerOptions.folder);
+  };
+
+  window.setMediaPickerFolder = async function(folder) {
+    currentMediaPickerOptions.folder = folder;
+    const folderTabs = document.querySelectorAll('#mediaLibraryFolderTabs button');
+    folderTabs.forEach(btn => {
+      if (btn.dataset.folder === folder) {
+        btn.className = 'btn-admin btn-admin-primary';
+      } else {
+        btn.className = 'btn-admin btn-admin-secondary';
+      }
+    });
+    const searchInput = document.getElementById('mediaLibrarySearchInput');
+    const query = searchInput ? searchInput.value.trim() : '';
+    await loadMediaLibraryAssets(folder, query);
+  };
+
+  async function loadMediaLibraryAssets(folder = 'all', searchQuery = '') {
+    const grid = document.getElementById('mediaLibraryGrid');
+    const statusText = document.getElementById('mediaLibraryStatusText');
+    if (!grid) return;
+
+    grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #64748B;"><i class="fas fa-spinner fa-spin fa-2x"></i><div style="margin-top: 10px;">Loading media assets...</div></div>';
+
+    try {
+      const url = `/api/admin/media-library?folder=${encodeURIComponent(folder)}&search=${encodeURIComponent(searchQuery)}`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (!data.success || !Array.isArray(data.files) || data.files.length === 0) {
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #64748B;"><i class="fas fa-images fa-2x" style="opacity: 0.4;"></i><div style="margin-top: 10px;">No images found in this folder.</div></div>';
+        if (statusText) statusText.textContent = '0 assets found';
+        return;
+      }
+
+      allMediaLibraryItems = data.files;
+      if (statusText) statusText.textContent = `Showing ${data.files.length} media assets`;
+
+      grid.innerHTML = data.files.map(item => `
+        <div class="media-library-card" onclick="selectMediaItem('${escapeHtml(item.url)}')" style="border: 1px solid #CBD5E1; border-radius: 8px; overflow: hidden; background: #FFFFFF; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; position: relative;">
+          <div style="height: 100px; background: #F8FAFC; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+            <img src="${escapeHtml(item.url)}" alt="${escapeHtml(item.filename)}" loading="lazy" style="max-width: 100%; max-height: 100%; object-fit: cover;" onerror="this.src='/img/placeholder.png'" />
+          </div>
+          <div style="padding: 6px 8px; font-size: 0.72rem; border-top: 1px solid #F1F5F9; background: #FFFFFF;">
+            <div style="font-weight: 600; color: #1E293B; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(item.filename)}">${escapeHtml(item.filename)}</div>
+            <div style="display: flex; justify-content: space-between; color: #64748B; font-size: 0.68rem; margin-top: 2px;">
+              <span>${escapeHtml(item.folder)}</span>
+              <span>${escapeHtml(item.sizeFormatted || '')}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    } catch (err) {
+      grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #DC2626;"><i class="fas fa-triangle-exclamation fa-2x"></i><div style="margin-top: 10px;">Error loading media library.</div></div>';
+    }
+  }
+
+  window.selectMediaItem = function(url) {
+    if (typeof currentMediaPickerOptions.onSelect === 'function') {
+      currentMediaPickerOptions.onSelect(url);
+    }
+    closeModal('modalMediaLibrary');
+  };
+
+  let mediaSearchDebounce = null;
+  window.onMediaLibrarySearch = function(query) {
+    clearTimeout(mediaSearchDebounce);
+    mediaSearchDebounce = setTimeout(() => {
+      loadMediaLibraryAssets(currentMediaPickerOptions.folder, (query || '').trim());
+    }, 250);
+  };
+
+  // Direct upload from Media Library modal file input
+  window.handleMediaLibraryDirectUpload = async function(inputEl) {
+    if (!inputEl.files || inputEl.files.length === 0) return;
+    const file = inputEl.files[0];
+    const formData = new FormData();
+    formData.append('image', file);
+    const targetFolder = (currentMediaPickerOptions.folder && currentMediaPickerOptions.folder !== 'all') 
+      ? currentMediaPickerOptions.folder 
+      : 'uploads';
+    formData.append('folder', targetFolder);
+
+    const statusText = document.getElementById('mediaLibraryStatusText');
+    if (statusText) statusText.textContent = 'Uploading and optimizing to WebP...';
+
+    try {
+      const res = await fetch(`/api/admin/upload?folder=${encodeURIComponent(targetFolder)}`, {
+        method: 'POST',
+        body: formData
+      });
+      const result = await res.json();
+      if (result.success && result.url) {
+        await loadMediaLibraryAssets(currentMediaPickerOptions.folder);
+        if (typeof currentMediaPickerOptions.onSelect === 'function') {
+          currentMediaPickerOptions.onSelect(result.url);
+          closeModal('modalMediaLibrary');
+        }
+      } else {
+        alert(result.message || 'Error uploading image.');
+      }
+    } catch (err) {
+      alert('Upload failed due to connection error.');
+    } finally {
+      inputEl.value = '';
+    }
+  };
+
+  // Universal Device File Uploader with automatic WebP conversion and target input update
+  window.handleImageFileUpload = async function(inputEl, targetInputId, previewImgId, folder = 'uploads') {
+    if (!inputEl.files || inputEl.files.length === 0) return;
+    const file = inputEl.files[0];
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('folder', folder);
+
+    const prevImg = document.getElementById(previewImgId);
+    if (prevImg) prevImg.style.opacity = '0.5';
+
+    try {
+      const res = await fetch(`/api/admin/upload?folder=${encodeURIComponent(folder)}`, {
+        method: 'POST',
+        body: formData
+      });
+      const result = await res.json();
+      if (result.success && result.url) {
+        const urlInput = document.getElementById(targetInputId);
+        if (urlInput) urlInput.value = result.url;
+        if (prevImg) {
+          prevImg.src = result.url;
+          prevImg.style.display = 'block';
+          prevImg.style.opacity = '1';
+        }
+        const placeholder = document.getElementById(previewImgId.replace('preview', 'placeholder'));
+        if (placeholder) placeholder.style.display = 'none';
+      } else {
+        alert(result.message || 'Image upload failed.');
+      }
+    } catch (err) {
+      alert('Error uploading image to server.');
+    } finally {
+      if (prevImg) prevImg.style.opacity = '1';
+      inputEl.value = '';
+    }
+  };
+
+  window.setProjectImage = function(url) {
+    const urlInput = document.getElementById('proj_image_url');
+    const previewImg = document.getElementById('proj_image_preview');
+    if (urlInput) urlInput.value = url || '';
+    if (previewImg && url) {
+      previewImg.src = url;
+      previewImg.style.display = 'block';
+    }
+  };
+
+  window.setArticleImage = function(url) {
+    const urlInput = document.getElementById('art_image_url');
+    const previewImg = document.getElementById('art_image_preview');
+    if (urlInput) urlInput.value = url || '';
+    if (previewImg && url) {
+      previewImg.src = url;
+      previewImg.style.display = 'block';
+    }
+  };
+
+  window.setCategoryImage = function(url) {
+    const urlInput = document.getElementById('cat_image_url');
+    const previewImg = document.getElementById('cat_image_preview');
+    const placeholder = document.getElementById('cat_image_placeholder');
+    if (urlInput) urlInput.value = url || '';
+    if (url) {
+      if (previewImg) { previewImg.src = url; previewImg.style.display = 'block'; }
+      if (placeholder) placeholder.style.display = 'none';
+    } else {
+      if (previewImg) { previewImg.src = ''; previewImg.style.display = 'none'; }
+      if (placeholder) placeholder.style.display = 'block';
+    }
+  };
 });
+
 

@@ -42,7 +42,7 @@ function resolveMediaRoot() {
 const mediaRoot = resolveMediaRoot();
 
 // Ensure destination base directories exist
-['branding', 'hero', 'projects', 'news', 'uploads'].forEach(sub => {
+['branding', 'hero', 'projects', 'news', 'uploads', 'categories'].forEach(sub => {
   const d = path.join(mediaRoot, sub);
   if (!fs.existsSync(d)) {
     fs.mkdirSync(d, { recursive: true });
@@ -61,6 +61,7 @@ const storage = multer.diskStorage({
       if (fullUrl.includes('branding')) subfolder = 'branding';
       else if (fullUrl.includes('project')) subfolder = 'projects';
       else if (fullUrl.includes('article') || fullUrl.includes('news')) subfolder = 'news';
+      else if (fullUrl.includes('categor')) subfolder = 'categories';
     }
 
     const targetDir = path.join(mediaRoot, subfolder);
