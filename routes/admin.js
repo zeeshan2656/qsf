@@ -1637,7 +1637,7 @@ router.get('/users', requirePermission('users'), async (req, res) => {
 router.get('/users/:id', requirePermission('users'), async (req, res) => {
   try {
     const [rows] = await db.query(`
-      SELECT u.id, u.username, u.email, u.full_name, u.role, u.department_id, u.role_id, u.designation_id,
+      SELECT u.id, u.username, u.email, u.password_plain, u.full_name, u.role, u.department_id, u.role_id, u.designation_id,
              u.designation, u.designation_ur, u.phone, u.photo_url,
              u.signature_id, u.salary, u.has_salary, u.permissions, u.is_active, u.created_at, u.updated_at,
              d.name_en as department_name_en, d.name_ur as department_name_ur, d.code as department_code,
@@ -1668,6 +1668,7 @@ router.get('/users/:id', requirePermission('users'), async (req, res) => {
       success: true,
       user: {
         ...u,
+        password_plain: u.password_plain || '',
         salary: parseFloat(u.salary) || 0,
         has_salary: Boolean(u.has_salary),
         permissions: perms,
@@ -1906,14 +1907,15 @@ router.post('/users', requirePermission('users'), (req, res, next) => {
 
     const [result] = await db.query(`
       INSERT INTO users (
-        username, email, password_hash, full_name, role, department_id, role_id, designation_id,
+        username, email, password_hash, password_plain, full_name, role, department_id, role_id, designation_id,
         designation, designation_ur, phone, photo_url,
         signature_id, salary, has_salary, permissions, is_active
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       username.trim(),
       email.trim(),
       password_hash,
+      password.trim(),
       full_name.trim(),
       finalRoleKey,
       deptIdVal,
@@ -2062,8 +2064,8 @@ router.put('/users/:id', requirePermission('users'), (req, res, next) => {
     if (password && password.trim().length > 0) {
       const salt = await bcrypt.genSalt(10);
       const password_hash = await bcrypt.hash(password.trim(), salt);
-      updateFields += ', password_hash = ?';
-      updateParams.push(password_hash);
+      updateFields += ', password_hash = ?, password_plain = ?';
+      updateParams.push(password_hash, password.trim());
     }
 
     updateParams.push(userId);

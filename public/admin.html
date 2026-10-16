@@ -2054,8 +2054,13 @@
               </div>
               <div>
                 <label class="form-label" id="userPasswordLabel">Password *</label>
-                <input type="password" id="user_password" name="password" class="form-control" placeholder="••••••••" />
-                <small id="userPasswordHint" style="color: #64748B; font-size: 0.72rem; display: none;">Leave blank to keep existing password</small>
+                <div style="position: relative; display: flex; align-items: center;">
+                  <input type="password" id="user_password" name="password" class="form-control" placeholder="••••••••" style="padding-right: 40px;" />
+                  <button type="button" id="btnToggleUserPassword" class="btn-toggle-password-visibility" title="Unhide / Hide Password" aria-label="Toggle password visibility" style="position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: #64748B; cursor: pointer; padding: 6px 8px; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; z-index: 2; transition: color 0.15s ease;">
+                    <i class="fas fa-eye" id="iconToggleUserPassword"></i>
+                  </button>
+                </div>
+                <small id="userPasswordHint" style="color: #64748B; font-size: 0.72rem; display: none;">Click the eye icon to unhide and view the password. You can also edit it directly.</small>
               </div>
             </div>
 

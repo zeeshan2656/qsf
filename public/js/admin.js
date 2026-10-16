@@ -2973,13 +2973,48 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Toggle Password Unhide / Hide in User Modal
+  const btnToggleUserPassword = document.getElementById('btnToggleUserPassword');
+  if (btnToggleUserPassword) {
+    btnToggleUserPassword.addEventListener('click', (e) => {
+      e.preventDefault();
+      const pwdInput = document.getElementById('user_password');
+      const pwdIcon = document.getElementById('iconToggleUserPassword');
+      if (!pwdInput) return;
+      if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+        if (pwdIcon) pwdIcon.className = 'fas fa-eye-slash';
+        btnToggleUserPassword.title = 'Hide Password';
+        btnToggleUserPassword.style.color = 'var(--admin-primary)';
+      } else {
+        pwdInput.type = 'password';
+        if (pwdIcon) pwdIcon.className = 'fas fa-eye';
+        btnToggleUserPassword.title = 'Unhide Password';
+        btnToggleUserPassword.style.color = '#64748B';
+      }
+    });
+  }
+
   // Open Add User Modal
   window.openAddUserModal = function() {
     const form = document.getElementById('formUser');
     if (form) form.reset();
     document.getElementById('userEditId').value = '';
     document.getElementById('userModalHeading').innerHTML = '<i class="fas fa-user-plus"></i> Add New User / Staff Member';
-    document.getElementById('user_password').required = true;
+    const pwdInput = document.getElementById('user_password');
+    if (pwdInput) {
+      pwdInput.type = 'password';
+      pwdInput.value = '';
+      pwdInput.required = true;
+    }
+    const pwdIcon = document.getElementById('iconToggleUserPassword');
+    if (pwdIcon) pwdIcon.className = 'fas fa-eye';
+    const pwdBtn = document.getElementById('btnToggleUserPassword');
+    if (pwdBtn) {
+      pwdBtn.title = 'Unhide Password';
+      pwdBtn.style.color = '#64748B';
+    }
+    document.getElementById('userPasswordLabel').innerHTML = 'Password *';
     document.getElementById('userPasswordHint').style.display = 'none';
     const desUrInput = document.getElementById('user_designation_ur');
     if (desUrInput) desUrInput.value = '';
@@ -3140,6 +3175,15 @@ document.addEventListener('DOMContentLoaded', () => {
             <label class="view-user-label"><i class="fas fa-calendar-check"></i> Account Created</label>
             <div class="view-user-value">${u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A'}</div>
           </div>
+          <div class="view-user-field" style="grid-column: span 2;">
+            <label class="view-user-label"><i class="fas fa-key"></i> System Login Password</label>
+            <div class="view-user-value" style="display: flex; align-items: center; justify-content: space-between; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 6px 12px; border-radius: 6px;">
+              <span id="viewUserPasswordText" data-revealed="false" style="font-family: monospace; font-size: 0.95rem; font-weight: 700; color: #0F172A; letter-spacing: 2px;">••••••••</span>
+              <button type="button" class="btn-action" onclick="toggleViewUserPassword('${escapeHtml(u.password_plain || '')}')" title="Unhide / Hide Password" style="color: var(--admin-primary); background: transparent; border: none; cursor: pointer; padding: 4px 8px; font-size: 0.95rem; display: inline-flex; align-items: center;">
+                <i class="fas fa-eye" id="iconViewUserPassword"></i> <span style="font-size: 0.75rem; font-weight: 600; margin-left: 4px;">Unhide</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         <div style="margin-bottom: 18px;">
@@ -3178,6 +3222,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  // Toggle Password Visibility in View User Modal
+  window.toggleViewUserPassword = function(plainPassword) {
+    const textEl = document.getElementById('viewUserPasswordText');
+    const iconEl = document.getElementById('iconViewUserPassword');
+    const btn = iconEl ? iconEl.closest('button') : null;
+    if (!textEl) return;
+    if (textEl.getAttribute('data-revealed') === 'true') {
+      textEl.textContent = '••••••••';
+      textEl.style.letterSpacing = '2px';
+      textEl.setAttribute('data-revealed', 'false');
+      if (iconEl) iconEl.className = 'fas fa-eye';
+      if (btn) btn.innerHTML = '<i class="fas fa-eye" id="iconViewUserPassword"></i> <span style="font-size: 0.75rem; font-weight: 600; margin-left: 4px;">Unhide</span>';
+    } else {
+      textEl.textContent = plainPassword || '(Not set)';
+      textEl.style.letterSpacing = 'normal';
+      textEl.setAttribute('data-revealed', 'true');
+      if (iconEl) iconEl.className = 'fas fa-eye-slash';
+      if (btn) btn.innerHTML = '<i class="fas fa-eye-slash" id="iconViewUserPassword"></i> <span style="font-size: 0.75rem; font-weight: 600; margin-left: 4px;">Hide</span>';
+    }
+  };
+
   // Edit User
   window.editUser = async function(userId) {
     try {
@@ -3193,9 +3258,25 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('user_full_name').value = user.full_name || '';
       document.getElementById('user_username').value = user.username || '';
       document.getElementById('user_email').value = user.email || '';
-      document.getElementById('user_password').value = '';
-      document.getElementById('user_password').required = false;
-      document.getElementById('userPasswordLabel').innerHTML = 'New Password (Optional)';
+      const pwdInput = document.getElementById('user_password');
+      if (pwdInput) {
+        pwdInput.type = 'password';
+        pwdInput.value = user.password_plain || '';
+        pwdInput.required = false;
+      }
+      const pwdIcon = document.getElementById('iconToggleUserPassword');
+      if (pwdIcon) pwdIcon.className = 'fas fa-eye';
+      const pwdBtn = document.getElementById('btnToggleUserPassword');
+      if (pwdBtn) {
+        pwdBtn.title = 'Unhide Password';
+        pwdBtn.style.color = '#64748B';
+      }
+      document.getElementById('userPasswordLabel').innerHTML = 'Password';
+      const pwdHint = document.getElementById('userPasswordHint');
+      if (pwdHint) {
+        pwdHint.style.display = 'block';
+        pwdHint.textContent = 'Click the eye icon to unhide and view the password. You can also edit it directly.';
+      }
       document.getElementById('user_role').value = user.role || 'staff';
       const deptSelect = document.getElementById('user_department_id');
       if (deptSelect) deptSelect.value = user.department_id || '';

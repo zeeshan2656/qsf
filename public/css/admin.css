@@ -3224,3 +3224,31 @@ select.form-control[dir="rtl"] {
   }
 }
 
+/* Password Visibility Unhide Button */
+.btn-toggle-password-visibility {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #64748B;
+  cursor: pointer;
+  padding: 6px 8px;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: color 0.15s ease, transform 0.1s ease;
+}
+
+.btn-toggle-password-visibility:hover {
+  color: var(--admin-primary) !important;
+}
+
+.btn-toggle-password-visibility:active {
+  transform: translateY(-50%) scale(0.92);
+}
+
+
