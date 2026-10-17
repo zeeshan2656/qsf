@@ -33,14 +33,12 @@ document.addEventListener('DOMContentLoaded', () => {
     renderDynamicContent(foundationData, e.detail.lang);
   });
 
-  // 4. Fetch initial foundation data post-load on idle without blocking main thread
-  window.addEventListener('load', () => {
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(() => fetchBootstrapData(), { timeout: 4000 });
-    } else {
-      setTimeout(fetchBootstrapData, 1500);
-    }
-  });
+  // 4. Fetch initial foundation data on DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', fetchBootstrapData);
+  } else {
+    fetchBootstrapData();
+  }
 
   async function fetchBootstrapData() {
     try {
@@ -373,41 +371,322 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     }
+
+    // H. Render Dynamic Scrolling Announcement Bar
+    renderAnnouncementsBar(data.announcements, isUrdu);
+
+    // I. Render Dynamic Dual-Row Header Menus & Mobile Accordions
+    renderHeaderMenus(data.menus, isUrdu);
+
+    // J. Render Dynamic Multi-Slide Hero Carousel (Optional Text, Headings & Buttons)
+    if (data.slides && data.slides.length > 0) {
+      renderHeroSlider(data.slides, isUrdu);
+    }
   }
 
-  // 6. Mobile Nav Toggle
-  const mobileToggleBtn = document.getElementById('mobileToggle');
-  const mainNav = document.getElementById('mainNav');
-  if (mobileToggleBtn && mainNav) {
-    mobileToggleBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isOpen = mainNav.classList.toggle('mobile-active');
-      mobileToggleBtn.setAttribute('aria-expanded', isOpen);
-      const icon = mobileToggleBtn.querySelector('i');
-      if (icon) {
-        icon.className = isOpen ? 'fas fa-times' : 'fas fa-bars';
+  function renderAnnouncementsBar(announcements, isUrdu) {
+    const marqueeEl = document.getElementById('announcementMarquee');
+    const trackEl = document.getElementById('announcementTrack');
+    if (!marqueeEl) return;
+
+    if (!announcements || announcements.length === 0) {
+      marqueeEl.innerHTML = '<span class="announcement-item-link">Welcome to Qasr-e-Shabbir Foundation</span>';
+      return;
+    }
+
+    // Direction: LTR for English, RTL for Urdu
+    if (isUrdu) {
+      marqueeEl.className = 'announcement-marquee-content marquee-rtl';
+      if (trackEl) trackEl.setAttribute('dir', 'rtl');
+    } else {
+      marqueeEl.className = 'announcement-marquee-content marquee-ltr';
+      if (trackEl) trackEl.setAttribute('dir', 'ltr');
+    }
+
+    // Build items with separator
+    const itemsHtml = announcements.map(a => {
+      const text = isUrdu ? (a.content_ur || a.content_en) : a.content_en;
+      if (a.link_url) {
+        return `<a href="${a.link_url}" class="announcement-item-link">${escapeHtml(text)} <i class="fas fa-arrow-right" style="font-size:0.75rem;"></i></a>`;
+      }
+      return `<span class="announcement-item-link">${escapeHtml(text)}</span>`;
+    }).join('<span style="opacity: 0.5; margin: 0 16px;">✦</span>');
+
+    // Duplicate 3 times for continuous seamless scrolling loop
+    marqueeEl.innerHTML = `${itemsHtml}<span style="opacity: 0.5; margin: 0 16px;">✦</span>${itemsHtml}<span style="opacity: 0.5; margin: 0 16px;">✦</span>${itemsHtml}`;
+  }
+
+  function renderHeaderMenus(menus, isUrdu) {
+    if (!menus || menus.length === 0) return;
+
+    const slotMap = {
+      'slotMenu1': menus.find(m => m.row_num === 1 && m.col_side === 'left'),
+      'slotMenu2': menus.find(m => m.row_num === 1 && m.col_side === 'right'),
+      'slotMenu3': menus.find(m => m.row_num === 2 && m.col_side === 'left'),
+      'slotMenu4': menus.find(m => m.row_num === 2 && m.col_side === 'right')
+    };
+
+    // Render 4 desktop slots INLINE (Desktop: In-line Setup, No Dropdowns)
+    Object.entries(slotMap).forEach(([slotId, m]) => {
+      const slotEl = document.getElementById(slotId);
+      if (!slotEl) return;
+
+      if (!m || m.is_active === 0) {
+        slotEl.style.visibility = 'hidden';
+        return;
+      }
+
+      slotEl.style.visibility = 'visible';
+      const title = isUrdu ? (m.title_ur || m.title_en) : m.title_en;
+      const items = Array.isArray(m.items) ? m.items.filter(it => it.is_active === 1) : [];
+
+      if (items.length > 0) {
+        slotEl.innerHTML = `
+          <nav class="nav-inline-group" aria-label="${escapeHtml(title)}">
+            ${items.map(it => `
+              <a href="${it.page_url}" class="nav-inline-link" ${it.open_new_tab ? 'target="_blank" rel="noopener"' : ''}>
+                <span>${escapeHtml(isUrdu ? (it.title_ur || it.title_en) : it.title_en)}</span>
+              </a>
+            `).join('')}
+          </nav>
+        `;
+      } else {
+        slotEl.innerHTML = `
+          <nav class="nav-inline-group">
+            <span class="nav-inline-link">${escapeHtml(title)}</span>
+          </nav>
+        `;
       }
     });
 
-    // Close mobile nav when clicking a nav link
-    mainNav.querySelectorAll('.nav-link, .btn-donate-mobile, .mobile-nav-search-btn').forEach(link => {
-      link.addEventListener('click', () => {
-        mainNav.classList.remove('mobile-active');
-        mobileToggleBtn.setAttribute('aria-expanded', 'false');
-        const icon = mobileToggleBtn.querySelector('i');
-        if (icon) icon.className = 'fas fa-bars';
-      });
-    });
+    // Render Mobile Accordions
+    const accordionContainer = document.getElementById('mobileMenuAccordion');
+    if (accordionContainer) {
+      const activeMenus = menus.filter(m => m.is_active === 1);
+      accordionContainer.innerHTML = activeMenus.map((m, idx) => {
+        const title = isUrdu ? (m.title_ur || m.title_en) : m.title_en;
+        const items = Array.isArray(m.items) ? m.items.filter(it => it.is_active === 1) : [];
+        const isFirst = idx === 0;
 
-    // Close when clicking outside header
-    document.addEventListener('click', (e) => {
-      if (!mainNav.contains(e.target) && !mobileToggleBtn.contains(e.target)) {
-        if (mainNav.classList.contains('mobile-active')) {
-          mainNav.classList.remove('mobile-active');
-          mobileToggleBtn.setAttribute('aria-expanded', 'false');
-          const icon = mobileToggleBtn.querySelector('i');
-          if (icon) icon.className = 'fas fa-bars';
+        return `
+          <div class="mobile-accordion-item">
+            <button type="button" class="mobile-accordion-btn ${isFirst ? 'expanded' : ''}" onclick="toggleMobileAccordion(this)">
+              <span>${escapeHtml(title)}</span>
+              ${items.length > 0 ? '<i class="fas fa-chevron-down mobile-accordion-icon"></i>' : ''}
+            </button>
+            <div class="mobile-accordion-panel ${isFirst ? 'show' : ''}">
+              ${items.map(it => `
+                <a href="${it.page_url}" class="mobile-panel-link" ${it.open_new_tab ? 'target="_blank" rel="noopener"' : ''}>
+                  ${escapeHtml(isUrdu ? (it.title_ur || it.title_en) : it.title_en)}
+                </a>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  // =========================================================================
+  // MULTI-SLIDE HERO CAROUSEL ENGINE (OPTIONAL TEXT & BUTTONS)
+  // =========================================================================
+  let heroAutoTimer = null;
+  let currentHeroSlideIndex = 0;
+  let activeHeroSlides = [];
+
+  function renderHeroSlider(slides, isUrdu) {
+    const track = document.getElementById('heroSliderTrack');
+    const dotsContainer = document.getElementById('heroSliderDots');
+    const prevBtn = document.getElementById('heroSliderPrev');
+    const nextBtn = document.getElementById('heroSliderNext');
+    const heroSection = document.getElementById('heroSection') || document.querySelector('.hero-section');
+    if (!track) return;
+
+    if (!Array.isArray(slides) || slides.length === 0) return;
+
+    activeHeroSlides = slides;
+    currentHeroSlideIndex = 0;
+
+    // Render multi-slides with optional text & button controls
+    track.innerHTML = slides.map((slide, idx) => {
+      const title = isUrdu ? (slide.title_ur || slide.title_en) : slide.title_en;
+      const eyebrow = isUrdu ? (slide.eyebrow_ur || slide.eyebrow_en) : slide.eyebrow_en;
+      const subtitle = isUrdu ? (slide.subtitle_ur || slide.subtitle_en) : slide.subtitle_en;
+      const desc = isUrdu ? (slide.description_ur || slide.description_en) : slide.description_en;
+      const btn1Text = isUrdu ? (slide.btn1_text_ur || slide.btn1_text_en) : slide.btn1_text_en;
+      const btn2Text = isUrdu ? (slide.btn2_text_ur || slide.btn2_text_en) : slide.btn2_text_en;
+
+      // Optional text rule: if no text/buttons given, omit overlay and text card for clean banner display
+      const hasContent = Boolean(title || subtitle || desc || eyebrow || btn1Text || btn2Text);
+
+      return `
+        <div class="hero-slide ${idx === 0 ? 'active' : ''}" data-index="${idx}" role="group" aria-roledescription="slide" aria-label="Slide ${idx + 1} of ${slides.length}">
+          <div class="hero-backdrop-image">
+            <picture>
+              ${slide.image_mobile_url ? `<source media="(max-width: 640px)" srcset="${slide.image_mobile_url}" type="image/webp">` : ''}
+              <img src="${slide.image_url}" alt="${escapeHtml(title || 'Qasr-e-Shabbir Foundation')}" class="hero-bg-img" loading="${idx === 0 ? 'eager' : 'lazy'}" decoding="async" />
+            </picture>
+          </div>
+          ${hasContent ? `
+            <div class="hero-bg-overlay"></div>
+            <div class="container hero-layout">
+              <div class="hero-content-card">
+                ${eyebrow ? `<span class="hero-eyebrow">${escapeHtml(eyebrow)}</span>` : ''}
+                ${title ? `<h1 class="hero-title">${escapeHtml(title)}</h1>` : ''}
+                ${subtitle ? `<p class="hero-subtitle">${escapeHtml(subtitle)}</p>` : ''}
+                ${desc ? `<p class="hero-text">${escapeHtml(desc)}</p>` : ''}
+                ${(btn1Text || btn2Text) ? `
+                  <div class="hero-actions">
+                    ${btn1Text ? `
+                      <a href="${slide.btn1_link || '/donate'}" class="btn-primary trigger-donate-modal">
+                        <i class="fas fa-heart"></i>
+                        <span>${escapeHtml(btn1Text)}</span>
+                      </a>
+                    ` : ''}
+                    ${btn2Text ? `
+                      <a href="${slide.btn2_link || '/about'}" class="btn-secondary">
+                        <span>${escapeHtml(btn2Text)}</span>
+                      </a>
+                    ` : ''}
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join('');
+
+    // Indicator dots
+    if (dotsContainer) {
+      if (slides.length > 1) {
+        dotsContainer.style.display = 'flex';
+        dotsContainer.innerHTML = slides.map((_, idx) => `
+          <button type="button" class="hero-dot ${idx === 0 ? 'active' : ''}" data-index="${idx}" aria-label="Go to slide ${idx + 1}" onclick="goToHeroSlide(${idx})"></button>
+        `).join('');
+      } else {
+        dotsContainer.style.display = 'none';
+      }
+    }
+
+    // Toggle arrows
+    if (prevBtn && nextBtn) {
+      const showArrows = slides.length > 1;
+      prevBtn.style.display = showArrows ? 'flex' : 'none';
+      nextBtn.style.display = showArrows ? 'flex' : 'none';
+    }
+
+    startHeroSliderAuto();
+
+    if (heroSection) {
+      heroSection.onmouseenter = pauseHeroSliderAuto;
+      heroSection.onmouseleave = startHeroSliderAuto;
+
+      // Mobile Touch Swipe
+      let touchStartX = 0;
+      let touchEndX = 0;
+      heroSection.ontouchstart = (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      };
+      heroSection.ontouchend = (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        const diff = touchEndX - touchStartX;
+        if (Math.abs(diff) > 40) {
+          if (diff < 0) {
+            nextHeroSlide();
+          } else {
+            prevHeroSlide();
+          }
         }
+      };
+    }
+  }
+
+  function goToHeroSlide(idx) {
+    if (!activeHeroSlides || activeHeroSlides.length === 0) return;
+    const slides = document.querySelectorAll('.hero-slide');
+    const dots = document.querySelectorAll('.hero-dot');
+
+    currentHeroSlideIndex = (idx + activeHeroSlides.length) % activeHeroSlides.length;
+
+    slides.forEach((sl, i) => {
+      sl.classList.toggle('active', i === currentHeroSlideIndex);
+    });
+    dots.forEach((dot, i) => {
+      dot.classList.toggle('active', i === currentHeroSlideIndex);
+    });
+  }
+
+  window.goToHeroSlide = goToHeroSlide;
+
+  function nextHeroSlide() {
+    goToHeroSlide(currentHeroSlideIndex + 1);
+  }
+
+  function prevHeroSlide() {
+    goToHeroSlide(currentHeroSlideIndex - 1);
+  }
+
+  window.nextHeroSlide = nextHeroSlide;
+  window.prevHeroSlide = prevHeroSlide;
+
+  function startHeroSliderAuto() {
+    pauseHeroSliderAuto();
+    if (activeHeroSlides && activeHeroSlides.length > 1) {
+      heroAutoTimer = setInterval(nextHeroSlide, 5000);
+    }
+  }
+
+  function pauseHeroSliderAuto() {
+    if (heroAutoTimer) {
+      clearInterval(heroAutoTimer);
+      heroAutoTimer = null;
+    }
+  }
+
+  window.toggleMobileAccordion = function(btn) {
+    const panel = btn.nextElementSibling;
+    const isExpanded = btn.classList.toggle('expanded');
+    if (panel) {
+      panel.classList.toggle('show', isExpanded);
+    }
+  };
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  // 6. Mobile Nav Drawer Toggle
+  const mobileToggleBtn = document.getElementById('mobileToggle');
+  const mobileDrawer = document.getElementById('mobileNavDrawer');
+  const mobileBackdrop = document.getElementById('mobileNavBackdrop');
+  const mobileCloseBtn = document.getElementById('mobileNavCloseBtn');
+
+  function openMobileNav() {
+    if (mobileDrawer) mobileDrawer.classList.add('open');
+    if (mobileBackdrop) mobileBackdrop.classList.add('active');
+  }
+
+  function closeMobileNav() {
+    if (mobileDrawer) mobileDrawer.classList.remove('open');
+    if (mobileBackdrop) mobileBackdrop.classList.remove('active');
+  }
+
+  if (mobileToggleBtn) mobileToggleBtn.addEventListener('click', openMobileNav);
+  if (mobileCloseBtn) mobileCloseBtn.addEventListener('click', closeMobileNav);
+  if (mobileBackdrop) mobileBackdrop.addEventListener('click', closeMobileNav);
+
+  // Close mobile nav on link click
+  if (mobileDrawer) {
+    mobileDrawer.addEventListener('click', (e) => {
+      if (e.target.closest('.mobile-panel-link, .btn-donate-mobile-drawer')) {
+        closeMobileNav();
       }
     });
   }
@@ -485,27 +764,33 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 9. Scroll-To-Top (Topup) Button behavior
+  // 9. Hero Slider Arrow Button Listeners
+  const prevSlideBtn = document.getElementById('heroSliderPrev');
+  const nextSlideBtn = document.getElementById('heroSliderNext');
+  if (prevSlideBtn) prevSlideBtn.addEventListener('click', prevHeroSlide);
+  if (nextSlideBtn) nextSlideBtn.addEventListener('click', nextHeroSlide);
+
+  // 10. Scroll-To-Top (Topup) Button behavior - Guaranteed reliable detection
   const scrollTopBtn = document.getElementById('scrollTopBtn');
   if (scrollTopBtn) {
-    let scrollTicking = false;
-    window.addEventListener('scroll', () => {
-      if (!scrollTicking) {
-        window.requestAnimationFrame(() => {
-          if (window.scrollY > 300) {
-            scrollTopBtn.classList.add('visible');
-          } else {
-            scrollTopBtn.classList.remove('visible');
-          }
-          scrollTicking = false;
-        });
-        scrollTicking = true;
+    function handleScrollTopVisibility() {
+      const scrollPos = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+      if (scrollPos > 160) {
+        scrollTopBtn.classList.add('visible');
+      } else {
+        scrollTopBtn.classList.remove('visible');
       }
-    }, { passive: true });
+    }
+
+    window.addEventListener('scroll', handleScrollTopVisibility, { passive: true });
+    document.addEventListener('scroll', handleScrollTopVisibility, { passive: true });
+    // Check immediately on load in case page loaded mid-scroll
+    setTimeout(handleScrollTopVisibility, 100);
 
     scrollTopBtn.addEventListener('click', (e) => {
       e.preventDefault();
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
 });

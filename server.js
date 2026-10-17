@@ -396,7 +396,11 @@ app.use((req, res, next) => {
   if (minPath && fs.existsSync(minPath)) {
     const isCss = req.path.endsWith('.css');
     res.setHeader('Content-Type', isCss ? 'text/css; charset=UTF-8' : 'application/javascript; charset=UTF-8');
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    if (req.path.includes('admin')) {
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
     return res.sendFile(minPath);
   }
   next();

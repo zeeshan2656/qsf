@@ -161,7 +161,8 @@ const translations = {
     statusReview: "Under Review",
     statusApproved: "Approved",
     statusVerified: "Verified",
-    currencyPKR: "PKR"
+    currencyPKR: "PKR",
+    announcementTitle: "Announcements"
   },
   ur: {
     // Navigation
@@ -325,7 +326,8 @@ const translations = {
     statusReview: "جانچ پڑتال جاری ہے",
     statusApproved: "منظور شدہ",
     statusVerified: "تصدیق شدہ",
-    currencyPKR: "روپے"
+    currencyPKR: "روپے",
+    announcementTitle: "اعلانات"
   }
 };
 

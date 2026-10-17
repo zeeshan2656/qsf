@@ -17,68 +17,121 @@
 </head>
 <body>
 
-  <!-- Header -->
-  <header class="site-header">
-    <div class="header-container">
-      <a href="/" class="header-brand">
-        <div class="brand-logos-pair">
-          <img src="/media/branding/logo_header_58.webp" alt="Qasr-e-Shabbir Foundation Main Logo" class="header-brand-logo header-logo-img" width="58" height="58" style="height: 58px; width: auto; max-width: 62px; object-fit: contain; flex-shrink: 0; display: block;" onerror="this.onerror=null; this.src='/media/branding/logo.svg';" fetchpriority="high" decoding="async">
+  <!-- ==================== TOP ANNOUNCEMENT BAR (CONTINUOUS SCROLLING) ==================== -->
+  <aside class="announcement-bar" id="announcementBar" aria-label="Announcements">
+    <div class="announcement-container">
+      <div class="announcement-badge">
+        <i class="fas fa-bullhorn" aria-hidden="true"></i>
+        <span data-i18n="announcementTitle">Announcements</span>
+      </div>
+      <div class="announcement-ticker-track" id="announcementTrack" dir="ltr">
+        <div class="announcement-marquee-content marquee-ltr" id="announcementMarquee">
+          <span class="announcement-item-link">Welcome to Qasr-e-Shabbir Foundation</span>
         </div>
-        <div class="brand-text">
-          <span class="brand-name" data-i18n="foundationName">QASR-E-SHABBIR FOUNDATION</span>
-          <span class="brand-tagline" data-i18n="tagline">Together for a Brighter Tomorrow</span>
-        </div>
-      </a>
-
-      <!-- Primary Navigation & Mobile Menu Container -->
-      <nav class="header-nav" id="mainNav">
-        <ul class="nav-links">
-          <li><a href="/" class="nav-link" data-i18n="navHome">Home</a></li>
-          <li><a href="/about" class="nav-link" data-i18n="navAbout">About Us</a></li>
-          <li><a href="/projects" class="nav-link" data-i18n="navProjects">Projects</a></li>
-          <li><a href="/news" class="nav-link" data-i18n="navNews">News & Updates</a></li>
-          <li><a href="/apply" class="nav-link" data-i18n="navApply">Apply for Assistance</a></li>
-          <li><a href="/contact" class="nav-link active" data-i18n="navContact">Contact</a></li>
-        </ul>
-
-        <!-- Mobile-Only Action Items Under the Toggle Button -->
-        <div class="mobile-nav-controls">
-          <div class="lang-toggle" title="Switch Language / زبان تبدیل کریں">
-            <button type="button" class="lang-btn active" data-lang="en">English</button>
-            <button type="button" class="lang-btn" data-lang="ur">اردو</button>
-          </div>
-          <a href="/projects" class="mobile-nav-search-btn">
-            <i class="fas fa-search"></i>
-            <span>Search Projects</span>
-          </a>
-          <a href="/donate" class="btn-donate-mobile">
-            <i class="fas fa-heart"></i>
-            <span data-i18n="btnDonateNow">Donate Now</span>
-          </a>
-        </div>
-      </nav>
-
-      <!-- Desktop Action Controls -->
-      <div class="header-actions desktop-actions">
-        <div class="lang-toggle" title="Switch Language / زبان تبدیل کریں">
-          <button type="button" class="lang-btn active" data-lang="en">English</button>
+      </div>
+      <div class="announcement-actions">
+        <div class="announcement-lang-toggle lang-toggle" title="Switch Language / زبان تبدیل کریں">
+          <button type="button" class="lang-btn active" data-lang="en">EN</button>
           <button type="button" class="lang-btn" data-lang="ur">اردو</button>
         </div>
-        <a href="/projects" class="header-search-btn" title="Search Projects">
-          <i class="fas fa-search"></i>
-        </a>
-        <a href="/donate" class="btn-donate-header">
-          <i class="fas fa-heart"></i>
-          <span data-i18n="btnDonateNow">Donate Now</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== DESKTOP DUAL-ROW HEADER (CIRCULAR EMBLEM ONLY, INLINE MENUS) ==================== -->
+  <header class="header-dual-menu-wrap" id="desktopHeader" role="banner">
+    <div class="header-dual-container">
+      
+      <!-- ROW 1 RED (Row 1 Left: Menu 1 | Row 1 Right: Menu 2) -->
+      <div class="nav-row-red">
+        <div class="nav-slot nav-slot-left" id="slotMenu1">
+          <nav class="nav-inline-group">
+            <a href="/" class="nav-inline-link">Home</a>
+            <a href="/about" class="nav-inline-link">About Us</a>
+          </nav>
+        </div>
+        <div class="nav-slot nav-slot-right" id="slotMenu2">
+          <nav class="nav-inline-group">
+            <a href="/projects" class="nav-inline-link">Welfare Projects</a>
+            <a href="/news" class="nav-inline-link">News & Updates</a>
+          </nav>
+        </div>
+      </div>
+
+      <!-- ROW 2 BLUE (Row 2 Left: Menu 3 | Row 2 Right: Menu 4) -->
+      <div class="nav-row-blue">
+        <div class="nav-slot nav-slot-left" id="slotMenu3">
+          <nav class="nav-inline-group">
+            <a href="/apply" class="nav-inline-link">Apply for Assistance</a>
+            <a href="/volunteer" class="nav-inline-link">Become a Volunteer</a>
+          </nav>
+        </div>
+        <div class="nav-slot nav-slot-right" id="slotMenu4">
+          <nav class="nav-inline-group">
+            <a href="/donate" class="nav-inline-link">Donate Now</a>
+            <a href="/contact" class="nav-inline-link">Contact Us</a>
+          </nav>
+        </div>
+      </div>
+
+      <!-- CENTER EMBLEM (CIRCULAR ONLY - NO RECTANGULAR BOX) -->
+      <div class="nav-center-emblem-wrap">
+        <a href="/" class="nav-emblem-link" title="Qasr-e-Shabbir Foundation">
+          <div class="nav-emblem-circle">
+            <img src="/media/branding/Qasr-e-Shabir_Foundation_Emble_1792086383401_940589.webp" 
+                 alt="Qasr-e-Shabbir Foundation Official Emblem" 
+                 class="nav-emblem-img" 
+                 width="96" height="96" 
+                 fetchpriority="high" decoding="async"
+                 onerror="this.onerror=null; this.src='/media/branding/logo.svg';">
+          </div>
         </a>
       </div>
 
-      <!-- Mobile Menu Toggle Button -->
-      <button type="button" class="mobile-toggle" id="mobileToggle" aria-label="Toggle navigation" aria-expanded="false">
+    </div>
+  </header>
+
+  <!-- ==================== MOBILE SITE HEADER ==================== -->
+  <header class="mobile-site-header" id="mobileSiteHeader">
+    <a href="/" class="mobile-brand-wrap">
+      <img src="/media/branding/Qasr-e-Shabir_Foundation_Emble_1792086383401_940589.webp" 
+           alt="Qasr-e-Shabbir Foundation" 
+           class="mobile-brand-logo" 
+           width="48" height="48"
+           onerror="this.onerror=null; this.src='/media/branding/logo.svg';">
+      <div class="mobile-brand-title">
+        <span class="mobile-title-main" data-i18n="foundationName">QASR-E-SHABBIR</span>
+        <span class="mobile-title-sub" data-i18n="tagline">FOUNDATION</span>
+      </div>
+    </a>
+    <div class="mobile-header-actions">
+      <div class="lang-toggle" title="Switch Language / زبان تبدیل کریں">
+        <button type="button" class="lang-btn active" data-lang="en">EN</button>
+        <button type="button" class="lang-btn" data-lang="ur">اردو</button>
+      </div>
+      <button type="button" class="mobile-hamburger-btn" id="mobileToggle" aria-label="Toggle navigation" aria-expanded="false">
         <i class="fas fa-bars"></i>
       </button>
     </div>
   </header>
+
+  <!-- ==================== MOBILE NAVIGATION DRAWER & BACKDROP ==================== -->
+  <div class="mobile-drawer-backdrop" id="mobileNavBackdrop"></div>
+  <aside class="mobile-nav-drawer" id="mobileNavDrawer" aria-label="Mobile Navigation">
+    <div class="mobile-drawer-header">
+      <div class="mobile-drawer-title" data-i18n="navigationMenu">Navigation</div>
+      <button type="button" class="btn-drawer-close" id="mobileNavCloseBtn" aria-label="Close navigation">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <nav class="mobile-menu-accordion" id="mobileMenuAccordion"></nav>
+    <div class="mobile-drawer-footer">
+      <a href="/donate" class="btn-donate-mobile-drawer">
+        <i class="fas fa-heart"></i>
+        <span data-i18n="btnDonateNow">Donate Now</span>
+      </a>
+    </div>
+  </aside>
 
   <!-- Title Banner -->
   <section style="background: linear-gradient(135deg, #7F1D1D 0%, #2B050E 100%); color: #FFFFFF; padding: 50px 0; text-align: center;">
@@ -258,6 +311,21 @@
       </div>
     </div>
   </footer>
+
+  <!-- ==================== FLOATING CONTROLS: TOPUP & WHATSAPP ==================== -->
+  <div class="floating-actions-container" id="floatingActions">
+    <button type="button" class="btn-scroll-top" id="scrollTopBtn" aria-label="Scroll to top of page" title="Scroll to top">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block;margin:auto;">
+        <polyline points="18 15 12 9 6 15"></polyline>
+      </svg>
+    </button>
+    <a href="https://wa.me/923000817702?text=Assalam-o-Alaikum%2C%20I%20want%20to%20inquire%20about%20Qasr-e-Shabbir%20Foundation%20welfare%20projects." 
+       class="btn-whatsapp-float" id="whatsappFloatBtn" target="_blank" rel="noopener noreferrer" 
+       aria-label="Chat with Qasr-e-Shabbir Foundation on WhatsApp" title="WhatsApp Chat & Support">
+      <i class="fab fa-whatsapp"></i>
+      <span class="whatsapp-tooltip">Chat with Us</span>
+    </a>
+  </div>
 
   <script src="/js/translations.js" defer></script>
   <script src="/js/main.js" defer></script>

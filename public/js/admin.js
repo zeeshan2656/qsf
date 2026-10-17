@@ -66,6 +66,10 @@ document.addEventListener('DOMContentLoaded', () => {
       return perms.includes('settings');
     }
 
+    if (tabId === 'announcements' || tabId === 'menus' || tabId === 'hero-slides') {
+      return isSuper || perms.includes(tabId) || perms.includes('settings');
+    }
+
     return perms.includes(tabId);
   }
 
@@ -509,6 +513,73 @@ document.addEventListener('DOMContentLoaded', () => {
           onClick: 'openAddCategoryModal()'
         }
       ]
+    },
+    'announcements': {
+      titleEn: 'Announcement Bar',
+      titleUr: 'اعلانات بار',
+      icon: 'fas fa-bullhorn',
+      actions: [
+        {
+          textEn: 'Refresh',
+          textUr: 'تازہ کریں',
+          icon: 'fas fa-rotate',
+          type: 'secondary',
+          onClick: 'loadAnnouncements()'
+        },
+        {
+          textEn: 'Add New Announcement',
+          textUr: 'نیا اعلان شامل کریں',
+          icon: 'fas fa-plus',
+          type: 'primary',
+          permission: 'can_manage_settings',
+          onClick: 'openAnnouncementModal()'
+        }
+      ]
+    },
+    'menus': {
+      titleEn: 'Menu Management',
+      titleUr: 'مینو مینجمنٹ',
+      icon: 'fas fa-compass',
+      actions: [
+        {
+          textEn: 'Assign Page to Menu',
+          textUr: 'صفحہ مینو میں شامل کریں',
+          icon: 'fas fa-link',
+          type: 'secondary',
+          permission: 'can_manage_settings',
+          onClick: 'openMenuItemModal()'
+        },
+        {
+          textEn: 'Create New Menu',
+          textUr: 'نیا مینو بنائیں',
+          icon: 'fas fa-plus',
+          type: 'primary',
+          permission: 'can_manage_settings',
+          onClick: 'openMenuModal()'
+        }
+      ]
+    },
+    'hero-slides': {
+      titleEn: 'Hero Slider',
+      titleUr: 'ہیرو سلائیڈر',
+      icon: 'fas fa-images',
+      actions: [
+        {
+          textEn: 'Refresh',
+          textUr: 'تازہ کریں',
+          icon: 'fas fa-rotate',
+          type: 'secondary',
+          onClick: 'loadHeroSlides()'
+        },
+        {
+          textEn: 'Add New Slide',
+          textUr: 'نئی سلائیڈ شامل کریں',
+          icon: 'fas fa-plus',
+          type: 'primary',
+          permission: 'can_manage_settings',
+          onClick: 'openHeroSlideModal()'
+        }
+      ]
     }
   };
 
@@ -675,6 +746,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tabId === 'org-roles') loadRoles();
     if (tabId === 'org-designations') loadDesignations();
     if (tabId === 'org-categories') loadCategories();
+    if (tabId === 'announcements') loadAnnouncements();
+    if (tabId === 'menus') loadMenus();
+    if (tabId === 'hero-slides') loadHeroSlides();
     if (tabId === 'settings' || tabId === 'settings-bank' || tabId === 'settings-contact' || tabId === 'settings-layout') {
       loadSettings();
       if (tabId === 'settings-layout') {
@@ -7863,32 +7937,874 @@ document.addEventListener('DOMContentLoaded', () => {
     if (previewImg && url) {
       previewImg.src = url;
       previewImg.style.display = 'block';
-    }
-  };
-
-  window.setArticleImage = function(url) {
-    const urlInput = document.getElementById('art_image_url');
-    const previewImg = document.getElementById('art_image_preview');
-    if (urlInput) urlInput.value = url || '';
-    if (previewImg && url) {
-      previewImg.src = url;
-      previewImg.style.display = 'block';
-    }
-  };
-
-  window.setCategoryImage = function(url) {
-    const urlInput = document.getElementById('cat_image_url');
-    const previewImg = document.getElementById('cat_image_preview');
-    const placeholder = document.getElementById('cat_image_placeholder');
-    if (urlInput) urlInput.value = url || '';
-    if (url) {
-      if (previewImg) { previewImg.src = url; previewImg.style.display = 'block'; }
+      const placeholder = document.getElementById('proj_image_placeholder');
       if (placeholder) placeholder.style.display = 'none';
-    } else {
-      if (previewImg) { previewImg.src = ''; previewImg.style.display = 'none'; }
-      if (placeholder) placeholder.style.display = 'block';
     }
   };
+
+  // =========================================================================
+  // ANNOUNCEMENTS & MENU MANAGEMENT CLIENT LOGIC
+  // =========================================================================
+  let announcementsData = [];
+  let menusData = [];
+
+  // --- ANNOUNCEMENTS ---
+  async function loadAnnouncements() {
+    try {
+      const tbody = document.getElementById('announcementsTableBody');
+      if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #94A3B8; padding: 28px;"><i class="fas fa-spinner fa-spin"></i> Loading announcements...</td></tr>';
+
+      const res = await fetch('/api/admin/announcements');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data)) {
+        announcementsData = data.data;
+        renderAnnouncements(announcementsData);
+      } else {
+        if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #EF4444; padding: 24px;">Failed to load announcements.</td></tr>';
+      }
+    } catch (err) {
+      console.error('[loadAnnouncements Error]', err);
+    }
+  }
+
+  function renderAnnouncements(items) {
+    const tbody = document.getElementById('announcementsTableBody');
+    if (!tbody) return;
+
+    const metricTotal = document.getElementById('metricTotalAnnouncements');
+    if (metricTotal) metricTotal.textContent = items ? items.length : 0;
+    const metricActive = document.getElementById('metricActiveAnnouncements');
+    if (metricActive) metricActive.textContent = items ? items.filter(a => a.is_active).length : 0;
+    const metricInactive = document.getElementById('metricInactiveAnnouncements');
+    if (metricInactive) metricInactive.textContent = items ? items.filter(a => !a.is_active).length : 0;
+
+    if (!items || items.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #94A3B8; padding: 28px;">No announcements found. Click "Add New Announcement" to create one.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = items.map((a, idx) => {
+      const statusPill = a.is_active 
+        ? '<span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 0.76rem; font-weight: 700; background: #DCFCE7; color: #15803D;"><i class="fas fa-circle-check"></i> Active</span>'
+        : '<span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 0.76rem; font-weight: 700; background: #FEE2E2; color: #B91C1C;"><i class="fas fa-circle-xmark"></i> Inactive</span>';
+
+      const linkDisplay = a.link_url 
+        ? `<a href="${a.link_url}" target="_blank" style="color: var(--admin-primary); font-weight: 600; text-decoration: underline; font-size: 0.85rem;"><i class="fas fa-link" style="margin-right: 4px;"></i>${escapeHtml(a.link_url)}</a>`
+        : '<span style="color: #94A3B8; font-size: 0.82rem;">None (Text only)</span>';
+
+      return `
+        <tr>
+          <td style="color: #64748B; font-weight: 600;">${idx + 1}</td>
+          <td>
+            <div style="font-weight: 600; color: var(--admin-text-dark); margin-bottom: 4px; font-size: 0.92rem;">
+              ${escapeHtml(a.content_en)}
+            </div>
+            ${a.content_ur ? `<div class="urdu-text" dir="rtl" style="font-size: 0.88rem; color: #475569; line-height: 1.6;">${escapeHtml(a.content_ur)}</div>` : ''}
+          </td>
+          <td>${linkDisplay}</td>
+          <td style="text-align: center; font-weight: 600; color: #475569;">#${a.sort_order || 0}</td>
+          <td style="text-align: center;">${statusPill}</td>
+          <td style="text-align: right; white-space: nowrap;">
+            <button type="button" class="btn-action-icon" onclick="toggleAnnouncement(${a.id})" title="${a.is_active ? 'Deactivate' : 'Activate'}" style="margin-right: 6px; color: ${a.is_active ? '#10B981' : '#94A3B8'};">
+              <i class="fas ${a.is_active ? 'fa-toggle-on' : 'fa-toggle-off'}" style="font-size: 1.35rem;"></i>
+            </button>
+            <button type="button" class="btn-action-icon" onclick="openAnnouncementModal(${a.id})" title="Edit Announcement" style="margin-right: 6px; color: #3B82F6;">
+              <i class="fas fa-pencil"></i>
+            </button>
+            <button type="button" class="btn-action-icon" onclick="deleteAnnouncement(${a.id})" title="Delete Announcement" style="color: #EF4444;">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  window.filterAnnouncementsTable = function() {
+    const q = (document.getElementById('announcementSearchInput')?.value || '').toLowerCase().trim();
+    if (!q) {
+      renderAnnouncements(announcementsData);
+      return;
+    }
+    const filtered = announcementsData.filter(a => 
+      (a.content_en && a.content_en.toLowerCase().includes(q)) ||
+      (a.content_ur && a.content_ur.toLowerCase().includes(q)) ||
+      (a.link_url && a.link_url.toLowerCase().includes(q))
+    );
+    renderAnnouncements(filtered);
+  };
+
+  window.openAnnouncementModal = function(id) {
+    const titleEl = document.getElementById('announcementModalTitle');
+    const form = document.getElementById('formAnnouncement');
+    if (!form) return;
+    form.reset();
+
+    const editIdInput = document.getElementById('ann_edit_id');
+    const contentEn = document.getElementById('ann_content_en');
+    const contentUr = document.getElementById('ann_content_ur');
+    const linkUrl = document.getElementById('ann_link_url');
+    const sortOrder = document.getElementById('ann_sort_order');
+    const isActive = document.getElementById('ann_is_active');
+
+    if (id) {
+      const a = announcementsData.find(item => item.id === parseInt(id, 10));
+      if (a) {
+        if (titleEl) titleEl.innerHTML = '<i class="fas fa-bullhorn"></i> Edit Announcement';
+        editIdInput.value = a.id;
+        contentEn.value = a.content_en || '';
+        contentUr.value = a.content_ur || '';
+        linkUrl.value = a.link_url || '';
+        sortOrder.value = a.sort_order || 0;
+        isActive.checked = a.is_active === 1;
+      }
+    } else {
+      if (titleEl) titleEl.innerHTML = '<i class="fas fa-bullhorn"></i> Add New Announcement';
+      editIdInput.value = '';
+      sortOrder.value = announcementsData.length + 1;
+      isActive.checked = true;
+    }
+
+    openModal('modalAnnouncement');
+  };
+
+  window.handleAnnouncementSubmit = async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSaveAnnouncement');
+    const originalText = btn ? btn.innerHTML : 'Save';
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; }
+
+    try {
+      const editId = document.getElementById('ann_edit_id')?.value;
+      const content_en = document.getElementById('ann_content_en')?.value?.trim();
+      const content_ur = document.getElementById('ann_content_ur')?.value?.trim();
+      const link_url = document.getElementById('ann_link_url')?.value?.trim();
+      const sort_order = parseInt(document.getElementById('ann_sort_order')?.value, 10) || 0;
+      const is_active = document.getElementById('ann_is_active')?.checked ? 1 : 0;
+
+      const url = editId ? `/api/admin/announcements/${editId}` : '/api/admin/announcements';
+      const method = editId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content_en, content_ur, link_url, sort_order, is_active })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        closeModal('modalAnnouncement');
+        showToast('Announcement saved successfully!');
+        loadAnnouncements();
+      } else {
+        alert(data.message || 'Error saving announcement');
+      }
+    } catch (err) {
+      console.error('[handleAnnouncementSubmit]', err);
+      alert('Network error while saving announcement.');
+    } finally {
+      if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+    }
+  };
+
+  window.toggleAnnouncement = async function(id) {
+    try {
+      const res = await fetch(`/api/admin/announcements/${id}/toggle`, { method: 'PATCH' });
+      const data = await res.json();
+      if (data.success) {
+        loadAnnouncements();
+      } else {
+        alert(data.message || 'Error toggling announcement status.');
+      }
+    } catch (err) {
+      console.error('[toggleAnnouncement]', err);
+    }
+  };
+
+  window.deleteAnnouncement = async function(id) {
+    if (!confirm('Are you sure you want to delete this announcement?')) return;
+    try {
+      const res = await fetch(`/api/admin/announcements/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        showToast('Announcement deleted successfully.');
+        loadAnnouncements();
+      } else {
+        alert(data.message || 'Error deleting announcement.');
+      }
+    } catch (err) {
+      console.error('[deleteAnnouncement]', err);
+    }
+  };
+
+  // --- DYNAMIC MENUS ---
+  async function loadMenus() {
+    try {
+      const container = document.getElementById('menusContainer');
+      if (container) container.innerHTML = '<div style="text-align: center; padding: 40px; color: #94A3B8;"><i class="fas fa-spinner fa-spin"></i> Loading menus and assigned pages...</div>';
+
+      const res = await fetch('/api/admin/menus');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data)) {
+        menusData = data.data;
+        renderMenus(menusData);
+      } else {
+        if (container) container.innerHTML = '<div style="text-align: center; padding: 40px; color: #EF4444;">Failed to load menus.</div>';
+      }
+    } catch (err) {
+      console.error('[loadMenus Error]', err);
+    }
+  }
+
+  function renderMenus(menus) {
+    const container = document.getElementById('menusContainer');
+    if (!container) return;
+
+    // Update Layout Preview labels
+    const m1 = menus.find(m => m.row_num === 1 && m.col_side === 'left');
+    const m2 = menus.find(m => m.row_num === 1 && m.col_side === 'right');
+    const m3 = menus.find(m => m.row_num === 2 && m.col_side === 'left');
+    const m4 = menus.find(m => m.row_num === 2 && m.col_side === 'right');
+
+    const p1 = document.getElementById('previewMenu1Title');
+    const p2 = document.getElementById('previewMenu2Title');
+    const p3 = document.getElementById('previewMenu3Title');
+    const p4 = document.getElementById('previewMenu4Title');
+
+    if (p1) p1.innerText = m1 ? m1.title_en : 'Menu 1';
+    if (p2) p2.innerText = m2 ? m2.title_en : 'Menu 2';
+    if (p3) p3.innerText = m3 ? m3.title_en : 'Menu 3';
+    if (p4) p4.innerText = m4 ? m4.title_en : 'Menu 4';
+
+    const metricMenuItems = document.getElementById('metricTotalMenuItems');
+    if (metricMenuItems) {
+      let count = 0;
+      if (Array.isArray(menus)) {
+        menus.forEach(m => { if (Array.isArray(m.items)) count += m.items.length; });
+      }
+      metricMenuItems.textContent = count;
+    }
+
+    if (!menus || menus.length === 0) {
+      container.innerHTML = '<div style="text-align: center; padding: 40px; color: #94A3B8;">No header menus found. Click "Create Menu" to get started.</div>';
+      return;
+    }
+
+    container.innerHTML = menus.map(m => {
+      const isRed = m.row_num === 1;
+      const themeColor = isRed ? '#B91C1C' : '#1D4ED8';
+      const themeBg = isRed ? 'rgba(185, 28, 28, 0.08)' : 'rgba(29, 78, 216, 0.08)';
+      const slotLabel = `Row ${m.row_num} (${isRed ? 'Red' : 'Blue'}) • ${m.col_side === 'left' ? 'Left' : 'Right'} Side`;
+
+      const statusBadge = m.is_active
+        ? '<span style="background: #DCFCE7; color: #15803D; padding: 3px 8px; border-radius: 12px; font-size: 0.72rem; font-weight: 700;"><i class="fas fa-check"></i> Active</span>'
+        : '<span style="background: #FEE2E2; color: #B91C1C; padding: 3px 8px; border-radius: 12px; font-size: 0.72rem; font-weight: 700;"><i class="fas fa-xmark"></i> Inactive</span>';
+
+      const items = Array.isArray(m.items) ? m.items : [];
+
+      const itemsListHtml = items.length === 0
+        ? `<div style="text-align: center; padding: 18px 12px; color: #94A3B8; font-size: 0.84rem; background: #F8FAFC; border-radius: 8px; border: 1px dashed #CBD5E1;">
+             No frontend pages assigned yet. Click <strong>"+ Assign Page"</strong> to link a page to this menu.
+           </div>`
+        : `<div style="display: flex; flex-direction: column; gap: 8px;">
+            ${items.map((it, idx) => `
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span style="font-size: 0.74rem; font-weight: 700; color: #94A3B8; width: 16px;">#${idx + 1}</span>
+                  <div>
+                    <div style="font-size: 0.88rem; font-weight: 600; color: var(--admin-text-dark);">
+                      ${escapeHtml(it.title_en)}
+                      ${it.title_ur ? `<span class="urdu-text" style="font-size: 0.8rem; color: #64748B; margin-left: 6px;">(${escapeHtml(it.title_ur)})</span>` : ''}
+                    </div>
+                    <div style="font-size: 0.78rem; color: #64748B;">
+                      <a href="${it.page_url}" target="_blank" style="color: var(--admin-primary); text-decoration: underline;">${escapeHtml(it.page_url)}</a>
+                      ${it.open_new_tab ? '<span style="font-size: 0.7rem; color: #3B82F6; margin-left: 6px;"><i class="fas fa-arrow-up-right-from-square"></i> New Tab</span>' : ''}
+                    </div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <button type="button" class="btn-action-icon" onclick="toggleMenuItem(${it.id})" title="${it.is_active ? 'Deactivate Link' : 'Activate Link'}" style="color: ${it.is_active ? '#10B981' : '#CBD5E1'};">
+                    <i class="fas ${it.is_active ? 'fa-toggle-on' : 'fa-toggle-off'}"></i>
+                  </button>
+                  <button type="button" class="btn-action-icon" onclick="openMenuItemModal(${m.id}, ${it.id})" title="Edit Link" style="color: #3B82F6;">
+                    <i class="fas fa-pencil"></i>
+                  </button>
+                  <button type="button" class="btn-action-icon" onclick="deleteMenuItem(${it.id})" title="Remove Link" style="color: #EF4444;">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>`;
+
+      return `
+        <div class="admin-card" style="border-radius: 12px; border: 1px solid #E2E8F0; box-shadow: 0 4px 14px rgba(0,0,0,0.03); display: flex; flex-direction: column;">
+          <!-- Menu Card Header -->
+          <div style="padding: 16px; border-bottom: 1px solid #EEF2F6; background: ${themeBg}; border-top: 4px solid ${themeColor}; border-top-left-radius: 12px; border-top-right-radius: 12px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-size: 0.74rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: ${themeColor};">
+                <i class="fas fa-layer-group"></i> ${slotLabel}
+              </span>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                ${statusBadge}
+                <span style="font-size: 0.76rem; color: #64748B; font-weight: 600;">Order: #${m.sort_order || 0}</span>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div>
+                <h3 style="font-size: 1.18rem; font-weight: 800; color: var(--admin-text-dark); margin: 0;">${escapeHtml(m.title_en)}</h3>
+                ${m.title_ur ? `<div class="urdu-text" dir="rtl" style="font-size: 0.95rem; color: #475569; margin-top: 2px;">${escapeHtml(m.title_ur)}</div>` : ''}
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <button type="button" class="btn-action-icon" onclick="toggleMenu(${m.id})" title="${m.is_active ? 'Deactivate Menu' : 'Activate Menu'}" style="color: ${m.is_active ? '#10B981' : '#CBD5E1'}; font-size: 1.3rem;">
+                  <i class="fas ${m.is_active ? 'fa-toggle-on' : 'fa-toggle-off'}"></i>
+                </button>
+                <button type="button" class="btn-action-icon" onclick="openMenuModal(${m.id})" title="Edit Menu Title & Position" style="color: #3B82F6;">
+                  <i class="fas fa-pencil"></i>
+                </button>
+                <button type="button" class="btn-action-icon" onclick="deleteMenu(${m.id})" title="Delete Menu" style="color: #EF4444;">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Assigned Pages Section -->
+          <div style="padding: 16px; flex: 1; display: flex; flex-direction: column;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+              <span style="font-size: 0.82rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.03em;">
+                Assigned Pages (${items.length})
+              </span>
+              <button type="button" class="btn-admin btn-admin-secondary" onclick="openMenuItemModal(${m.id})" style="padding: 3px 10px; font-size: 0.78rem;">
+                <i class="fas fa-plus"></i> Assign Page
+              </button>
+            </div>
+            ${itemsListHtml}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.openMenuModal = function(id) {
+    const titleEl = document.getElementById('menuModalTitle');
+    const form = document.getElementById('formMenu');
+    if (!form) return;
+    form.reset();
+
+    const editId = document.getElementById('menu_edit_id');
+    const titleEn = document.getElementById('menu_title_en');
+    const titleUr = document.getElementById('menu_title_ur');
+    const rowNum = document.getElementById('menu_row_num');
+    const colSide = document.getElementById('menu_col_side');
+    const sortOrder = document.getElementById('menu_sort_order');
+    const isActive = document.getElementById('menu_is_active');
+
+    if (id) {
+      const m = menusData.find(item => item.id === parseInt(id, 10));
+      if (m) {
+        if (titleEl) titleEl.innerHTML = '<i class="fas fa-compass"></i> Edit Header Menu';
+        editId.value = m.id;
+        titleEn.value = m.title_en || '';
+        titleUr.value = m.title_ur || '';
+        rowNum.value = String(m.row_num || 1);
+        colSide.value = m.col_side || 'left';
+        sortOrder.value = m.sort_order || 0;
+        isActive.checked = m.is_active === 1;
+      }
+    } else {
+      if (titleEl) titleEl.innerHTML = '<i class="fas fa-compass"></i> Create New Menu';
+      editId.value = '';
+      sortOrder.value = menusData.length + 1;
+      isActive.checked = true;
+    }
+
+    openModal('modalMenu');
+  };
+
+  window.handleMenuSubmit = async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSaveMenu');
+    const originalText = btn ? btn.innerHTML : 'Save';
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; }
+
+    try {
+      const editId = document.getElementById('menu_edit_id')?.value;
+      const title_en = document.getElementById('menu_title_en')?.value?.trim();
+      const title_ur = document.getElementById('menu_title_ur')?.value?.trim();
+      const row_num = parseInt(document.getElementById('menu_row_num')?.value, 10) || 1;
+      const col_side = document.getElementById('menu_col_side')?.value || 'left';
+      const sort_order = parseInt(document.getElementById('menu_sort_order')?.value, 10) || 0;
+      const is_active = document.getElementById('menu_is_active')?.checked ? 1 : 0;
+
+      const url = editId ? `/api/admin/menus/${editId}` : '/api/admin/menus';
+      const method = editId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title_en, title_ur, row_num, col_side, sort_order, is_active })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        closeModal('modalMenu');
+        showToast('Menu saved successfully!');
+        loadMenus();
+      } else {
+        alert(data.message || 'Error saving menu');
+      }
+    } catch (err) {
+      console.error('[handleMenuSubmit]', err);
+      alert('Network error while saving menu.');
+    } finally {
+      if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+    }
+  };
+
+  window.toggleMenu = async function(id) {
+    try {
+      const res = await fetch(`/api/admin/menus/${id}/toggle`, { method: 'PATCH' });
+      const data = await res.json();
+      if (data.success) {
+        loadMenus();
+      } else {
+        alert(data.message || 'Error toggling menu status.');
+      }
+    } catch (err) {
+      console.error('[toggleMenu]', err);
+    }
+  };
+
+  window.deleteMenu = async function(id) {
+    if (!confirm('Are you sure you want to delete this menu and all its assigned page links?')) return;
+    try {
+      const res = await fetch(`/api/admin/menus/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        showToast('Menu deleted successfully.');
+        loadMenus();
+      } else {
+        alert(data.message || 'Error deleting menu.');
+      }
+    } catch (err) {
+      console.error('[deleteMenu]', err);
+    }
+  };
+
+  // --- MENU ITEMS (ASSIGNED PAGES) ---
+  window.openMenuItemModal = function(menuId, itemId) {
+    const titleEl = document.getElementById('menuItemModalTitle');
+    const form = document.getElementById('formMenuItem');
+    if (!form) return;
+    form.reset();
+
+    // Populate target menu selector
+    const menuSelect = document.getElementById('item_menu_id');
+    if (menuSelect) {
+      menuSelect.innerHTML = menusData.map(m => `
+        <option value="${m.id}" ${menuId && parseInt(menuId, 10) === m.id ? 'selected' : ''}>
+          ${escapeHtml(m.title_en)} (Row ${m.row_num} • ${m.col_side})
+        </option>
+      `).join('');
+    }
+
+    const editIdInput = document.getElementById('menu_item_edit_id');
+    const titleEn = document.getElementById('item_title_en');
+    const titleUr = document.getElementById('item_title_ur');
+    const pageUrl = document.getElementById('item_page_url');
+    const sortOrder = document.getElementById('item_sort_order');
+    const isActive = document.getElementById('item_is_active');
+    const openNewTab = document.getElementById('item_open_new_tab');
+
+    if (itemId) {
+      let foundItem = null;
+      menusData.forEach(m => {
+        const it = (m.items || []).find(x => x.id === parseInt(itemId, 10));
+        if (it) foundItem = it;
+      });
+
+      if (foundItem) {
+        if (titleEl) titleEl.innerHTML = '<i class="fas fa-link"></i> Edit Assigned Page';
+        editIdInput.value = foundItem.id;
+        if (menuSelect) menuSelect.value = foundItem.menu_id;
+        titleEn.value = foundItem.title_en || '';
+        titleUr.value = foundItem.title_ur || '';
+        pageUrl.value = foundItem.page_url || '';
+        sortOrder.value = foundItem.sort_order || 0;
+        isActive.checked = foundItem.is_active === 1;
+        openNewTab.checked = foundItem.open_new_tab === 1;
+      }
+    } else {
+      if (titleEl) titleEl.innerHTML = '<i class="fas fa-link"></i> Assign Page to Menu';
+      editIdInput.value = '';
+      sortOrder.value = 1;
+      isActive.checked = true;
+      openNewTab.checked = false;
+    }
+
+    openModal('modalMenuItem');
+  };
+
+  window.onSelectPagePreset = function(val) {
+    if (!val) return;
+    const select = document.getElementById('item_preset_page');
+    const opt = select.options[select.selectedIndex];
+    const en = opt.getAttribute('data-en') || '';
+    const ur = opt.getAttribute('data-ur') || '';
+
+    const titleEn = document.getElementById('item_title_en');
+    const titleUr = document.getElementById('item_title_ur');
+    const pageUrl = document.getElementById('item_page_url');
+
+    if (titleEn) titleEn.value = en;
+    if (titleUr) titleUr.value = ur;
+    if (pageUrl) pageUrl.value = val;
+  };
+
+  window.handleMenuItemSubmit = async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSaveMenuItem');
+    const originalText = btn ? btn.innerHTML : 'Save';
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; }
+
+    try {
+      const editId = document.getElementById('menu_item_edit_id')?.value;
+      const menu_id = document.getElementById('item_menu_id')?.value;
+      const title_en = document.getElementById('item_title_en')?.value?.trim();
+      const title_ur = document.getElementById('item_title_ur')?.value?.trim();
+      const page_url = document.getElementById('item_page_url')?.value?.trim();
+      const sort_order = parseInt(document.getElementById('item_sort_order')?.value, 10) || 0;
+      const is_active = document.getElementById('item_is_active')?.checked ? 1 : 0;
+      const open_new_tab = document.getElementById('item_open_new_tab')?.checked ? 1 : 0;
+
+      const url = editId ? `/api/admin/menu-items/${editId}` : `/api/admin/menus/${menu_id}/items`;
+      const method = editId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ menu_id, title_en, title_ur, page_url, sort_order, is_active, open_new_tab })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        closeModal('modalMenuItem');
+        showToast('Page link saved successfully!');
+        loadMenus();
+      } else {
+        alert(data.message || 'Error saving page link');
+      }
+    } catch (err) {
+      console.error('[handleMenuItemSubmit]', err);
+      alert('Network error while saving page link.');
+    } finally {
+      if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+    }
+  };
+
+  window.toggleMenuItem = async function(id) {
+    try {
+      const res = await fetch(`/api/admin/menu-items/${id}/toggle`, { method: 'PATCH' });
+      const data = await res.json();
+      if (data.success) {
+        loadMenus();
+      } else {
+        alert(data.message || 'Error toggling item status.');
+      }
+    } catch (err) {
+      console.error('[toggleMenuItem]', err);
+    }
+  };
+
+  window.deleteMenuItem = async function(id) {
+    if (!confirm('Are you sure you want to remove this assigned page from the menu?')) return;
+    try {
+      const res = await fetch(`/api/admin/menu-items/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        showToast('Page link removed.');
+        loadMenus();
+      } else {
+        alert(data.message || 'Error deleting item.');
+      }
+    } catch (err) {
+      console.error('[deleteMenuItem]', err);
+    }
+  };
+
+  // =========================================================================
+  // HERO SLIDES MANAGEMENT
+  // =========================================================================
+  let heroSlidesData = [];
+
+  window.openMediaPickerForSlide = function() {
+    if (typeof window.openMediaPicker === 'function') {
+      window.openMediaPicker({
+        folder: 'all',
+        onSelect: (url) => {
+          const input = document.getElementById('slide_image_url');
+          const preview = document.getElementById('slideImagePreview');
+          const placeholder = document.getElementById('slideImagePlaceholder');
+          if (input) input.value = url;
+          if (preview && url) {
+            preview.src = url;
+            preview.style.display = 'block';
+            if (placeholder) placeholder.style.display = 'none';
+          }
+        }
+      });
+    }
+  };
+
+  async function loadHeroSlides() {
+    try {
+      const container = document.getElementById('heroSlidesContainer');
+      if (container) {
+        container.innerHTML = '<div style="text-align: center; padding: 40px; color: #94A3B8;"><i class="fas fa-spinner fa-spin"></i> Loading hero slides...</div>';
+      }
+      const res = await fetch('/api/admin/hero-slides');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data)) {
+        heroSlidesData = data.data;
+        renderHeroSlides(heroSlidesData);
+      } else if (container) {
+        container.innerHTML = '<div style="text-align: center; padding: 40px; color: #EF4444;">Failed to load hero slides.</div>';
+      }
+    } catch (err) {
+      console.error('[loadHeroSlides Error]', err);
+    }
+  }
+
+  function renderHeroSlides(slides) {
+    const container = document.getElementById('heroSlidesContainer');
+    if (!container) return;
+
+    const metricTotal = document.getElementById('metricTotalHeroSlides');
+    if (metricTotal) metricTotal.textContent = slides ? slides.length : 0;
+    const metricActive = document.getElementById('metricActiveHeroSlides');
+    if (metricActive) metricActive.textContent = slides ? slides.filter(s => s.is_active).length : 0;
+
+    if (!slides || slides.length === 0) {
+      container.innerHTML = '<div style="text-align: center; padding: 40px; color: #94A3B8; grid-column: 1 / -1;">No hero slides found. Click "Add New Slide" to create one.</div>';
+      return;
+    }
+
+    container.innerHTML = slides.map((s, idx) => {
+      const hasContent = Boolean(s.title_en || s.subtitle_en || s.description_en || s.btn1_text_en || s.btn2_text_en);
+      const title = s.title_en || s.title_ur || '(Clean Banner - No Text)';
+      const activeBadge = s.is_active
+        ? '<span style="background: #DCFCE7; color: #15803D; padding: 3px 10px; border-radius: 12px; font-size: 0.74rem; font-weight: 700;"><i class="fas fa-check"></i> Active</span>'
+        : '<span style="background: #FEE2E2; color: #B91C1C; padding: 3px 10px; border-radius: 12px; font-size: 0.74rem; font-weight: 700;"><i class="fas fa-xmark"></i> Inactive</span>';
+
+      return `
+        <div class="admin-card" style="display: flex; flex-direction: column; overflow: hidden; border-radius: 12px; border: 1px solid #E2E8F0; padding: 0;">
+          <div style="position: relative; height: 160px; background: #0F172A; overflow: hidden;">
+            <img src="${s.image_url}" alt="${escapeHtml(title)}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='/media/branding/hero_bg.jpg'" />
+            <div style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.65); color: #FFF; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">
+              Slide #${s.sort_order || (idx + 1)}
+            </div>
+            <div style="position: absolute; top: 10px; right: 10px;">
+              ${activeBadge}
+            </div>
+            <div style="position: absolute; bottom: 8px; left: 10px; background: ${hasContent ? '#1D4ED8' : '#059669'}; color: #FFF; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">
+              ${hasContent ? '<i class="fas fa-heading"></i> With Text & Buttons' : '<i class="fas fa-image"></i> Clean Banner (No Text)'}
+            </div>
+          </div>
+          <div style="padding: 16px; flex-grow: 1; display: flex; flex-direction: column;">
+            <h4 style="font-size: 1.02rem; font-weight: 700; color: #1E293B; margin-bottom: 6px;">${escapeHtml(title)}</h4>
+            ${s.subtitle_en ? `<p style="font-size: 0.82rem; color: #64748B; margin-bottom: 8px;">${escapeHtml(s.subtitle_en)}</p>` : ''}
+            ${s.description_en ? `<p style="font-size: 0.8rem; color: #94A3B8; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${escapeHtml(s.description_en)}</p>` : ''}
+            
+            <div style="margin-top: auto; padding-top: 12px; border-top: 1px solid #F1F5F9; display: flex; align-items: center; justify-content: space-between;">
+              <button type="button" class="btn-action-icon" onclick="toggleHeroSlide(${s.id})" title="${s.is_active ? 'Deactivate' : 'Activate'}" style="color: ${s.is_active ? '#10B981' : '#94A3B8'};">
+                <i class="fas ${s.is_active ? 'fa-toggle-on' : 'fa-toggle-off'}" style="font-size: 1.4rem;"></i>
+              </button>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn-action-icon" onclick="openHeroSlideModal(${s.id})" title="Edit Slide" style="color: #3B82F6;">
+                  <i class="fas fa-pencil"></i>
+                </button>
+                <button type="button" class="btn-action-icon" onclick="deleteHeroSlide(${s.id})" title="Delete Slide" style="color: #EF4444;">
+                  <i class="fas fa-trash-can"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.openHeroSlideModal = function(id) {
+    const titleEl = document.getElementById('heroSlideModalTitle');
+    const form = document.getElementById('formHeroSlide');
+    if (!form) return;
+    form.reset();
+
+    const editId = document.getElementById('slide_edit_id');
+    const imageUrl = document.getElementById('slide_image_url');
+    const imageMobileUrl = document.getElementById('slide_image_mobile_url');
+    const eyebrowEn = document.getElementById('slide_eyebrow_en');
+    const eyebrowUr = document.getElementById('slide_eyebrow_ur');
+    const titleEn = document.getElementById('slide_title_en');
+    const titleUr = document.getElementById('slide_title_ur');
+    const subtitleEn = document.getElementById('slide_subtitle_en');
+    const subtitleUr = document.getElementById('slide_subtitle_ur');
+    const descEn = document.getElementById('slide_description_en');
+    const descUr = document.getElementById('slide_description_ur');
+    const btn1TextEn = document.getElementById('slide_btn1_text_en');
+    const btn1TextUr = document.getElementById('slide_btn1_text_ur');
+    const btn1Link = document.getElementById('slide_btn1_link');
+    const btn2TextEn = document.getElementById('slide_btn2_text_en');
+    const btn2TextUr = document.getElementById('slide_btn2_text_ur');
+    const btn2Link = document.getElementById('slide_btn2_link');
+    const sortOrder = document.getElementById('slide_sort_order');
+    const isActive = document.getElementById('slide_is_active');
+    const preview = document.getElementById('slideImagePreview');
+    const placeholder = document.getElementById('slideImagePlaceholder');
+
+    if (id) {
+      const s = heroSlidesData.find(x => x.id === parseInt(id, 10));
+      if (s) {
+        if (titleEl) titleEl.innerHTML = '<i class="fas fa-images"></i> Edit Hero Slide';
+        editId.value = s.id;
+        imageUrl.value = s.image_url || '';
+        imageMobileUrl.value = s.image_mobile_url || '';
+        eyebrowEn.value = s.eyebrow_en || '';
+        eyebrowUr.value = s.eyebrow_ur || '';
+        titleEn.value = s.title_en || '';
+        titleUr.value = s.title_ur || '';
+        subtitleEn.value = s.subtitle_en || '';
+        subtitleUr.value = s.subtitle_ur || '';
+        descEn.value = s.description_en || '';
+        descUr.value = s.description_ur || '';
+        btn1TextEn.value = s.btn1_text_en || '';
+        btn1TextUr.value = s.btn1_text_ur || '';
+        btn1Link.value = s.btn1_link || '';
+        btn2TextEn.value = s.btn2_text_en || '';
+        btn2TextUr.value = s.btn2_text_ur || '';
+        btn2Link.value = s.btn2_link || '';
+        sortOrder.value = s.sort_order || 0;
+        isActive.checked = s.is_active === 1;
+
+        if (preview && s.image_url) {
+          preview.src = s.image_url;
+          preview.style.display = 'block';
+          if (placeholder) placeholder.style.display = 'none';
+        }
+      }
+    } else {
+      if (titleEl) titleEl.innerHTML = '<i class="fas fa-images"></i> Add New Hero Slide';
+      editId.value = '';
+      sortOrder.value = heroSlidesData.length + 1;
+      isActive.checked = true;
+      if (preview) {
+        preview.src = '';
+        preview.style.display = 'none';
+        if (placeholder) placeholder.style.display = 'block';
+      }
+    }
+
+    openModal('modalHeroSlide');
+  };
+
+  window.handleHeroSlideSubmit = async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSaveHeroSlide');
+    const origHtml = btn ? btn.innerHTML : 'Save';
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    }
+
+    try {
+      const editId = document.getElementById('slide_edit_id')?.value;
+      const payload = {
+        image_url: document.getElementById('slide_image_url')?.value?.trim(),
+        image_mobile_url: document.getElementById('slide_image_mobile_url')?.value?.trim() || null,
+        eyebrow_en: document.getElementById('slide_eyebrow_en')?.value?.trim() || null,
+        eyebrow_ur: document.getElementById('slide_eyebrow_ur')?.value?.trim() || null,
+        title_en: document.getElementById('slide_title_en')?.value?.trim() || null,
+        title_ur: document.getElementById('slide_title_ur')?.value?.trim() || null,
+        subtitle_en: document.getElementById('slide_subtitle_en')?.value?.trim() || null,
+        subtitle_ur: document.getElementById('slide_subtitle_ur')?.value?.trim() || null,
+        description_en: document.getElementById('slide_description_en')?.value?.trim() || null,
+        description_ur: document.getElementById('slide_description_ur')?.value?.trim() || null,
+        btn1_text_en: document.getElementById('slide_btn1_text_en')?.value?.trim() || null,
+        btn1_text_ur: document.getElementById('slide_btn1_text_ur')?.value?.trim() || null,
+        btn1_link: document.getElementById('slide_btn1_link')?.value?.trim() || null,
+        btn2_text_en: document.getElementById('slide_btn2_text_en')?.value?.trim() || null,
+        btn2_text_ur: document.getElementById('slide_btn2_text_ur')?.value?.trim() || null,
+        btn2_link: document.getElementById('slide_btn2_link')?.value?.trim() || null,
+        sort_order: parseInt(document.getElementById('slide_sort_order')?.value, 10) || 0,
+        is_active: document.getElementById('slide_is_active')?.checked ? 1 : 0
+      };
+
+      if (!payload.image_url) {
+        alert('Desktop Slide Image URL is required.');
+        return;
+      }
+
+      const url = editId ? `/api/admin/hero-slides/${editId}` : '/api/admin/hero-slides';
+      const method = editId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        closeModal('modalHeroSlide');
+        showToast('Hero slide saved successfully!');
+        loadHeroSlides();
+      } else {
+        alert(data.message || 'Error saving hero slide');
+      }
+    } catch (err) {
+      console.error('[handleHeroSlideSubmit]', err);
+      alert('Network error while saving hero slide.');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+      }
+    }
+  };
+
+  window.toggleHeroSlide = async function(id) {
+    try {
+      const res = await fetch(`/api/admin/hero-slides/${id}/toggle`, { method: 'PATCH' });
+      const data = await res.json();
+      if (data.success) {
+        loadHeroSlides();
+      } else {
+        alert(data.message || 'Error toggling slide status.');
+      }
+    } catch (err) {
+      console.error('[toggleHeroSlide]', err);
+    }
+  };
+
+  window.deleteHeroSlide = async function(id) {
+    if (!confirm('Are you sure you want to delete this hero slide?')) return;
+    try {
+      const res = await fetch(`/api/admin/hero-slides/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        showToast('Hero slide deleted successfully.');
+        loadHeroSlides();
+      } else {
+        alert(data.message || 'Error deleting hero slide.');
+      }
+    } catch (err) {
+      console.error('[deleteHeroSlide]', err);
+    }
+  };
+
+  window.loadAnnouncements = loadAnnouncements;
+  window.loadMenus = loadMenus;
+  window.loadHeroSlides = loadHeroSlides;
 });
 
 

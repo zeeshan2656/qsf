@@ -52,6 +52,31 @@ router.get('/bootstrap', async (req, res) => {
       'SELECT stat_key, number_val, suffix, label_en, label_ur, icon FROM impact_stats WHERE is_active = 1 ORDER BY sort_order ASC'
     );
 
+    // 6. Active Announcements
+    const [announcements] = await db.query(
+      'SELECT id, content_en, content_ur, link_url, sort_order FROM announcements WHERE is_active = 1 ORDER BY sort_order ASC, id ASC'
+    );
+
+    // 7. Active Header Menus & Assigned Items
+    const [menus] = await db.query(
+      'SELECT id, menu_key, title_en, title_ur, row_num, col_side, sort_order FROM header_menus WHERE is_active = 1 ORDER BY sort_order ASC, id ASC'
+    );
+    const [menuItems] = await db.query(`
+      SELECT mi.id, mi.menu_id, mi.title_en, mi.title_ur, mi.page_url, mi.open_new_tab, mi.sort_order
+      FROM header_menu_items mi
+      JOIN header_menus m ON mi.menu_id = m.id
+      WHERE mi.is_active = 1 AND m.is_active = 1
+      ORDER BY mi.sort_order ASC, mi.id ASC
+    `);
+    menus.forEach(m => {
+      m.items = menuItems.filter(item => item.menu_id === m.id);
+    });
+
+    // 8. Active Hero Slides
+    const [slides] = await db.query(
+      'SELECT id, title_en, title_ur, eyebrow_en, eyebrow_ur, subtitle_en, subtitle_ur, description_en, description_ur, btn1_text_en, btn1_text_ur, btn1_link, btn2_text_en, btn2_text_ur, btn2_link, image_url, image_mobile_url, sort_order FROM hero_slides WHERE is_active = 1 ORDER BY sort_order ASC, id ASC'
+    );
+
     const payload = {
       success: true,
       data: {
@@ -59,7 +84,10 @@ router.get('/bootstrap', async (req, res) => {
         categories,
         projects,
         news,
-        stats
+        stats,
+        announcements,
+        menus,
+        slides
       }
     };
 
@@ -71,6 +99,19 @@ router.get('/bootstrap', async (req, res) => {
   } catch (err) {
     console.error('[Public Bootstrap Error]', err);
     return res.status(500).json({ success: false, message: 'Error retrieving foundation data.' });
+  }
+});
+
+// GET /api/public/hero-slides
+router.get('/hero-slides', async (req, res) => {
+  try {
+    const [slides] = await db.query(
+      'SELECT id, title_en, title_ur, eyebrow_en, eyebrow_ur, subtitle_en, subtitle_ur, description_en, description_ur, btn1_text_en, btn1_text_ur, btn1_link, btn2_text_en, btn2_text_ur, btn2_link, image_url, image_mobile_url, sort_order FROM hero_slides WHERE is_active = 1 ORDER BY sort_order ASC, id ASC'
+    );
+    return res.json({ success: true, data: slides });
+  } catch (err) {
+    console.error('[Public Hero Slides Error]', err);
+    return res.status(500).json({ success: false, message: 'Error retrieving hero slides.' });
   }
 });
 
@@ -617,6 +658,65 @@ router.post('/donate', async (req, res) => {
   } catch (err) {
     console.error('[Donate Error]', err);
     return res.status(500).json({ success: false, message: 'Error recording donation.' });
+  }
+});
+
+// GET /api/public/announcements
+router.get('/announcements', async (req, res) => {
+  try {
+    const cacheKey = 'public:announcements';
+    const cached = cache.get(cacheKey);
+    if (cached) {
+      res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=600');
+      return res.json(cached);
+    }
+
+    const [rows] = await db.query(
+      'SELECT id, content_en, content_ur, link_url, sort_order FROM announcements WHERE is_active = 1 ORDER BY sort_order ASC, id ASC'
+    );
+
+    const payload = { success: true, data: rows };
+    cache.set(cacheKey, payload, 10 * 60 * 1000);
+    res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=600');
+    return res.json(payload);
+  } catch (err) {
+    console.error('[Public Announcements Error]', err);
+    return res.status(500).json({ success: false, message: 'Error fetching announcements.' });
+  }
+});
+
+// GET /api/public/menus
+router.get('/menus', async (req, res) => {
+  try {
+    const cacheKey = 'public:menus';
+    const cached = cache.get(cacheKey);
+    if (cached) {
+      res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=600');
+      return res.json(cached);
+    }
+
+    const [menus] = await db.query(
+      'SELECT id, menu_key, title_en, title_ur, row_num, col_side, sort_order FROM header_menus WHERE is_active = 1 ORDER BY sort_order ASC, id ASC'
+    );
+    const [menuItems] = await db.query(`
+      SELECT mi.id, mi.menu_id, mi.title_en, mi.title_ur, mi.page_url, mi.open_new_tab, mi.sort_order
+      FROM header_menu_items mi
+      JOIN header_menus m ON mi.menu_id = m.id
+      WHERE mi.is_active = 1 AND m.is_active = 1
+      ORDER BY mi.sort_order ASC, mi.id ASC
+    `);
+
+    menus.forEach(m => {
+      m.items = menuItems.filter(item => item.menu_id === m.id);
+    });
+
+    const payload = { success: true, data: menus };
+    cache.set(cacheKey, payload, 10 * 60 * 1000);
+    res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=600');
+    return res.json(payload);
+  } catch (err) {
+    console.error('[Public Menus Error]', err);
+    return res.status(500).json({ success: false, message: 'Error fetching header menus.' });
   }
 });
 

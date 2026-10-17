@@ -534,9 +534,23 @@ body.admin-body {
 }
 
 .btn-admin-primary {
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
   background: var(--admin-primary);
   color: #FFFFFF;
   box-shadow: 0 2px 6px rgba(185, 28, 28, 0.25);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  white-space: nowrap;
 }
 
 .btn-admin-primary:hover {
@@ -546,9 +560,22 @@ body.admin-body {
 }
 
 .btn-admin-secondary {
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
   background: #F8FAFC;
   color: var(--admin-text-dark);
   border: 1.5px solid #CBD5E1;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  white-space: nowrap;
 }
 
 .btn-admin-secondary:hover {
@@ -3315,6 +3342,47 @@ select.form-control[dir="rtl"] {
 
 .btn-toggle-password-visibility:active {
   transform: translateY(-50%) scale(0.92);
+}
+
+/* =========================================================================
+   ANNOUNCEMENTS, MENUS & HERO SLIDER MANAGEMENT STYLES
+   ========================================================================= */
+.menu-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+  gap: 24px;
+  align-items: stretch;
+}
+
+.hero-slides-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: 24px;
+  align-items: stretch;
+}
+
+.admin-card-menu {
+  background: var(--admin-card-bg);
+  border-radius: var(--admin-radius);
+  border: 1px solid var(--admin-border);
+  box-shadow: var(--admin-shadow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-card-menu:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+@media (max-width: 768px) {
+  .menu-cards-grid,
+  .hero-slides-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
 }
 
 
