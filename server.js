@@ -92,13 +92,37 @@ try {
   }
 } catch (e) {}
 
-// Security Headers (Configured for local assets & fonts)
+// Security Headers & HSTS (Strict Performance & Best Practices Configuration)
 app.use(
   helmet({
-    contentSecurityPolicy: false,
-    crossOriginEmbedderPolicy: false
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdnjs.cloudflare.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com", "data:"],
+        imgSrc: ["'self'", "data:", "blob:", "https:"],
+        connectSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: []
+      }
+    },
+    crossOriginEmbedderPolicy: false,
+    hsts: {
+      maxAge: 63072000,
+      includeSubDomains: true,
+      preload: true
+    }
   })
 );
+
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+  next();
+});
 
 // Production HTTP compression with threshold and optimal ratio
 app.use(
@@ -165,6 +189,8 @@ app.get('/favicon.ico', (req, res, next) => {
 // Optimized Header Branding Endpoints with 1-Year Immutable Caching
 app.get('/media/branding/logo_header_58.webp', (req, res, next) => {
   for (const c of [
+    path.join(__dirname, 'public/media/branding', 'logo_header_58.webp'),
+    path.join(__dirname, 'public/images/branding', 'logo_header_58.webp'),
     path.join(mediaDir, 'branding', 'logo_header_58.webp'),
     path.join(mediaDir, 'uploads', 'logo_header_58.webp')
   ]) {
@@ -176,8 +202,39 @@ app.get('/media/branding/logo_header_58.webp', (req, res, next) => {
   next();
 });
 
+// Dedicated Fast Hero Background Endpoints (LCP Optimization)
+app.get('/media/uploads/hero_bg_mobile.webp', (req, res, next) => {
+  for (const c of [
+    path.join(__dirname, 'public/media/uploads', 'hero_bg_mobile.webp'),
+    path.join(mediaDir, 'uploads', 'hero_bg_mobile.webp'),
+    path.join(mediaDir, 'branding', 'hero_bg_mobile.webp')
+  ]) {
+    if (fs.existsSync(c)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      return res.sendFile(c, { maxAge: 31536000000, immutable: true });
+    }
+  }
+  next();
+});
+
+app.get('/media/uploads/Smiling_School_Group_with_Foun_1792082807587_458986.webp', (req, res, next) => {
+  for (const c of [
+    path.join(__dirname, 'public/media/uploads', 'Smiling_School_Group_with_Foun_1792082807587_458986.webp'),
+    path.join(__dirname, 'public/media/uploads', 'hero_bg_desktop.webp'),
+    path.join(mediaDir, 'uploads', 'Smiling_School_Group_with_Foun_1792082807587_458986.webp'),
+    path.join(mediaDir, 'branding', 'Smiling_School_Group_with_Foun_1792082807587_458986.webp')
+  ]) {
+    if (fs.existsSync(c)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      return res.sendFile(c, { maxAge: 31536000000, immutable: true });
+    }
+  }
+  next();
+});
+
 app.get('/media/branding/flag_header_58.webp', (req, res, next) => {
   for (const c of [
+    path.join(__dirname, 'public/media/branding', 'flag_header_58.webp'),
     path.join(mediaDir, 'branding', 'flag_header_58.webp'),
     path.join(mediaDir, 'uploads', 'flag_header_58.webp')
   ]) {
@@ -189,40 +246,46 @@ app.get('/media/branding/flag_header_58.webp', (req, res, next) => {
   next();
 });
 
-// Smart Logo & Flag Serving: Always serve uploaded branding assets from DB
-app.get('/media/branding/logo.svg', async (req, res, next) => {
-  try {
-    const [rows] = await query("SELECT setting_val FROM site_settings WHERE setting_key = 'site_logo_url'");
-    if (rows.length && rows[0].setting_val) {
-      const filename = path.basename(rows[0].setting_val);
-      for (const sub of ['branding', 'uploads']) {
-        const candidate = path.join(mediaDir, sub, filename);
-        if (fs.existsSync(candidate)) {
-          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-          return res.sendFile(candidate, { maxAge: 31536000000, immutable: true });
-        }
-      }
+// Lightweight Logo & Flag Serving
+app.get('/media/branding/logo.svg', (req, res, next) => {
+  for (const c of [
+    path.join(__dirname, 'public/media/branding', 'logo.svg'),
+    path.join(__dirname, 'public/images/branding', 'logo.svg'),
+    path.join(mediaDir, 'branding', 'logo.svg')
+  ]) {
+    if (fs.existsSync(c)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      res.setHeader('Content-Type', 'image/svg+xml');
+      return res.sendFile(c, { maxAge: 31536000000, immutable: true });
     }
-  } catch (e) {}
+  }
   next();
 });
 
-app.get('/media/branding/flag.svg', async (req, res, next) => {
-  try {
-    const [rows] = await query("SELECT setting_val FROM site_settings WHERE setting_key = 'site_flag_url'");
-    if (rows.length && rows[0].setting_val) {
-      const filename = path.basename(rows[0].setting_val);
-      for (const sub of ['branding', 'uploads']) {
-        const candidate = path.join(mediaDir, sub, filename);
-        if (fs.existsSync(candidate)) {
-          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-          return res.sendFile(candidate, { maxAge: 31536000000, immutable: true });
-        }
-      }
+app.get('/media/branding/flag.svg', (req, res, next) => {
+  for (const c of [
+    path.join(__dirname, 'public/images/branding', 'flag.svg'),
+    path.join(mediaDir, 'branding', 'flag.svg')
+  ]) {
+    if (fs.existsSync(c)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      res.setHeader('Content-Type', 'image/svg+xml');
+      return res.sendFile(c, { maxAge: 31536000000, immutable: true });
     }
-  } catch (e) {}
+  }
   next();
 });
+
+// Serve Local Bundled Media Directory with 1-Year Immutable Caching
+app.use(
+  '/media',
+  express.static(path.join(__dirname, 'public/media'), {
+    maxAge: '365d',
+    immutable: true,
+    etag: true,
+    lastModified: true
+  })
+);
 
 // Serve External Media Repository outside project directory with optimal 1-year caching
 app.use(
@@ -287,6 +350,8 @@ app.use('/media', (req, res, next) => {
   // Graceful fallback for logo and flag branding images
   if (reqPath.toLowerCase().includes('logo')) {
     const fallbacks = [
+      path.join(__dirname, 'public/media/branding', 'logo_header_58.webp'),
+      path.join(__dirname, 'public/images/branding', 'logo.svg'),
       path.join(mediaDir, 'branding', 'logo_header_58.webp'),
       path.join(mediaDir, 'branding', 'logo.svg'),
       path.join(mediaDir, 'qasreshabbir_media', 'branding', 'logo.svg'),
@@ -299,6 +364,8 @@ app.use('/media', (req, res, next) => {
   }
   if (reqPath.toLowerCase().includes('flag')) {
     const fallbacks = [
+      path.join(__dirname, 'public/media/branding', 'flag_header_58.webp'),
+      path.join(__dirname, 'public/images/branding', 'flag.svg'),
       path.join(mediaDir, 'branding', 'flag_header_58.webp'),
       path.join(mediaDir, 'branding', 'flag.svg'),
       path.join(mediaDir, 'qasreshabbir_media', 'branding', 'flag.svg'),
@@ -328,27 +395,27 @@ app.use((req, res, next) => {
   if (minPath && fs.existsSync(minPath)) {
     const isCss = req.path.endsWith('.css');
     res.setHeader('Content-Type', isCss ? 'text/css; charset=UTF-8' : 'application/javascript; charset=UTF-8');
-    res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     return res.sendFile(minPath);
   }
   next();
 });
 
-// Serve Pre-minified Dist Assets with 30-day immutable caching
+// Serve Pre-minified Dist Assets with 1-year immutable caching
 app.use(
   '/dist',
   express.static(path.join(__dirname, 'public/dist'), {
-    maxAge: '30d',
+    maxAge: '365d',
     immutable: true,
     etag: true,
     lastModified: true
   })
 );
 
-// Serve Public Static Assets with 1-day caching and ETag revalidation
+// Serve Public Static Assets with 30-day caching and ETag revalidation
 app.use(
   express.static(path.join(__dirname, 'public'), {
-    maxAge: '1d',
+    maxAge: '30d',
     etag: true,
     lastModified: true
   })

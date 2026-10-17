@@ -194,8 +194,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         document.querySelectorAll('.modal-logo, .sidebar-logo, .admin-login-logo').forEach(img => {
-          if (!img.src.includes(customLogo)) {
-            img.src = customLogo;
+          if (!img.src.includes(headerLogoSrc)) {
+            img.src = headerLogoSrc;
           }
           img.onerror = function() {
             this.onerror = null;
