@@ -22,7 +22,7 @@ const translations = {
     heroSubtitle: "Together for a Brighter Tomorrow",
     heroText: "We work for a better, healthier and educated community by providing support, care and hope to those in need.",
     btnSupportCause: "Support Our Cause",
-    btnLearnMore: "Learn More",
+    btnLearnMore: "Learn About Us",
     btnExploreProjects: "Explore Our Projects",
 
     // Welfare Categories

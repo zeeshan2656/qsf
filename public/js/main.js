@@ -33,12 +33,14 @@ document.addEventListener('DOMContentLoaded', () => {
     renderDynamicContent(foundationData, e.detail.lang);
   });
 
-  // 4. Fetch initial foundation data on idle without blocking main thread
-  if ('requestIdleCallback' in window) {
-    requestIdleCallback(() => fetchBootstrapData(), { timeout: 3500 });
-  } else {
-    setTimeout(fetchBootstrapData, 600);
-  }
+  // 4. Fetch initial foundation data post-load on idle without blocking main thread
+  window.addEventListener('load', () => {
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => fetchBootstrapData(), { timeout: 4000 });
+    } else {
+      setTimeout(fetchBootstrapData, 1500);
+    }
+  });
 
   async function fetchBootstrapData() {
     try {
