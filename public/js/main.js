@@ -49,9 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (json.success && json.data) {
         foundationData = json.data;
         const currentLang = window.FoundationI18n ? window.FoundationI18n.currentLang : 'en';
-        if (currentLang === 'ur') {
-          renderDynamicContent(foundationData, currentLang);
-        }
+        renderDynamicContent(foundationData, currentLang);
       }
     } catch (err) {
       console.warn('[Data Load Warning] Using default static content while server hydrates:', err);
@@ -90,52 +88,71 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // B. Render Featured Projects (Only if container empty or Urdu language selected)
+    // B. Render Featured Projects (In-place update avoids CLS and guarantees clickability)
     const projectsContainer = document.getElementById('featuredProjectsGrid');
-    if (projectsContainer && data.projects && data.projects.length > 0 && (isUrdu || projectsContainer.children.length === 0)) {
-      projectsContainer.innerHTML = data.projects.map(p => {
-        const title = isUrdu ? p.title_ur : p.title_en;
-        const desc = isUrdu ? p.short_desc_ur : p.short_desc_en;
-        const catName = isUrdu ? p.category_name_ur : p.category_name_en;
-        const goal = parseFloat(p.goal_amount) || 0;
-        const raised = parseFloat(p.raised_amount) || 0;
-        const pct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 75;
-        const benCount = p.beneficiaries_count || 126;
-        const benLabel = isUrdu ? (p.beneficiaries_label_ur || 'طلباء') : (p.beneficiaries_label_en || 'Students');
+    if (projectsContainer && data.projects && data.projects.length > 0) {
+      const cards = projectsContainer.querySelectorAll('.project-card');
+      if (cards.length === data.projects.length) {
+        data.projects.forEach((p, idx) => {
+          const card = cards[idx];
+          const title = isUrdu ? p.title_ur : p.title_en;
+          const desc = isUrdu ? p.short_desc_ur : p.short_desc_en;
+          const catName = isUrdu ? p.category_name_ur : p.category_name_en;
+          const tag = card.querySelector('.project-category-tag');
+          const titleEl = card.querySelector('.project-title');
+          const descEl = card.querySelector('.project-desc');
+          const btn = card.querySelector('.btn-card-donate span');
+          if (tag) tag.textContent = catName;
+          if (titleEl) titleEl.textContent = title;
+          if (descEl) descEl.textContent = desc;
+          if (btn) btn.textContent = isUrdu ? 'تفصیل و عطیہ' : 'Learn & Support';
+          card.onclick = () => window.location.href = `/project/${p.slug}`;
+        });
+      } else {
+        projectsContainer.innerHTML = data.projects.map(p => {
+          const title = isUrdu ? p.title_ur : p.title_en;
+          const desc = isUrdu ? p.short_desc_ur : p.short_desc_en;
+          const catName = isUrdu ? p.category_name_ur : p.category_name_en;
+          const goal = parseFloat(p.goal_amount) || 0;
+          const raised = parseFloat(p.raised_amount) || 0;
+          const pct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 75;
+          const benCount = p.beneficiaries_count || 126;
+          const benLabel = isUrdu ? (p.beneficiaries_label_ur || 'طلباء') : (p.beneficiaries_label_en || 'Students');
 
-        return `
-          <div class="project-card">
-            <div class="project-image-wrapper">
-              <img src="${p.image_url || '/media/projects/orphan_education.webp'}" alt="${title}" class="project-image" loading="lazy" decoding="async" width="400" height="250" />
-            </div>
-            <div class="project-content">
-              <span class="project-category-tag">${catName || (isUrdu ? 'تعلیمی کفالت' : 'Education')}</span>
-              <h3 class="project-title">${title}</h3>
-              <p class="project-desc">${desc}</p>
-              
-              <div class="project-progress-wrapper">
-                <div class="project-progress-bar">
-                  <div class="project-progress-fill" style="width: ${pct}%"></div>
+          return `
+            <div class="project-card" onclick="window.location.href='/project/${p.slug}'" style="cursor: pointer;">
+              <div class="project-image-wrapper">
+                <img src="${p.image_url || '/media/projects/orphan_education.webp'}" alt="${title}" class="project-image" loading="lazy" decoding="async" width="400" height="250" />
+              </div>
+              <div class="project-content">
+                <span class="project-category-tag">${catName || (isUrdu ? 'تعلیمی کفالت' : 'Education')}</span>
+                <h3 class="project-title">${title}</h3>
+                <p class="project-desc">${desc}</p>
+                
+                <div class="project-progress-wrapper">
+                  <div class="project-progress-bar">
+                    <div class="project-progress-fill" style="width: ${pct}%"></div>
+                  </div>
+                  <div class="project-meta-stats">
+                    <span>${pct}% ${isUrdu ? 'مکمل' : 'Funded'}</span>
+                    <span>PKR ${raised.toLocaleString()}</span>
+                  </div>
                 </div>
-                <div class="project-meta-stats">
-                  <span>${pct}% ${isUrdu ? 'مکمل' : 'Funded'}</span>
-                  <span>PKR ${raised.toLocaleString()}</span>
+
+                <div class="project-card-actions">
+                  <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-dark);">
+                    <i class="fas fa-users" style="color: var(--primary); margin-inline-end: 4px;"></i>
+                    ${benCount} ${benLabel}
+                  </span>
+                  <a href="/project/${p.slug}" class="btn-card-donate" onclick="event.stopPropagation()" aria-label="Learn & Support ${title}">
+                    <span>${isUrdu ? 'تفصیل و عطیہ' : 'Learn & Support'}</span>
+                  </a>
                 </div>
               </div>
-
-              <div class="project-card-actions">
-                <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-dark);">
-                  <i class="fas fa-users" style="color: var(--primary); margin-inline-end: 4px;"></i>
-                  ${benCount} ${benLabel}
-                </span>
-                <a href="/project/${p.slug}" class="btn-card-donate">
-                  ${isUrdu ? 'تفصیل و عطیہ' : 'Learn & Support'}
-                </a>
-              </div>
             </div>
-          </div>
-        `;
-      }).join('');
+          `;
+        }).join('');
+      }
     }
 
     // C. Render Latest News (Only if container empty or Urdu language selected)
@@ -341,6 +358,20 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.branch-code-display').forEach(el => { if (branchCode) el.textContent = branchCode; });
       document.querySelectorAll('.easypaisa-display').forEach(el => { if (easypaisa) el.textContent = easypaisa; });
       document.querySelectorAll('.jazzcash-display').forEach(el => { if (jazzcash) el.textContent = jazzcash; });
+
+      // G. Configure WhatsApp Floating Chat Button from Dashboard Settings
+      const whatsappBtn = document.getElementById('whatsappFloatBtn');
+      if (whatsappBtn) {
+        if (data.settings.whatsapp_enabled === '0') {
+          whatsappBtn.style.display = 'none';
+        } else {
+          whatsappBtn.style.display = 'flex';
+          const rawNum = data.settings.whatsapp_number || data.settings.contact_phone || '923000817702';
+          const cleanPhone = rawNum.replace(/[^0-9]/g, '');
+          const rawMsg = data.settings.whatsapp_message || 'Assalam-o-Alaikum, I want to inquire about Qasr-e-Shabbir Foundation welfare projects.';
+          whatsappBtn.href = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(rawMsg)}`;
+        }
+      }
     }
   }
 
@@ -451,6 +482,30 @@ document.addEventListener('DOMContentLoaded', () => {
       } finally {
         if (submitBtn) submitBtn.disabled = false;
       }
+    });
+  }
+
+  // 9. Scroll-To-Top (Topup) Button behavior
+  const scrollTopBtn = document.getElementById('scrollTopBtn');
+  if (scrollTopBtn) {
+    let scrollTicking = false;
+    window.addEventListener('scroll', () => {
+      if (!scrollTicking) {
+        window.requestAnimationFrame(() => {
+          if (window.scrollY > 300) {
+            scrollTopBtn.classList.add('visible');
+          } else {
+            scrollTopBtn.classList.remove('visible');
+          }
+          scrollTicking = false;
+        });
+        scrollTicking = true;
+      }
+    }, { passive: true });
+
+    scrollTopBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
 });
