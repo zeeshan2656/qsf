@@ -1700,6 +1700,13 @@ textarea.form-control {
   transition: opacity 0.3s ease, transform 0.3s ease, background 0.2s ease;
 }
 
+.btn-scroll-top svg {
+  width: 20px;
+  height: 20px;
+  stroke: #ffffff;
+  display: block;
+}
+
 .btn-scroll-top.visible {
   opacity: 1;
   visibility: visible;
