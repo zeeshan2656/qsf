@@ -62,7 +62,7 @@ router.get('/bootstrap', async (req, res) => {
       'SELECT id, menu_key, title_en, title_ur, row_num, col_side, sort_order FROM header_menus WHERE is_active = 1 ORDER BY sort_order ASC, id ASC'
     );
     const [menuItems] = await db.query(`
-      SELECT mi.id, mi.menu_id, mi.title_en, mi.title_ur, mi.page_url, mi.open_new_tab, mi.sort_order
+      SELECT mi.id, mi.menu_id, mi.title_en, mi.title_ur, mi.page_url, mi.open_new_tab, mi.is_active, mi.sort_order
       FROM header_menu_items mi
       JOIN header_menus m ON mi.menu_id = m.id
       WHERE mi.is_active = 1 AND m.is_active = 1
@@ -77,6 +77,11 @@ router.get('/bootstrap', async (req, res) => {
       'SELECT id, title_en, title_ur, eyebrow_en, eyebrow_ur, subtitle_en, subtitle_ur, description_en, description_ur, btn1_text_en, btn1_text_ur, btn1_link, btn2_text_en, btn2_text_ur, btn2_link, image_url, image_mobile_url, sort_order FROM hero_slides WHERE is_active = 1 ORDER BY sort_order ASC, id ASC'
     );
 
+    // 9. Published Website Pages
+    const [pages] = await db.query(
+      'SELECT id, title_en, title_ur, slug, page_type, target_url, meta_description_en, meta_description_ur, banner_image_url, menu_id, sort_order FROM pages WHERE is_published = 1 ORDER BY sort_order ASC, id ASC'
+    ).catch(() => [[]]);
+
     const payload = {
       success: true,
       data: {
@@ -87,7 +92,8 @@ router.get('/bootstrap', async (req, res) => {
         stats,
         announcements,
         menus,
-        slides
+        slides,
+        pages
       }
     };
 
@@ -99,6 +105,59 @@ router.get('/bootstrap', async (req, res) => {
   } catch (err) {
     console.error('[Public Bootstrap Error]', err);
     return res.status(500).json({ success: false, message: 'Error retrieving foundation data.' });
+  }
+});
+
+// GET /api/public/menus (Direct menus endpoint with immediate real-time sync)
+router.get('/menus', async (req, res) => {
+  try {
+    const [menus] = await db.query(
+      'SELECT id, menu_key, title_en, title_ur, row_num, col_side, sort_order FROM header_menus WHERE is_active = 1 ORDER BY sort_order ASC, id ASC'
+    );
+    const [menuItems] = await db.query(`
+      SELECT mi.id, mi.menu_id, mi.title_en, mi.title_ur, mi.page_url, mi.open_new_tab, mi.is_active, mi.sort_order
+      FROM header_menu_items mi
+      JOIN header_menus m ON mi.menu_id = m.id
+      WHERE mi.is_active = 1 AND m.is_active = 1
+      ORDER BY mi.sort_order ASC, mi.id ASC
+    `);
+    menus.forEach(m => {
+      m.items = menuItems.filter(item => item.menu_id === m.id);
+    });
+    return res.json({ success: true, data: menus });
+  } catch (err) {
+    console.error('[Public Menus Error]', err);
+    return res.status(500).json({ success: false, message: 'Error retrieving menus.' });
+  }
+});
+
+// GET /api/public/pages (Published pages list)
+router.get('/pages', async (req, res) => {
+  try {
+    const [pages] = await db.query(
+      'SELECT id, title_en, title_ur, slug, page_type, target_url, meta_description_en, meta_description_ur, banner_image_url, menu_id, sort_order FROM pages WHERE is_published = 1 ORDER BY sort_order ASC, id ASC'
+    );
+    return res.json({ success: true, data: pages });
+  } catch (err) {
+    console.error('[Public Pages Error]', err);
+    return res.status(500).json({ success: false, message: 'Error retrieving pages.' });
+  }
+});
+
+// GET /api/public/pages/:slug (Single page by slug)
+router.get('/pages/:slug', async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      'SELECT * FROM pages WHERE slug = ? AND is_published = 1 LIMIT 1',
+      [req.params.slug]
+    );
+    if (!rows.length) {
+      return res.status(404).json({ success: false, message: 'Page not found.' });
+    }
+    return res.json({ success: true, data: rows[0] });
+  } catch (err) {
+    console.error('[Public Page Detail Error]', err);
+    return res.status(500).json({ success: false, message: 'Error retrieving page.' });
   }
 });
 

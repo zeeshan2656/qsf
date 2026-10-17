@@ -3838,6 +3838,8 @@ router.post('/announcements', async (req, res) => {
       [req.session.user?.id, 'CREATE_ANNOUNCEMENT', 'announcement', String(result.insertId), JSON.stringify({ content_en: content_en.trim() })]
     ).catch(() => {});
 
+    cache.invalidateAll();
+
     return res.json({
       success: true,
       announcementId: result.insertId,
@@ -3873,6 +3875,8 @@ router.put('/announcements/:id', async (req, res) => {
       [req.session.user?.id, 'UPDATE_ANNOUNCEMENT', 'announcement', String(annId), JSON.stringify({ content_en: content_en.trim() })]
     ).catch(() => {});
 
+    cache.invalidateAll();
+
     return res.json({ success: true, message: 'Announcement updated successfully.' });
   } catch (err) {
     console.error('[Admin Announcements PUT]', err);
@@ -3889,6 +3893,8 @@ router.patch('/announcements/:id/toggle', async (req, res) => {
 
     const newStatus = rows[0].is_active ? 0 : 1;
     await db.query('UPDATE announcements SET is_active = ? WHERE id = ?', [newStatus, annId]);
+
+    cache.invalidateAll();
 
     return res.json({ success: true, is_active: newStatus, message: `Announcement ${newStatus ? 'activated' : 'deactivated'} successfully.` });
   } catch (err) {
@@ -3907,6 +3913,8 @@ router.delete('/announcements/:id', async (req, res) => {
       'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
       [req.session.user?.id, 'DELETE_ANNOUNCEMENT', 'announcement', String(annId), JSON.stringify({ id: annId })]
     ).catch(() => {});
+
+    cache.invalidateAll();
 
     return res.json({ success: true, message: 'Announcement deleted successfully.' });
   } catch (err) {
@@ -3961,6 +3969,8 @@ router.post('/menus', async (req, res) => {
       [req.session.user?.id, 'CREATE_MENU', 'menu', String(result.insertId), JSON.stringify({ title_en: title_en.trim() })]
     ).catch(() => {});
 
+    cache.invalidateAll();
+
     return res.json({
       success: true,
       menuId: result.insertId,
@@ -3998,6 +4008,8 @@ router.put('/menus/:id', async (req, res) => {
       [req.session.user?.id, 'UPDATE_MENU', 'menu', String(menuId), JSON.stringify({ title_en: title_en.trim() })]
     ).catch(() => {});
 
+    cache.invalidateAll();
+
     return res.json({ success: true, message: 'Menu updated successfully.' });
   } catch (err) {
     console.error('[Admin Menus PUT]', err);
@@ -4014,6 +4026,8 @@ router.patch('/menus/:id/toggle', async (req, res) => {
 
     const newStatus = rows[0].is_active ? 0 : 1;
     await db.query('UPDATE header_menus SET is_active = ? WHERE id = ?', [newStatus, menuId]);
+
+    cache.invalidateAll();
 
     return res.json({ success: true, is_active: newStatus, message: `Menu ${newStatus ? 'activated' : 'deactivated'} successfully.` });
   } catch (err) {
@@ -4032,6 +4046,8 @@ router.delete('/menus/:id', async (req, res) => {
       'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
       [req.session.user?.id, 'DELETE_MENU', 'menu', String(menuId), JSON.stringify({ id: menuId })]
     ).catch(() => {});
+
+    cache.invalidateAll();
 
     return res.json({ success: true, message: 'Menu deleted successfully.' });
   } catch (err) {
@@ -4059,6 +4075,8 @@ router.post('/menus/:id/items', async (req, res) => {
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [menuId, title_en.trim(), title_ur ? title_ur.trim() : null, page_url.trim(), newTab, activeFlag, orderVal]
     );
+
+    cache.invalidateAll();
 
     return res.json({
       success: true,
@@ -4092,6 +4110,8 @@ router.put('/menu-items/:id', async (req, res) => {
       [title_en.trim(), title_ur ? title_ur.trim() : null, page_url.trim(), newTab, activeFlag, orderVal, itemId]
     );
 
+    cache.invalidateAll();
+
     return res.json({ success: true, message: 'Menu item updated successfully.' });
   } catch (err) {
     console.error('[Admin Menu Items PUT]', err);
@@ -4109,6 +4129,8 @@ router.patch('/menu-items/:id/toggle', async (req, res) => {
     const newStatus = rows[0].is_active ? 0 : 1;
     await db.query('UPDATE header_menu_items SET is_active = ? WHERE id = ?', [newStatus, itemId]);
 
+    cache.invalidateAll();
+
     return res.json({ success: true, is_active: newStatus, message: `Menu item ${newStatus ? 'activated' : 'deactivated'} successfully.` });
   } catch (err) {
     console.error('[Admin Menu Items TOGGLE]', err);
@@ -4121,6 +4143,8 @@ router.delete('/menu-items/:id', async (req, res) => {
   try {
     const itemId = req.params.id;
     await db.query('DELETE FROM header_menu_items WHERE id = ?', [itemId]);
+
+    cache.invalidateAll();
 
     return res.json({ success: true, message: 'Menu item deleted successfully.' });
   } catch (err) {
@@ -4178,7 +4202,7 @@ router.post('/hero-slides', async (req, res) => {
       activeFlag, orderVal
     ]);
 
-    cache.del('public:bootstrap');
+    if (cache && typeof cache.invalidateGroup === 'function') cache.invalidateGroup('public');
 
     return res.json({
       success: true,
@@ -4228,7 +4252,7 @@ router.put('/hero-slides/:id', async (req, res) => {
       activeFlag, orderVal, slideId
     ]);
 
-    cache.del('public:bootstrap');
+    if (cache && typeof cache.invalidateGroup === 'function') cache.invalidateGroup('public');
 
     return res.json({ success: true, message: 'Hero slide updated successfully.' });
   } catch (err) {
@@ -4247,7 +4271,7 @@ router.patch('/hero-slides/:id/toggle', async (req, res) => {
     const newStatus = rows[0].is_active ? 0 : 1;
     await db.query('UPDATE hero_slides SET is_active = ? WHERE id = ?', [newStatus, slideId]);
 
-    cache.del('public:bootstrap');
+    if (cache && typeof cache.invalidateGroup === 'function') cache.invalidateGroup('public');
 
     return res.json({ success: true, is_active: newStatus, message: `Slide ${newStatus ? 'activated' : 'deactivated'} successfully.` });
   } catch (err) {
@@ -4262,12 +4286,227 @@ router.delete('/hero-slides/:id', async (req, res) => {
     const slideId = req.params.id;
     await db.query('DELETE FROM hero_slides WHERE id = ?', [slideId]);
 
-    cache.del('public:bootstrap');
+    cache.invalidateAll();
 
     return res.json({ success: true, message: 'Hero slide deleted successfully.' });
   } catch (err) {
     console.error('[Admin Hero Slides DELETE]', err);
     return res.status(500).json({ success: false, message: 'Failed to delete hero slide.' });
+  }
+});
+
+// =========================================================================
+// WEBSITE PAGES MANAGEMENT CRUD ENDPOINTS
+// =========================================================================
+
+// GET /api/admin/pages
+router.get('/pages', async (req, res) => {
+  try {
+    const [pages] = await db.query(`
+      SELECT p.*, 
+             m.title_en as menu_title_en,
+             m.row_num as menu_row_num,
+             m.col_side as menu_col_side,
+             m.is_active as menu_is_active
+      FROM pages p
+      LEFT JOIN header_menus m ON p.menu_id = m.id
+      ORDER BY p.sort_order ASC, p.id ASC
+    `);
+    return res.json({ success: true, data: pages });
+  } catch (err) {
+    console.error('[Admin Pages GET]', err);
+    return res.status(500).json({ success: false, message: 'Failed to fetch pages.' });
+  }
+});
+
+// POST /api/admin/pages
+router.post('/pages', async (req, res) => {
+  try {
+    const {
+      title_en, title_ur, slug, page_type, target_url,
+      meta_description_en, meta_description_ur,
+      content_en, content_ur, banner_image_url,
+      is_published, menu_id, sort_order
+    } = req.body;
+
+    if (!title_en || !title_en.trim()) {
+      return res.status(400).json({ success: false, message: 'Page title (English) is required.' });
+    }
+
+    const cleanSlug = (slug || title_en).trim().toLowerCase()
+      .replace(/[^a-z0-9_-]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+
+    if (!cleanSlug) {
+      return res.status(400).json({ success: false, message: 'Valid page slug is required.' });
+    }
+
+    const [existing] = await db.query('SELECT id FROM pages WHERE slug = ?', [cleanSlug]);
+    if (existing.length > 0) {
+      return res.status(400).json({ success: false, message: 'A page with this slug already exists.' });
+    }
+
+    const pType = page_type === 'core' ? 'core' : 'custom';
+    const pUrl = target_url && target_url.trim() ? target_url.trim() : (pType === 'core' ? `/${cleanSlug}` : `/page/${cleanSlug}`);
+    const pubFlag = is_published === undefined || is_published === null ? 1 : (is_published ? 1 : 0);
+    const menuIdVal = menu_id ? parseInt(menu_id, 10) : null;
+    const orderVal = parseInt(sort_order, 10) || 0;
+
+    const [result] = await db.query(`
+      INSERT INTO pages 
+      (title_en, title_ur, slug, page_type, target_url, meta_description_en, meta_description_ur, content_en, content_ur, banner_image_url, is_published, menu_id, sort_order)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+      title_en.trim(), title_ur?.trim() || null, cleanSlug, pType, pUrl,
+      meta_description_en?.trim() || null, meta_description_ur?.trim() || null,
+      content_en || null, content_ur || null, banner_image_url?.trim() || null,
+      pubFlag, menuIdVal, orderVal
+    ]);
+
+    const newPageId = result.insertId;
+
+    if (menuIdVal) {
+      await db.query(`
+        INSERT INTO header_menu_items (menu_id, title_en, title_ur, page_url, open_new_tab, is_active, sort_order)
+        VALUES (?, ?, ?, ?, 0, ?, ?)
+      `, [menuIdVal, title_en.trim(), title_ur?.trim() || null, pUrl, pubFlag, orderVal]);
+    }
+
+    cache.invalidateAll();
+
+    return res.json({
+      success: true,
+      pageId: newPageId,
+      message: 'Page created successfully.'
+    });
+  } catch (err) {
+    console.error('[Admin Pages POST]', err);
+    return res.status(500).json({ success: false, message: 'Failed to create page.' });
+  }
+});
+
+// PUT /api/admin/pages/:id
+router.put('/pages/:id', async (req, res) => {
+  try {
+    const pageId = req.params.id;
+    const [existingPage] = await db.query('SELECT * FROM pages WHERE id = ?', [pageId]);
+    if (!existingPage.length) return res.status(404).json({ success: false, message: 'Page not found.' });
+
+    const oldPage = existingPage[0];
+    const {
+      title_en, title_ur, slug, page_type, target_url,
+      meta_description_en, meta_description_ur,
+      content_en, content_ur, banner_image_url,
+      is_published, menu_id, sort_order
+    } = req.body;
+
+    if (!title_en || !title_en.trim()) {
+      return res.status(400).json({ success: false, message: 'Page title (English) is required.' });
+    }
+
+    const cleanSlug = (slug || oldPage.slug).trim().toLowerCase()
+      .replace(/[^a-z0-9_-]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+
+    if (cleanSlug !== oldPage.slug) {
+      const [conflict] = await db.query('SELECT id FROM pages WHERE slug = ? AND id != ?', [cleanSlug, pageId]);
+      if (conflict.length > 0) {
+        return res.status(400).json({ success: false, message: 'A page with this slug already exists.' });
+      }
+    }
+
+    const pType = oldPage.page_type === 'core' ? 'core' : (page_type || 'custom');
+    const pUrl = target_url && target_url.trim() ? target_url.trim() : oldPage.target_url;
+    const pubFlag = is_published === undefined || is_published === null ? oldPage.is_published : (is_published ? 1 : 0);
+    const menuIdVal = menu_id !== undefined && menu_id !== '' && menu_id !== null ? parseInt(menu_id, 10) : null;
+    const orderVal = parseInt(sort_order, 10) || 0;
+
+    await db.query(`
+      UPDATE pages SET
+        title_en = ?, title_ur = ?, slug = ?, page_type = ?, target_url = ?,
+        meta_description_en = ?, meta_description_ur = ?,
+        content_en = ?, content_ur = ?, banner_image_url = ?,
+        is_published = ?, menu_id = ?, sort_order = ?
+      WHERE id = ?
+    `, [
+      title_en.trim(), title_ur?.trim() || null, cleanSlug, pType, pUrl,
+      meta_description_en?.trim() || null, meta_description_ur?.trim() || null,
+      content_en || null, content_ur || null, banner_image_url?.trim() || null,
+      pubFlag, menuIdVal, orderVal, pageId
+    ]);
+
+    // Synchronize header menu items
+    if (menuIdVal) {
+      const [existingItems] = await db.query('SELECT id FROM header_menu_items WHERE page_url = ?', [oldPage.target_url]);
+      if (existingItems.length > 0) {
+        await db.query(`
+          UPDATE header_menu_items SET
+            menu_id = ?, title_en = ?, title_ur = ?, page_url = ?, is_active = ?, sort_order = ?
+          WHERE id = ?
+        `, [menuIdVal, title_en.trim(), title_ur?.trim() || null, pUrl, pubFlag, orderVal, existingItems[0].id]);
+      } else {
+        await db.query(`
+          INSERT INTO header_menu_items (menu_id, title_en, title_ur, page_url, open_new_tab, is_active, sort_order)
+          VALUES (?, ?, ?, ?, 0, ?, ?)
+        `, [menuIdVal, title_en.trim(), title_ur?.trim() || null, pUrl, pubFlag, orderVal]);
+      }
+    } else {
+      await db.query('UPDATE header_menu_items SET is_active = 0 WHERE page_url = ?', [oldPage.target_url]);
+    }
+
+    cache.invalidateAll();
+
+    return res.json({ success: true, message: 'Page updated successfully.' });
+  } catch (err) {
+    console.error('[Admin Pages PUT]', err);
+    return res.status(500).json({ success: false, message: 'Failed to update page.' });
+  }
+});
+
+// PATCH /api/admin/pages/:id/toggle
+router.patch('/pages/:id/toggle', async (req, res) => {
+  try {
+    const pageId = req.params.id;
+    const [rows] = await db.query('SELECT target_url, is_published FROM pages WHERE id = ?', [pageId]);
+    if (!rows.length) return res.status(404).json({ success: false, message: 'Page not found.' });
+
+    const newStatus = rows[0].is_published ? 0 : 1;
+    await db.query('UPDATE pages SET is_published = ? WHERE id = ?', [newStatus, pageId]);
+
+    // Sync header_menu_items
+    await db.query('UPDATE header_menu_items SET is_active = ? WHERE page_url = ?', [newStatus, rows[0].target_url]);
+
+    cache.invalidateAll();
+
+    return res.json({ success: true, is_published: newStatus, message: `Page ${newStatus ? 'published' : 'unpublished'} successfully.` });
+  } catch (err) {
+    console.error('[Admin Pages TOGGLE]', err);
+    return res.status(500).json({ success: false, message: 'Failed to toggle page status.' });
+  }
+});
+
+// DELETE /api/admin/pages/:id
+router.delete('/pages/:id', async (req, res) => {
+  try {
+    const pageId = req.params.id;
+    const [rows] = await db.query('SELECT page_type, target_url FROM pages WHERE id = ?', [pageId]);
+    if (!rows.length) return res.status(404).json({ success: false, message: 'Page not found.' });
+
+    if (rows[0].page_type === 'core') {
+      return res.status(400).json({ success: false, message: 'Core system pages cannot be deleted. You can unpublish them instead.' });
+    }
+
+    await db.query('DELETE FROM header_menu_items WHERE page_url = ?', [rows[0].target_url]);
+    await db.query('DELETE FROM pages WHERE id = ?', [pageId]);
+
+    cache.invalidateAll();
+
+    return res.json({ success: true, message: 'Page deleted successfully.' });
+  } catch (err) {
+    console.error('[Admin Pages DELETE]', err);
+    return res.status(500).json({ success: false, message: 'Failed to delete page.' });
   }
 });
 

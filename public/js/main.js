@@ -438,16 +438,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
       slotEl.style.visibility = 'visible';
       const title = isUrdu ? (m.title_ur || m.title_en) : m.title_en;
-      const items = Array.isArray(m.items) ? m.items.filter(it => it.is_active === 1) : [];
+      const items = Array.isArray(m.items) ? m.items.filter(it => it.is_active === 1 || it.is_active === true || it.is_active === undefined) : [];
 
       if (items.length > 0) {
         slotEl.innerHTML = `
           <nav class="nav-inline-group" aria-label="${escapeHtml(title)}">
-            ${items.map(it => `
-              <a href="${it.page_url}" class="nav-inline-link" ${it.open_new_tab ? 'target="_blank" rel="noopener"' : ''}>
-                <span>${escapeHtml(isUrdu ? (it.title_ur || it.title_en) : it.title_en)}</span>
-              </a>
-            `).join('')}
+            ${items.map(it => {
+              const itemTitle = isUrdu ? (it.title_ur || it.title_en) : it.title_en;
+              const isCurrent = window.location.pathname === it.page_url || (it.page_url !== '/' && window.location.pathname.startsWith(it.page_url));
+              return `
+                <a href="${it.page_url}" class="nav-inline-link ${isCurrent ? 'active' : ''}" ${it.open_new_tab ? 'target="_blank" rel="noopener"' : ''}>
+                  <span>${escapeHtml(itemTitle)}</span>
+                </a>
+              `;
+            }).join('')}
           </nav>
         `;
       } else {
@@ -465,7 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const activeMenus = menus.filter(m => m.is_active === 1);
       accordionContainer.innerHTML = activeMenus.map((m, idx) => {
         const title = isUrdu ? (m.title_ur || m.title_en) : m.title_en;
-        const items = Array.isArray(m.items) ? m.items.filter(it => it.is_active === 1) : [];
+        const items = Array.isArray(m.items) ? m.items.filter(it => it.is_active === 1 || it.is_active === true || it.is_active === undefined) : [];
         const isFirst = idx === 0;
 
         return `
@@ -475,11 +479,15 @@ document.addEventListener('DOMContentLoaded', () => {
               ${items.length > 0 ? '<i class="fas fa-chevron-down mobile-accordion-icon"></i>' : ''}
             </button>
             <div class="mobile-accordion-panel ${isFirst ? 'show' : ''}">
-              ${items.map(it => `
-                <a href="${it.page_url}" class="mobile-panel-link" ${it.open_new_tab ? 'target="_blank" rel="noopener"' : ''}>
-                  ${escapeHtml(isUrdu ? (it.title_ur || it.title_en) : it.title_en)}
-                </a>
-              `).join('')}
+              ${items.map(it => {
+                const itemTitle = isUrdu ? (it.title_ur || it.title_en) : it.title_en;
+                const isCurrent = window.location.pathname === it.page_url;
+                return `
+                  <a href="${it.page_url}" class="mobile-panel-link ${isCurrent ? 'active' : ''}" ${it.open_new_tab ? 'target="_blank" rel="noopener"' : ''}>
+                    ${escapeHtml(itemTitle)}
+                  </a>
+                `;
+              }).join('')}
             </div>
           </div>
         `;

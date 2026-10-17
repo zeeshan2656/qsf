@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return perms.includes('settings');
     }
 
-    if (tabId === 'announcements' || tabId === 'menus' || tabId === 'hero-slides') {
+    if (tabId === 'announcements' || tabId === 'menus' || tabId === 'hero-slides' || tabId === 'pages') {
       return isSuper || perms.includes(tabId) || perms.includes('settings');
     }
 
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function getFirstPermittedTab() {
-    const tabsInOrder = ['overview', 'users', 'accounts', 'projects', 'volunteers', 'articles', 'applications', 'donations', 'submissions', 'org-departments', 'settings-bank'];
+    const tabsInOrder = ['overview', 'users', 'accounts', 'projects', 'volunteers', 'articles', 'applications', 'donations', 'submissions', 'pages', 'org-departments', 'settings-bank'];
     for (const t of tabsInOrder) {
       if (isTabPermitted(t)) return t;
     }
@@ -108,10 +108,20 @@ document.addEventListener('DOMContentLoaded', () => {
       orgItem.style.display = allowed ? '' : 'none';
     }
 
+    // Filter submenu items inside Organization and Settings
+    document.querySelectorAll('.sidebar-submenu .submenu-item').forEach(subItem => {
+      const link = subItem.querySelector('a[data-tab]');
+      if (link) {
+        const tab = link.dataset.tab;
+        const allowed = isSuper || isTabPermitted(tab);
+        subItem.style.display = allowed ? '' : 'none';
+      }
+    });
+
     // Settings item
     const settingsItem = document.getElementById('sidebarSettingsItem');
     if (settingsItem) {
-      const allowed = isSuper || isTabPermitted('settings-bank');
+      const allowed = isSuper || isTabPermitted('settings') || isTabPermitted('settings-bank') || isTabPermitted('announcements') || isTabPermitted('menus') || isTabPermitted('hero-slides');
       settingsItem.style.display = allowed ? '' : 'none';
     }
   }
@@ -580,6 +590,28 @@ document.addEventListener('DOMContentLoaded', () => {
           onClick: 'openHeroSlideModal()'
         }
       ]
+    },
+    pages: {
+      titleEn: 'Website Pages',
+      titleUr: 'ویب سائٹ کے صفحات',
+      icon: 'fas fa-file-lines',
+      actions: [
+        {
+          textEn: 'Refresh',
+          textUr: 'تازہ کریں',
+          icon: 'fas fa-rotate',
+          type: 'secondary',
+          onClick: 'loadPages()'
+        },
+        {
+          textEn: 'Add New Page',
+          textUr: 'نیا صفحہ شامل کریں',
+          icon: 'fas fa-plus',
+          type: 'primary',
+          permission: 'can_manage_settings',
+          onClick: 'openPageModal()'
+        }
+      ]
     }
   };
 
@@ -742,6 +774,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tabId === 'applications') loadApplications();
     if (tabId === 'donations') loadDonations();
     if (tabId === 'submissions') loadSubmissions();
+    if (tabId === 'pages') loadPages();
     if (tabId === 'org-departments') loadDepartments();
     if (tabId === 'org-roles') loadRoles();
     if (tabId === 'org-designations') loadDesignations();
@@ -8802,9 +8835,288 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  // =========================================================================
+  // WEBSITE PAGES MANAGEMENT
+  // =========================================================================
+  let pagesData = [];
+
+  async function loadPages() {
+    const tableBody = document.getElementById('pagesTableBody');
+    if (tableBody) {
+      tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94A3B8; padding: 28px;"><i class="fas fa-spinner fa-spin"></i> Loading pages directory...</td></tr>';
+    }
+
+    try {
+      const res = await fetch('/api/admin/pages');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data)) {
+        pagesData = data.data;
+        updatePagesMetrics(pagesData);
+        renderPages(pagesData);
+      } else {
+        if (tableBody) tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #EF4444; padding: 24px;">Failed to load pages data.</td></tr>';
+      }
+    } catch (err) {
+      console.error('[loadPages]', err);
+      if (tableBody) tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #EF4444; padding: 24px;">Error communicating with server.</td></tr>';
+    }
+  }
+
+  function updatePagesMetrics(pages) {
+    const totalEl = document.getElementById('metricTotalPages');
+    const pubEl = document.getElementById('metricPublishedPages');
+    const menuEl = document.getElementById('metricMenuAssignedPages');
+    const customEl = document.getElementById('metricCustomPages');
+
+    if (totalEl) totalEl.textContent = pages.length;
+    if (pubEl) pubEl.textContent = pages.filter(p => p.is_published === 1).length;
+    if (menuEl) menuEl.textContent = pages.filter(p => p.menu_id !== null && p.menu_id !== undefined).length;
+    if (customEl) customEl.textContent = pages.filter(p => p.page_type === 'custom').length;
+  }
+
+  function renderPages(pages) {
+    const tableBody = document.getElementById('pagesTableBody');
+    if (!tableBody) return;
+
+    if (!pages || pages.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94A3B8; padding: 28px;">No pages found. Click "+ Add New Page" to create one.</td></tr>';
+      return;
+    }
+
+    tableBody.innerHTML = pages.map((p, idx) => {
+      const isUrdu = document.documentElement.lang === 'ur' || document.body.classList.contains('lang-ur');
+      const typeBadge = p.page_type === 'core' 
+        ? '<span class="badge badge-primary" style="font-size: 0.72rem;"><i class="fas fa-cube"></i> Core Page</span>'
+        : '<span class="badge badge-info" style="font-size: 0.72rem;"><i class="fas fa-file-pen"></i> Custom Page</span>';
+
+      const menuBadge = p.menu_title_en 
+        ? `<span class="badge badge-success" style="font-size: 0.72rem;"><i class="fas fa-compass"></i> ${escapeHtml(p.menu_title_en)}</span>`
+        : '<span style="color: #94A3B8; font-size: 0.8rem;">None (Unassigned)</span>';
+
+      const pubStatusPill = p.is_published 
+        ? '<span class="badge badge-success" style="font-size: 0.75rem;"><i class="fas fa-circle-check"></i> Published</span>' 
+        : '<span class="badge badge-secondary" style="font-size: 0.75rem;"><i class="fas fa-eye-slash"></i> Draft</span>';
+
+      return `
+        <tr>
+          <td style="color: #64748B; font-weight: 600; text-align: center;">${idx + 1}</td>
+          <td>
+            <div style="font-weight: 700; color: var(--admin-text-dark); margin-bottom: 2px;">
+              ${escapeHtml(p.title_en)}
+            </div>
+            ${p.title_ur ? `<div class="urdu-text" dir="rtl" style="font-size: 0.84rem; color: #64748B;">${escapeHtml(p.title_ur)}</div>` : ''}
+            <div style="margin-top: 4px;">
+              <a href="${p.target_url}" target="_blank" style="color: var(--admin-primary); font-size: 0.82rem; font-weight: 600; text-decoration: underline;">
+                <i class="fas fa-external-link-alt" style="margin-right: 4px; font-size: 0.72rem;"></i>${escapeHtml(p.target_url)}
+              </a>
+            </div>
+          </td>
+          <td>
+            <code style="background: #F1F5F9; color: #0F172A; padding: 2px 6px; border-radius: 4px; font-size: 0.82rem;">/${escapeHtml(p.slug)}</code>
+          </td>
+          <td style="text-align: center;">${typeBadge}</td>
+          <td>${menuBadge}</td>
+          <td style="text-align: center;">${pubStatusPill}</td>
+          <td style="text-align: right; white-space: nowrap;">
+            <button type="button" class="btn-action-icon" onclick="togglePagePublish(${p.id})" title="${p.is_published ? 'Unpublish Page' : 'Publish Page'}" style="margin-right: 6px; color: ${p.is_published ? '#10B981' : '#94A3B8'};">
+              <i class="fas ${p.is_published ? 'fa-toggle-on' : 'fa-toggle-off'}" style="font-size: 1.35rem;"></i>
+            </button>
+            <button type="button" class="btn-action-icon" onclick="openPageModal(${p.id})" title="Edit Page Settings" style="margin-right: 6px; color: #3B82F6;">
+              <i class="fas fa-pencil"></i>
+            </button>
+            ${p.page_type === 'custom' ? `
+              <button type="button" class="btn-action-icon" onclick="deletePage(${p.id})" title="Delete Custom Page" style="color: #EF4444;">
+                <i class="fas fa-trash"></i>
+              </button>
+            ` : ''}
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  window.filterPagesTable = function() {
+    const q = (document.getElementById('pageSearchInput')?.value || '').toLowerCase().trim();
+    if (!q) {
+      renderPages(pagesData);
+      return;
+    }
+    const filtered = pagesData.filter(p => 
+      (p.title_en && p.title_en.toLowerCase().includes(q)) ||
+      (p.title_ur && p.title_ur.toLowerCase().includes(q)) ||
+      (p.slug && p.slug.toLowerCase().includes(q)) ||
+      (p.target_url && p.target_url.toLowerCase().includes(q))
+    );
+    renderPages(filtered);
+  };
+
+  window.autoGeneratePageSlug = function(val) {
+    const editId = document.getElementById('page_edit_id')?.value;
+    if (editId) return;
+    const slugInput = document.getElementById('page_slug');
+    const targetUrlInput = document.getElementById('page_target_url');
+    if (!slugInput || !targetUrlInput) return;
+
+    const slug = (val || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    slugInput.value = slug;
+    targetUrlInput.value = slug ? `/page/${slug}` : '';
+  };
+
+  window.openPageModal = async function(id) {
+    const titleEl = document.getElementById('pageModalTitle');
+    const form = document.getElementById('formPage');
+    if (!form) return;
+    form.reset();
+
+    // Populate active menus into select dropdown
+    const menuSelect = document.getElementById('page_menu_id');
+    if (menuSelect) {
+      menuSelect.innerHTML = '<option value="">-- Do Not Display in Header Menu --</option>' + 
+        menusData.map(m => `<option value="${m.id}">${escapeHtml(m.title_en)} (Row ${m.row_num} • ${m.col_side})</option>`).join('');
+    }
+
+    const editId = document.getElementById('page_edit_id');
+    const pageType = document.getElementById('page_type');
+    const titleEn = document.getElementById('page_title_en');
+    const titleUr = document.getElementById('page_title_ur');
+    const slug = document.getElementById('page_slug');
+    const targetUrl = document.getElementById('page_target_url');
+    const sortOrder = document.getElementById('page_sort_order');
+    const isPub = document.getElementById('page_is_published');
+    const metaDesc = document.getElementById('page_meta_description_en');
+    const bannerUrl = document.getElementById('page_banner_image_url');
+    const contentEn = document.getElementById('page_content_en');
+
+    if (id) {
+      const p = pagesData.find(item => item.id === parseInt(id, 10));
+      if (p) {
+        if (titleEl) titleEl.innerHTML = `<i class="fas fa-file-pen"></i> Edit Page: ${escapeHtml(p.title_en)}`;
+        editId.value = p.id;
+        pageType.value = p.page_type || 'custom';
+        titleEn.value = p.title_en || '';
+        titleUr.value = p.title_ur || '';
+        slug.value = p.slug || '';
+        targetUrl.value = p.target_url || '';
+        if (menuSelect) menuSelect.value = p.menu_id ? String(p.menu_id) : '';
+        sortOrder.value = p.sort_order || 0;
+        isPub.checked = p.is_published === 1;
+        metaDesc.value = p.meta_description_en || '';
+        bannerUrl.value = p.banner_image_url || '';
+        contentEn.value = p.content_en || '';
+
+        if (p.page_type === 'core') {
+          slug.readOnly = true;
+          targetUrl.readOnly = true;
+        } else {
+          slug.readOnly = false;
+          targetUrl.readOnly = false;
+        }
+      }
+    } else {
+      if (titleEl) titleEl.innerHTML = '<i class="fas fa-file-lines"></i> Add New Website Page';
+      editId.value = '';
+      pageType.value = 'custom';
+      slug.readOnly = false;
+      targetUrl.readOnly = false;
+      sortOrder.value = pagesData.length + 1;
+      isPub.checked = true;
+    }
+
+    openModal('modalPage');
+  };
+
+  window.handlePageSubmit = async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSavePage');
+    const originalText = btn ? btn.innerHTML : 'Save Page';
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; }
+
+    try {
+      const editId = document.getElementById('page_edit_id')?.value;
+      const title_en = document.getElementById('page_title_en')?.value?.trim();
+      const title_ur = document.getElementById('page_title_ur')?.value?.trim();
+      const slug = document.getElementById('page_slug')?.value?.trim();
+      const target_url = document.getElementById('page_target_url')?.value?.trim();
+      const menu_id = document.getElementById('page_menu_id')?.value || null;
+      const sort_order = parseInt(document.getElementById('page_sort_order')?.value, 10) || 0;
+      const is_published = document.getElementById('page_is_published')?.checked ? 1 : 0;
+      const meta_description_en = document.getElementById('page_meta_description_en')?.value?.trim();
+      const banner_image_url = document.getElementById('page_banner_image_url')?.value?.trim();
+      const content_en = document.getElementById('page_content_en')?.value?.trim();
+
+      const url = editId ? `/api/admin/pages/${editId}` : '/api/admin/pages';
+      const method = editId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title_en, title_ur, slug, target_url, menu_id, sort_order, is_published,
+          meta_description_en, banner_image_url, content_en
+        })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        closeModal('modalPage');
+        showToast('Page saved and synchronised successfully!');
+        loadPages();
+        loadMenus();
+      } else {
+        alert(data.message || 'Error saving page');
+      }
+    } catch (err) {
+      console.error('[handlePageSubmit]', err);
+      alert('Network error while saving page.');
+    } finally {
+      if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+    }
+  };
+
+  window.togglePagePublish = async function(id) {
+    try {
+      const res = await fetch(`/api/admin/pages/${id}/toggle`, { method: 'PATCH' });
+      const data = await res.json();
+      if (data.success) {
+        loadPages();
+      } else {
+        alert(data.message || 'Error toggling page publish status.');
+      }
+    } catch (err) {
+      console.error('[togglePagePublish]', err);
+    }
+  };
+
+  window.deletePage = async function(id) {
+    if (!confirm('Are you sure you want to delete this custom page? This action cannot be undone.')) return;
+    try {
+      const res = await fetch(`/api/admin/pages/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        showToast('Page deleted successfully.');
+        loadPages();
+      } else {
+        alert(data.message || 'Error deleting page.');
+      }
+    } catch (err) {
+      console.error('[deletePage]', err);
+    }
+  };
+
+  window.openMediaPickerForPage = function() {
+    if (typeof openMediaLibraryModal === 'function') {
+      window.activeMediaTargetInputId = 'page_banner_image_url';
+      openMediaLibraryModal();
+    } else {
+      const url = prompt('Enter image URL:');
+      if (url) document.getElementById('page_banner_image_url').value = url;
+    }
+  };
+
   window.loadAnnouncements = loadAnnouncements;
   window.loadMenus = loadMenus;
   window.loadHeroSlides = loadHeroSlides;
+  window.loadPages = loadPages;
 });
 
 

@@ -37,6 +37,10 @@ class FastMemoryCache {
     return this.store.delete(key);
   }
 
+  del(key) {
+    return this.delete(key);
+  }
+
   invalidateGroup(prefix) {
     let count = 0;
     for (const key of this.store.keys()) {

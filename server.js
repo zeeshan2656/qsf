@@ -396,11 +396,8 @@ app.use((req, res, next) => {
   if (minPath && fs.existsSync(minPath)) {
     const isCss = req.path.endsWith('.css');
     res.setHeader('Content-Type', isCss ? 'text/css; charset=UTF-8' : 'application/javascript; charset=UTF-8');
-    if (req.path.includes('admin')) {
-      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
-    } else {
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-    }
+    // Ensure browsers always revalidate non-hashed css/js assets
+    res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
     return res.sendFile(minPath);
   }
   next();
@@ -466,6 +463,10 @@ app.get('/volunteer', (req, res) => {
 
 app.get('/contact', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'contact.html'));
+});
+
+app.get('/page/:slug', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'page.html'));
 });
 
 app.get('/admin', (req, res) => {

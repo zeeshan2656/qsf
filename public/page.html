@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="pageMetaTitle">Page | Qasr-e-Shabbir Foundation</title>
+  <meta name="description" id="pageMetaDesc" content="Qasr-e-Shabbir Foundation official page.">
+
+  <!-- Google Fonts: Inter, Outfit & Noto Nastaliq Urdu -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/webp" href="/media/branding/favicon-64.webp">
+  <link rel="alternate icon" type="image/png" href="/media/branding/favicon-32.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Inlined Critical Header CSS (Guarantees zero header disturbance) -->
+  <style id="critical-header-css">
+    .announcement-bar{background:#000!important;color:#fff!important;min-height:40px;display:flex;align-items:center;position:relative;z-index:105;border-bottom:1px solid rgba(255,255,255,.12);overflow:hidden}
+    .announcement-container{width:100%;display:flex;align-items:center;padding:0 clamp(12px,3vw,36px);gap:14px}
+    .announcement-badge{display:inline-flex;align-items:center;gap:7px;background:#b91c1c;color:#fff;font-size:.74rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:4px;white-space:nowrap;flex-shrink:0}
+    .announcement-ticker-track{flex:1;overflow:hidden;white-space:nowrap;position:relative;display:flex;align-items:center}
+    .announcement-marquee-content{display:inline-flex;align-items:center;gap:48px;white-space:nowrap;will-change:transform}
+    .announcement-marquee-content.marquee-ltr{animation:scroll-ltr 32s linear infinite}
+    .announcement-marquee-content.marquee-rtl{animation:scroll-rtl 32s linear infinite}
+    @keyframes scroll-ltr{0%{transform:translateX(-50%)}to{transform:translateX(0)}}
+    @keyframes scroll-rtl{0%{transform:translateX(0)}to{transform:translateX(-50%)}}
+    .announcement-item-link{color:#fff!important;text-decoration:none;font-size:.9rem;font-weight:600;display:inline-flex;align-items:center;gap:8px}
+    .announcement-actions{display:flex;align-items:center;gap:10px;flex-shrink:0;margin-left:auto}
+    .announcement-lang-toggle{display:flex;align-items:center;background:rgba(255,255,255,.15);border-radius:20px;padding:2px 4px}
+    .announcement-lang-toggle .lang-btn{color:#e2e8f0;font-size:.74rem;padding:3px 8px;border-radius:14px;background:transparent;border:none;cursor:pointer}
+    .announcement-lang-toggle .lang-btn.active{background:#b91c1c;color:#fff}
+    .header-dual-menu-wrap{display:block;width:100%;background:transparent;position:relative;z-index:100;box-shadow:0 4px 16px rgba(0,0,0,.12)}
+    .header-dual-container{position:relative;width:100%}
+    .nav-row-red{background:#b91c1c!important;min-height:48px;height:48px;display:flex;align-items:center;justify-content:space-between;position:relative;width:100%;border-bottom:1.5px solid rgba(255,255,255,.22)}
+    .nav-row-blue{background:#1d4ed8!important;min-height:48px;height:48px;display:flex;align-items:center;justify-content:space-between;position:relative;width:100%}
+    .nav-slot,.nav-slot-left,.nav-slot-right{flex:1;display:flex;align-items:center;height:100%;min-width:0}
+    .nav-slot-left{justify-content:flex-end;padding-right:68px;padding-left:24px}
+    .nav-slot-right{justify-content:flex-start;padding-left:68px;padding-right:24px}
+    body.urdu .nav-slot-left{justify-content:flex-start;padding-left:68px;padding-right:24px}
+    body.urdu .nav-slot-right{justify-content:flex-end;padding-right:68px;padding-left:24px}
+    .nav-center-emblem-wrap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:30;pointer-events:auto;display:flex;align-items:center;justify-content:center;background:transparent!important;border:none!important;box-shadow:none!important;padding:0!important;margin:0!important}
+    .nav-emblem-link{display:block;text-decoration:none;border-radius:50%}
+    .nav-emblem-circle{width:96px;height:96px;border-radius:50%;background:#fff!important;border:3.5px solid #fff;box-shadow:0 4px 20px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;padding:4px;overflow:hidden;position:relative}
+    .nav-emblem-img{width:100%;height:100%;object-fit:contain;display:block;border-radius:50%}
+    .nav-inline-group{display:inline-flex;align-items:center;gap:14px;list-style:none;margin:0;padding:0;flex-wrap:nowrap}
+    .nav-inline-link{color:#fff!important;font-family:"Outfit",sans-serif;font-size:clamp(.88rem,1.1vw,1.02rem);font-weight:700;padding:7px 14px;border-radius:6px;text-decoration:none!important;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+    .nav-inline-link:hover{background:rgba(255,255,255,.2)}
+    body.urdu .nav-inline-link{font-family:"Noto Nastaliq Urdu",Tahoma,sans-serif;font-size:1.05rem}
+    .mobile-site-header{display:none!important;align-items:center;justify-content:space-between;height:72px;padding:0 16px;background:#fff;border-bottom:1px solid #eef2f6;width:100%}
+    .mobile-nav-drawer{position:fixed;top:0;right:-320px;width:300px;max-width:85vw;height:100vh;background:#fff;z-index:10000;display:flex;flex-direction:column;transition:right .3s ease;overflow-y:auto}
+    body.urdu .mobile-nav-drawer{right:auto;left:-320px}
+    .mobile-nav-drawer.open{right:0}
+    body.urdu .mobile-nav-drawer.open{left:0}
+    .mobile-drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;opacity:0;visibility:hidden;transition:all .3s ease}
+    .mobile-drawer-backdrop.active{opacity:1;visibility:visible}
+    @media(max-width:900px){.header-dual-menu-wrap{display:none!important}.mobile-site-header{display:flex!important}}
+  </style>
+
+  <link rel="stylesheet" href="/css/style.css?v=20261018_v1">
+  <link rel="stylesheet" href="/css/rtl.css?v=20261018_v1">
+</head>
+<body>
+
+  <!-- ==================== TOP ANNOUNCEMENT BAR ==================== -->
+  <aside class="announcement-bar" id="announcementBar" aria-label="Announcements">
+    <div class="announcement-container">
+      <div class="announcement-badge">
+        <i class="fas fa-bullhorn" aria-hidden="true"></i>
+        <span data-i18n="announcementTitle">Announcements</span>
+      </div>
+      <div class="announcement-ticker-track" id="announcementTrack" dir="ltr">
+        <div class="announcement-marquee-content marquee-ltr" id="announcementMarquee">
+          <span class="announcement-item-link">Welcome to Qasr-e-Shabbir Foundation</span>
+        </div>
+      </div>
+      <div class="announcement-actions">
+        <div class="announcement-lang-toggle lang-toggle" title="Switch Language / زبان تبدیل کریں">
+          <button type="button" class="lang-btn active" data-lang="en">EN</button>
+          <button type="button" class="lang-btn" data-lang="ur">اردو</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== DESKTOP DUAL-ROW HEADER ==================== -->
+  <header class="header-dual-menu-wrap" id="desktopHeader" role="banner">
+    <div class="header-dual-container">
+      <div class="nav-row-red">
+        <div class="nav-slot nav-slot-left" id="slotMenu1">
+          <nav class="nav-inline-group">
+            <a href="/" class="nav-inline-link">Home</a>
+            <a href="/about" class="nav-inline-link">About Us</a>
+          </nav>
+        </div>
+        <div class="nav-slot nav-slot-right" id="slotMenu2">
+          <nav class="nav-inline-group">
+            <a href="/projects" class="nav-inline-link">Welfare Projects</a>
+            <a href="/news" class="nav-inline-link">News & Updates</a>
+          </nav>
+        </div>
+      </div>
+
+      <div class="nav-row-blue">
+        <div class="nav-slot nav-slot-left" id="slotMenu3">
+          <nav class="nav-inline-group">
+            <a href="/apply" class="nav-inline-link">Apply for Assistance</a>
+            <a href="/volunteer" class="nav-inline-link">Become a Volunteer</a>
+          </nav>
+        </div>
+        <div class="nav-slot nav-slot-right" id="slotMenu4">
+          <nav class="nav-inline-group">
+            <a href="/donate" class="nav-inline-link">Donate Now</a>
+            <a href="/contact" class="nav-inline-link">Contact Us</a>
+          </nav>
+        </div>
+      </div>
+
+      <div class="nav-center-emblem-wrap">
+        <a href="/" class="nav-emblem-link" title="Qasr-e-Shabbir Foundation">
+          <div class="nav-emblem-circle">
+            <img src="/media/branding/Qasr-e-Shabir_Foundation_Emble_1792086383401_940589.webp" 
+                 alt="Qasr-e-Shabbir Foundation Official Emblem" 
+                 class="nav-emblem-img" 
+                 width="96" height="96" 
+                 fetchpriority="high" decoding="async"
+                 onerror="this.onerror=null; this.src='/media/branding/logo.svg';">
+          </div>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== MOBILE SITE HEADER ==================== -->
+  <header class="mobile-site-header" id="mobileSiteHeader">
+    <a href="/" class="mobile-brand-wrap">
+      <img src="/media/branding/Qasr-e-Shabir_Foundation_Emble_1792086383401_940589.webp" 
+           alt="Qasr-e-Shabbir Foundation" 
+           class="mobile-brand-logo" 
+           width="48" height="48"
+           onerror="this.onerror=null; this.src='/media/branding/logo.svg';">
+      <div class="mobile-brand-title">
+        <span class="mobile-title-main" data-i18n="foundationName">QASR-E-SHABBIR</span>
+        <span class="mobile-title-sub" data-i18n="tagline">FOUNDATION</span>
+      </div>
+    </a>
+    <div class="mobile-header-actions">
+      <div class="lang-toggle" title="Switch Language / زبان تبدیل کریں">
+        <button type="button" class="lang-btn active" data-lang="en">EN</button>
+        <button type="button" class="lang-btn" data-lang="ur">اردو</button>
+      </div>
+      <button type="button" class="mobile-hamburger-btn" id="mobileToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==================== MOBILE NAVIGATION DRAWER & BACKDROP ==================== -->
+  <div class="mobile-drawer-backdrop" id="mobileNavBackdrop"></div>
+  <aside class="mobile-nav-drawer" id="mobileNavDrawer" aria-label="Mobile Navigation">
+    <div class="mobile-drawer-header">
+      <div class="mobile-drawer-title" data-i18n="navigationMenu">Navigation</div>
+      <button type="button" class="btn-drawer-close" id="mobileNavCloseBtn" aria-label="Close navigation">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <nav class="mobile-menu-accordion" id="mobileMenuAccordion"></nav>
+    <div class="mobile-drawer-footer">
+      <a href="/donate" class="btn-donate-mobile-drawer">
+        <i class="fas fa-heart"></i>
+        <span data-i18n="btnDonateNow">Donate Now</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Page Banner Section -->
+  <section id="pageBannerWrap" style="background: linear-gradient(135deg, #7F1D1D 0%, #2B050E 100%); color: #FFFFFF; padding: 60px 0; text-align: center; position: relative;">
+    <div class="container">
+      <h1 id="pageDisplayTitle" style="font-family: var(--font-en-title); font-size: 2.5rem; margin-bottom: 12px; font-weight: 800;">
+        Loading Page...
+      </h1>
+      <p id="pageDisplaySubtitle" style="font-size: 1.1rem; opacity: 0.9; max-width: 680px; margin: 0 auto;">
+        Qasr-e-Shabbir Foundation
+      </p>
+    </div>
+  </section>
+
+  <!-- Main Content Container -->
+  <main class="container" style="padding-top: 50px; padding-bottom: 80px; min-height: 400px;">
+    <div id="pageBodyContainer" style="background: #FFFFFF; border-radius: 12px; border: 1px solid #E2E8F0; padding: clamp(20px, 4vw, 48px); box-shadow: 0 4px 14px rgba(0,0,0,0.04); font-size: 1.05rem; line-height: 1.8; color: #334155;">
+      <div style="text-align: center; padding: 40px; color: #94A3B8;">
+        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 12px;"></i>
+        <p>Loading page content...</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand-col">
+          <div class="footer-logo-wrap">
+            <img src="/media/branding/Qasr-e-Shabir_Foundation_Emble_1792086383401_940589.webp" 
+                 alt="Qasr-e-Shabbir Foundation Emblem" 
+                 class="footer-logo-img" 
+                 width="76" height="66" 
+                 onerror="this.onerror=null; this.src='/media/branding/logo.svg';">
+            <div>
+              <div class="footer-brand-title" data-i18n="foundationName">Qasr-e-Shabbir Foundation</div>
+              <div class="footer-tagline" data-i18n="tagline">Serving Humanity with Dignity</div>
+            </div>
+          </div>
+          <p class="footer-mission-text" data-i18n="footerMission">
+            Dedicated to uplifting underprivileged communities through education, healthcare, clean water, and food sustenance across Pakistan.
+          </p>
+        </div>
+        <div class="footer-col">
+          <h4 class="footer-col-title" data-i18n="quickLinks">Quick Links</h4>
+          <ul class="footer-links-list">
+            <li><a href="/" class="footer-link" data-i18n="navHome">Home</a></li>
+            <li><a href="/about" class="footer-link" data-i18n="navAbout">About Us</a></li>
+            <li><a href="/projects" class="footer-link" data-i18n="navProjects">Welfare Projects</a></li>
+            <li><a href="/news" class="footer-link" data-i18n="navNews">News & Updates</a></li>
+            <li><a href="/contact" class="footer-link" data-i18n="navContact">Contact Us</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 class="footer-col-title" data-i18n="getInvolved">Get Involved</h4>
+          <ul class="footer-links-list">
+            <li><a href="/donate" class="footer-link" data-i18n="navDonate">Donate Now</a></li>
+            <li><a href="/volunteer" class="footer-link" data-i18n="navVolunteer">Become a Volunteer</a></li>
+            <li><a href="/apply" class="footer-link" data-i18n="navApply">Apply for Assistance</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 class="footer-col-title" data-i18n="stayConnected">Stay Connected</h4>
+          <p style="font-size: 0.85rem; color: #94A3B8; margin-bottom: 12px;" data-i18n="newsletterDesc">
+            Subscribe for quarterly welfare impact reports.
+          </p>
+          <div class="footer-social-icons">
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="social-icon-btn" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="social-icon-btn" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" class="social-icon-btn" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="social-icon-btn" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div>&copy; 2026 Qasr-e-Shabbir Foundation. <span data-i18n="allRightsReserved">All rights reserved.</span></div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Floating Controls -->
+  <div class="floating-actions-container" id="floatingActions">
+    <button type="button" class="btn-scroll-top" id="scrollTopBtn" aria-label="Scroll to top of page" title="Scroll to top">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block;margin:auto;">
+        <polyline points="18 15 12 9 6 15"></polyline>
+      </svg>
+    </button>
+    <a href="https://wa.me/923000817702?text=Assalam-o-Alaikum%2C%20I%20want%20to%20inquire%20about%20Qasr-e-Shabbir%20Foundation." 
+       class="btn-whatsapp-float" id="whatsappFloatBtn" target="_blank" rel="noopener noreferrer" 
+       aria-label="Chat with Qasr-e-Shabbir Foundation on WhatsApp" title="WhatsApp Chat">
+      <i class="fab fa-whatsapp"></i>
+      <span class="whatsapp-tooltip">Chat with Us</span>
+    </a>
+  </div>
+
+  <script src="/js/translations.js?v=20261018_v1" defer></script>
+  <script src="/js/main.js?v=20261018_v1" defer></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const slug = window.location.pathname.replace(/^\/page\//, '').replace(/\/$/, '');
+      if (!slug) return;
+
+      try {
+        const res = await fetch(`/api/public/pages/${encodeURIComponent(slug)}`);
+        const data = await res.json();
+        if (data.success && data.data) {
+          const p = data.data;
+          const isUrdu = document.documentElement.lang === 'ur' || document.body.classList.contains('lang-ur');
+          const title = isUrdu ? (p.title_ur || p.title_en) : p.title_en;
+          const content = isUrdu ? (p.content_ur || p.content_en) : (p.content_en || p.content_ur);
+          const metaDesc = isUrdu ? (p.meta_description_ur || p.meta_description_en) : p.meta_description_en;
+
+          document.title = `${title} | Qasr-e-Shabbir Foundation`;
+          document.getElementById('pageDisplayTitle').textContent = title;
+          if (metaDesc) {
+            document.getElementById('pageDisplaySubtitle').textContent = metaDesc;
+          }
+
+          if (p.banner_image_url) {
+            const banner = document.getElementById('pageBannerWrap');
+            banner.style.backgroundImage = `linear-gradient(rgba(43,5,14,0.78), rgba(43,5,14,0.88)), url('${p.banner_image_url}')`;
+            banner.style.backgroundSize = 'cover';
+            banner.style.backgroundPosition = 'center';
+          }
+
+          document.getElementById('pageBodyContainer').innerHTML = content || '<p>No content has been added to this page yet.</p>';
+        } else {
+          document.getElementById('pageDisplayTitle').textContent = 'Page Not Found';
+          document.getElementById('pageBodyContainer').innerHTML = '<div style="text-align: center; padding: 40px;"><p>The requested page could not be found or has not been published yet.</p><a href="/" class="btn-primary" style="margin-top: 20px;">Return to Homepage</a></div>';
+        }
+      } catch (err) {
+        console.error('[Page Load Error]', err);
+        document.getElementById('pageBodyContainer').innerHTML = '<p style="color: #EF4444; text-align: center;">Error loading page content. Please try again later.</p>';
+      }
+    });
+  </script>
+</body>
+</html>
