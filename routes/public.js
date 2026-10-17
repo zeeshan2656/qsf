@@ -283,7 +283,7 @@ router.get('/projects/:slug', async (req, res) => {
       SELECT p.*, c.slug as category_slug, c.name_en as category_name_en, c.name_ur as category_name_ur
       FROM projects p
       LEFT JOIN categories c ON p.category_id = c.id
-      WHERE p.slug = ? AND p.status = 'published'
+      WHERE p.slug = ? AND p.status IN ('published', 'active', 'completed')
       LIMIT 1
     `, [req.params.slug]);
 

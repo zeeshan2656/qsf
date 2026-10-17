@@ -1163,6 +1163,31 @@
                 </div>
               </div>
 
+              <!-- WHATSAPP FLOATING BUTTON SETTINGS -->
+              <h4 style="color: var(--admin-primary-dark); margin: 24px 0 14px; border-bottom: 1px solid #E2E8F0; padding-bottom: 8px;">
+                <i class="fab fa-whatsapp" style="color: #25D366;"></i> WhatsApp Floating Chat Button (Bottom-Right Corner)
+              </h4>
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <div>
+                  <label class="form-label">WhatsApp Button Status</label>
+                  <select id="setting_whatsapp_enabled" name="whatsapp_enabled" class="form-control">
+                    <option value="1">Enabled (Active & Visible on Site)</option>
+                    <option value="0">Disabled (Hidden)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label">WhatsApp Number (e.g. +923000817702) *</label>
+                  <input type="text" id="setting_whatsapp_number" name="whatsapp_number" class="form-control" placeholder="+923000817702" />
+                  <small style="color: #64748B;">International format with country code (e.g., +923000817702)</small>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 24px;">
+                <label class="form-label">WhatsApp Default Message / Inquiry Text</label>
+                <input type="text" id="setting_whatsapp_message" name="whatsapp_message" class="form-control" placeholder="Assalam-o-Alaikum, I want to inquire about Qasr-e-Shabbir Foundation welfare projects." />
+              </div>
+
               <button type="submit" class="btn-admin btn-admin-primary" style="padding: 12px 28px; font-size: 1rem;">
                 <i class="fas fa-floppy-disk"></i> Save Helpline & Official Address
               </button>
