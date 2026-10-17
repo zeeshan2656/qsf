@@ -144,7 +144,7 @@ button, input, select, textarea {
   overflow: visible;
 }
 
-/* Two Logos Pair (1st Main Logo, 2nd Flag Logo) */
+/* Brand Logo in Header */
 .brand-logos-pair {
   display: flex;
   align-items: center;
@@ -152,7 +152,7 @@ button, input, select, textarea {
   flex-shrink: 0;
 }
 
-/* Unified styling for both logos in header */
+/* Primary logo in header */
 .header-brand-logo,
 .header-logo-img,
 .header-flag-img {

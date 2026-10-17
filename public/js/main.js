@@ -213,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const customFlag = data.settings.site_flag_url;
         const isOfficialFlag = customFlag.includes('flag') && !customFlag.includes('custom');
         const flagSrc = isOfficialFlag ? '/media/branding/flag_header_58.webp' : customFlag;
-        document.querySelectorAll('.flag-svg-display, .header-flag-img, .footer-flag-img').forEach(img => {
+        document.querySelectorAll('.flag-svg-display, .footer-flag-img').forEach(img => {
           if (!img.src.includes(flagSrc)) {
             img.src = flagSrc;
           }
