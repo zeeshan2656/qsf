@@ -33,8 +33,12 @@ document.addEventListener('DOMContentLoaded', () => {
     renderDynamicContent(foundationData, e.detail.lang);
   });
 
-  // 4. Fetch initial foundation data from backend API
-  fetchBootstrapData();
+  // 4. Fetch initial foundation data on idle without blocking main thread
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(() => fetchBootstrapData(), { timeout: 3500 });
+  } else {
+    setTimeout(fetchBootstrapData, 600);
+  }
 
   async function fetchBootstrapData() {
     try {
@@ -43,7 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (json.success && json.data) {
         foundationData = json.data;
         const currentLang = window.FoundationI18n ? window.FoundationI18n.currentLang : 'en';
-        renderDynamicContent(foundationData, currentLang);
+        if (currentLang === 'ur') {
+          renderDynamicContent(foundationData, currentLang);
+        }
       }
     } catch (err) {
       console.warn('[Data Load Warning] Using default static content while server hydrates:', err);
@@ -82,9 +88,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // B. Render Featured Projects
+    // B. Render Featured Projects (Only if container empty or Urdu language selected)
     const projectsContainer = document.getElementById('featuredProjectsGrid');
-    if (projectsContainer && data.projects && data.projects.length > 0) {
+    if (projectsContainer && data.projects && data.projects.length > 0 && (isUrdu || projectsContainer.children.length === 0)) {
       projectsContainer.innerHTML = data.projects.map(p => {
         const title = isUrdu ? p.title_ur : p.title_en;
         const desc = isUrdu ? p.short_desc_ur : p.short_desc_en;
@@ -130,9 +136,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }).join('');
     }
 
-    // C. Render Latest News
+    // C. Render Latest News (Only if container empty or Urdu language selected)
     const newsContainer = document.getElementById('latestNewsGrid');
-    if (newsContainer && data.news && data.news.length > 0) {
+    if (newsContainer && data.news && data.news.length > 0 && (isUrdu || newsContainer.children.length === 0)) {
       newsContainer.innerHTML = data.news.map(article => {
         const title = isUrdu ? article.title_ur : article.title_en;
         const desc = isUrdu ? article.short_desc_ur : article.short_desc_en;

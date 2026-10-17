@@ -334,7 +334,10 @@ window.FoundationI18n = {
   currentLang: localStorage.getItem('qasr_lang') || 'en',
   
   init() {
-    this.setLanguage(this.currentLang, false);
+    // Zero-overhead initialization: HTML is pre-rendered in English, so skip DOM thrashing
+    if (this.currentLang && this.currentLang !== 'en') {
+      this.setLanguage(this.currentLang, false);
+    }
   },
 
   t(key) {
