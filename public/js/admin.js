@@ -8193,21 +8193,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('menusContainer');
     if (!container) return;
 
-    // Update Layout Preview labels
-    const m1 = menus.find(m => m.row_num === 1 && m.col_side === 'left');
-    const m2 = menus.find(m => m.row_num === 1 && m.col_side === 'right');
-    const m3 = menus.find(m => m.row_num === 2 && m.col_side === 'left');
-    const m4 = menus.find(m => m.row_num === 2 && m.col_side === 'right');
+    // Update Layout Preview with live red bar dropdown pills
+    const previewContainer = document.getElementById('desktopHeaderPreviewMenus');
+    if (previewContainer && Array.isArray(menus)) {
+      const activeMenus = [...menus].filter(m => m.is_active).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+      previewContainer.innerHTML = activeMenus.map(m => {
+        const hasPages = Array.isArray(m.items) && m.items.length > 0;
+        return `
+          <div style="background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 4px 10px; font-size: 0.78rem; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;">
+            <span>${escapeHtml(m.title_en)}</span>
+            ${hasPages ? `<i class="fas fa-chevron-down" style="font-size: 0.65rem; opacity: 0.85;"></i>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
 
-    const p1 = document.getElementById('previewMenu1Title');
-    const p2 = document.getElementById('previewMenu2Title');
-    const p3 = document.getElementById('previewMenu3Title');
-    const p4 = document.getElementById('previewMenu4Title');
-
-    if (p1) p1.innerText = m1 ? m1.title_en : 'Menu 1';
-    if (p2) p2.innerText = m2 ? m2.title_en : 'Menu 2';
-    if (p3) p3.innerText = m3 ? m3.title_en : 'Menu 3';
-    if (p4) p4.innerText = m4 ? m4.title_en : 'Menu 4';
+    const metricTotalMenus = document.getElementById('metricTotalMenus');
+    if (metricTotalMenus) {
+      metricTotalMenus.textContent = `${menus ? menus.length : 0} Menus`;
+    }
 
     const metricMenuItems = document.getElementById('metricTotalMenuItems');
     if (metricMenuItems) {
@@ -8224,45 +8228,55 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     container.innerHTML = menus.map(m => {
-      const isRed = m.row_num === 1;
-      const themeColor = isRed ? '#B91C1C' : '#1D4ED8';
-      const themeBg = isRed ? 'rgba(185, 28, 28, 0.08)' : 'rgba(29, 78, 216, 0.08)';
-      const slotLabel = `Row ${m.row_num} (${isRed ? 'Red' : 'Blue'}) • ${m.col_side === 'left' ? 'Left' : 'Right'} Side`;
+      const themeColor = '#B91C1C';
+      const items = Array.isArray(m.items) ? m.items : [];
+      const isDirect = items.length === 0;
 
       const statusBadge = m.is_active
-        ? '<span style="background: #DCFCE7; color: #15803D; padding: 3px 8px; border-radius: 12px; font-size: 0.72rem; font-weight: 700;"><i class="fas fa-check"></i> Active</span>'
-        : '<span style="background: #FEE2E2; color: #B91C1C; padding: 3px 8px; border-radius: 12px; font-size: 0.72rem; font-weight: 700;"><i class="fas fa-xmark"></i> Inactive</span>';
+        ? '<span class="menu-status-badge active"><i class="fas fa-check-circle"></i> Active</span>'
+        : '<span class="menu-status-badge inactive"><i class="fas fa-pause-circle"></i> Inactive</span>';
 
-      const items = Array.isArray(m.items) ? m.items : [];
+      const typeBadge = isDirect
+        ? '<span style="background: #F0FDF4; color: #166534; font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; border: 1px solid #BBF7D0;"><i class="fas fa-link"></i> Direct Link</span>'
+        : `<span style="background: #EFF6FF; color: #1E40AF; font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; border: 1px solid #BFDBFE;"><i class="fas fa-list-check"></i> Dropdown (${items.length} Pages)</span>`;
 
       const itemsListHtml = items.length === 0
-        ? `<div style="text-align: center; padding: 18px 12px; color: #94A3B8; font-size: 0.84rem; background: #F8FAFC; border-radius: 8px; border: 1px dashed #CBD5E1;">
-             No frontend pages assigned yet. Click <strong>"+ Assign Page"</strong> to link a page to this menu.
+        ? `<div style="text-align: left; padding: 14px 16px; background: #F8FAFC; border: 1px dashed #CBD5E1; border-radius: 8px;">
+             <div style="font-size: 0.84rem; font-weight: 700; color: #1E293B; display: flex; align-items: center; gap: 6px;">
+               <i class="fas fa-link" style="color: #B91C1C;"></i>
+               <span>Redirect URL:</span>
+               <code style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 2px 8px; border-radius: 4px; color: #B91C1C; font-size: 0.82rem;">${escapeHtml(m.link_url || '/')}</code>
+             </div>
+             <div style="font-size: 0.76rem; color: #64748B; margin-top: 4px;">
+               No subpages assigned. Clicking this menu on the frontend navigates directly to this link (e.g. <strong>Home</strong>).
+             </div>
            </div>`
         : `<div style="display: flex; flex-direction: column; gap: 8px;">
             ${items.map((it, idx) => `
-              <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+              <div class="menu-item-row">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                  <span style="font-size: 0.74rem; font-weight: 700; color: #94A3B8; width: 16px;">#${idx + 1}</span>
+                  <span style="font-size: 0.74rem; font-weight: 700; color: #64748B; background: #F1F5F9; width: 22px; height: 22px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center;">#${idx + 1}</span>
                   <div>
-                    <div style="font-size: 0.88rem; font-weight: 600; color: var(--admin-text-dark);">
+                    <div style="font-size: 0.88rem; font-weight: 700; color: var(--admin-text-dark);">
                       ${escapeHtml(it.title_en)}
-                      ${it.title_ur ? `<span class="urdu-text" style="font-size: 0.8rem; color: #64748B; margin-left: 6px;">(${escapeHtml(it.title_ur)})</span>` : ''}
+                      ${it.title_ur ? `<span class="urdu-text" style="font-size: 0.82rem; color: #64748B; margin-left: 6px;">(${escapeHtml(it.title_ur)})</span>` : ''}
                     </div>
-                    <div style="font-size: 0.78rem; color: #64748B;">
-                      <a href="${it.page_url}" target="_blank" style="color: var(--admin-primary); text-decoration: underline;">${escapeHtml(it.page_url)}</a>
+                    <div style="font-size: 0.78rem; color: #64748B; margin-top: 1px;">
+                      <a href="${it.page_url}" target="_blank" style="color: var(--admin-primary); font-weight: 600; text-decoration: underline;">
+                        <i class="fas fa-external-link-alt" style="font-size: 0.68rem; margin-right: 3px;"></i>${escapeHtml(it.page_url)}
+                      </a>
                       ${it.open_new_tab ? '<span style="font-size: 0.7rem; color: #3B82F6; margin-left: 6px;"><i class="fas fa-arrow-up-right-from-square"></i> New Tab</span>' : ''}
                     </div>
                   </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 6px;">
-                  <button type="button" class="btn-action-icon" onclick="toggleMenuItem(${it.id})" title="${it.is_active ? 'Deactivate Link' : 'Activate Link'}" style="color: ${it.is_active ? '#10B981' : '#CBD5E1'};">
+                  <button type="button" class="btn-action-icon ${it.is_active ? 'is-active' : 'is-inactive'}" onclick="toggleMenuItem(${it.id})" title="${it.is_active ? 'Deactivate Link' : 'Activate Link'}">
                     <i class="fas ${it.is_active ? 'fa-toggle-on' : 'fa-toggle-off'}"></i>
                   </button>
-                  <button type="button" class="btn-action-icon" onclick="openMenuItemModal(${m.id}, ${it.id})" title="Edit Link" style="color: #3B82F6;">
+                  <button type="button" class="btn-action-icon btn-action-edit" onclick="openMenuItemModal(${m.id}, ${it.id})" title="Edit Link">
                     <i class="fas fa-pencil"></i>
                   </button>
-                  <button type="button" class="btn-action-icon" onclick="deleteMenuItem(${it.id})" title="Remove Link" style="color: #EF4444;">
+                  <button type="button" class="btn-action-icon btn-action-delete" onclick="deleteMenuItem(${it.id})" title="Remove Link">
                     <i class="fas fa-trash"></i>
                   </button>
                 </div>
@@ -8271,31 +8285,33 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>`;
 
       return `
-        <div class="admin-card" style="border-radius: 12px; border: 1px solid #E2E8F0; box-shadow: 0 4px 14px rgba(0,0,0,0.03); display: flex; flex-direction: column;">
+        <div class="admin-card-menu" style="border-radius: 12px; border: 1px solid #E2E8F0; box-shadow: 0 4px 14px rgba(0,0,0,0.03); display: flex; flex-direction: column;">
           <!-- Menu Card Header -->
-          <div style="padding: 16px; border-bottom: 1px solid #EEF2F6; background: ${themeBg}; border-top: 4px solid ${themeColor}; border-top-left-radius: 12px; border-top-right-radius: 12px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-              <span style="font-size: 0.74rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: ${themeColor};">
-                <i class="fas fa-layer-group"></i> ${slotLabel}
+          <div class="menu-card-header">
+            <div class="menu-card-badge-row">
+              <span class="menu-order-pill">
+                <i class="fas fa-layer-group" style="color: ${themeColor};"></i> RED BAR MENU #${m.sort_order || 0}
               </span>
-              <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                ${typeBadge}
                 ${statusBadge}
-                <span style="font-size: 0.76rem; color: #64748B; font-weight: 600;">Order: #${m.sort_order || 0}</span>
               </div>
             </div>
-            <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div class="menu-card-title-row">
               <div>
-                <h3 style="font-size: 1.18rem; font-weight: 800; color: var(--admin-text-dark); margin: 0;">${escapeHtml(m.title_en)}</h3>
-                ${m.title_ur ? `<div class="urdu-text" dir="rtl" style="font-size: 0.95rem; color: #475569; margin-top: 2px;">${escapeHtml(m.title_ur)}</div>` : ''}
+                <h3 class="menu-card-title">
+                  <span>${escapeHtml(m.title_en)}</span>
+                  ${m.title_ur ? `<span class="menu-card-urdu" dir="rtl">${escapeHtml(m.title_ur)}</span>` : ''}
+                </h3>
               </div>
-              <div style="display: flex; align-items: center; gap: 6px;">
-                <button type="button" class="btn-action-icon" onclick="toggleMenu(${m.id})" title="${m.is_active ? 'Deactivate Menu' : 'Activate Menu'}" style="color: ${m.is_active ? '#10B981' : '#CBD5E1'}; font-size: 1.3rem;">
+              <div class="menu-card-actions">
+                <button type="button" class="btn-action-icon ${m.is_active ? 'is-active' : 'is-inactive'}" onclick="toggleMenu(${m.id})" title="${m.is_active ? 'Deactivate Menu' : 'Activate Menu'}">
                   <i class="fas ${m.is_active ? 'fa-toggle-on' : 'fa-toggle-off'}"></i>
                 </button>
-                <button type="button" class="btn-action-icon" onclick="openMenuModal(${m.id})" title="Edit Menu Title & Position" style="color: #3B82F6;">
+                <button type="button" class="btn-action-icon btn-action-edit" onclick="openMenuModal(${m.id})" title="Edit Menu & Direct URL">
                   <i class="fas fa-pencil"></i>
                 </button>
-                <button type="button" class="btn-action-icon" onclick="deleteMenu(${m.id})" title="Delete Menu" style="color: #EF4444;">
+                <button type="button" class="btn-action-icon btn-action-delete" onclick="deleteMenu(${m.id})" title="Delete Menu">
                   <i class="fas fa-trash"></i>
                 </button>
               </div>
@@ -8303,12 +8319,12 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
 
           <!-- Assigned Pages Section -->
-          <div style="padding: 16px; flex: 1; display: flex; flex-direction: column;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-              <span style="font-size: 0.82rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.03em;">
+          <div class="menu-items-container">
+            <div class="menu-items-header">
+              <span style="font-size: 0.8rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.04em;">
                 Assigned Pages (${items.length})
               </span>
-              <button type="button" class="btn-admin btn-admin-secondary" onclick="openMenuItemModal(${m.id})" style="padding: 3px 10px; font-size: 0.78rem;">
+              <button type="button" class="btn-admin btn-admin-secondary" onclick="openMenuItemModal(${m.id})" style="padding: 4px 10px; font-size: 0.78rem;">
                 <i class="fas fa-plus"></i> Assign Page
               </button>
             </div>
@@ -8328,6 +8344,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const editId = document.getElementById('menu_edit_id');
     const titleEn = document.getElementById('menu_title_en');
     const titleUr = document.getElementById('menu_title_ur');
+    const linkUrl = document.getElementById('menu_link_url');
     const rowNum = document.getElementById('menu_row_num');
     const colSide = document.getElementById('menu_col_side');
     const sortOrder = document.getElementById('menu_sort_order');
@@ -8340,6 +8357,7 @@ document.addEventListener('DOMContentLoaded', () => {
         editId.value = m.id;
         titleEn.value = m.title_en || '';
         titleUr.value = m.title_ur || '';
+        if (linkUrl) linkUrl.value = m.link_url || '/';
         rowNum.value = String(m.row_num || 1);
         colSide.value = m.col_side || 'left';
         sortOrder.value = m.sort_order || 0;
@@ -8348,6 +8366,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       if (titleEl) titleEl.innerHTML = '<i class="fas fa-compass"></i> Create New Menu';
       editId.value = '';
+      if (linkUrl) linkUrl.value = '/';
       sortOrder.value = menusData.length + 1;
       isActive.checked = true;
     }
@@ -8365,6 +8384,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const editId = document.getElementById('menu_edit_id')?.value;
       const title_en = document.getElementById('menu_title_en')?.value?.trim();
       const title_ur = document.getElementById('menu_title_ur')?.value?.trim();
+      const link_url = document.getElementById('menu_link_url')?.value?.trim() || '/';
       const row_num = parseInt(document.getElementById('menu_row_num')?.value, 10) || 1;
       const col_side = document.getElementById('menu_col_side')?.value || 'left';
       const sort_order = parseInt(document.getElementById('menu_sort_order')?.value, 10) || 0;
@@ -8376,7 +8396,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title_en, title_ur, row_num, col_side, sort_order, is_active })
+        body: JSON.stringify({ title_en, title_ur, link_url, row_num, col_side, sort_order, is_active })
       });
       const data = await res.json();
 
@@ -8437,7 +8457,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (menuSelect) {
       menuSelect.innerHTML = menusData.map(m => `
         <option value="${m.id}" ${menuId && parseInt(menuId, 10) === m.id ? 'selected' : ''}>
-          ${escapeHtml(m.title_en)} (Row ${m.row_num} • ${m.col_side})
+          ${escapeHtml(m.title_en)} (Order: #${m.sort_order || 0})
         </option>
       `).join('');
     }
@@ -8918,17 +8938,19 @@ document.addEventListener('DOMContentLoaded', () => {
           <td>${menuBadge}</td>
           <td style="text-align: center;">${pubStatusPill}</td>
           <td style="text-align: right; white-space: nowrap;">
-            <button type="button" class="btn-action-icon" onclick="togglePagePublish(${p.id})" title="${p.is_published ? 'Unpublish Page' : 'Publish Page'}" style="margin-right: 6px; color: ${p.is_published ? '#10B981' : '#94A3B8'};">
-              <i class="fas ${p.is_published ? 'fa-toggle-on' : 'fa-toggle-off'}" style="font-size: 1.35rem;"></i>
-            </button>
-            <button type="button" class="btn-action-icon" onclick="openPageModal(${p.id})" title="Edit Page Settings" style="margin-right: 6px; color: #3B82F6;">
-              <i class="fas fa-pencil"></i>
-            </button>
-            ${p.page_type === 'custom' ? `
-              <button type="button" class="btn-action-icon" onclick="deletePage(${p.id})" title="Delete Custom Page" style="color: #EF4444;">
-                <i class="fas fa-trash"></i>
+            <div style="display: inline-flex; align-items: center; gap: 6px;">
+              <button type="button" class="btn-action-icon ${p.is_published ? 'is-active' : 'is-inactive'}" onclick="togglePagePublish(${p.id})" title="${p.is_published ? 'Unpublish Page' : 'Publish Page'}">
+                <i class="fas ${p.is_published ? 'fa-toggle-on' : 'fa-toggle-off'}"></i>
               </button>
-            ` : ''}
+              <button type="button" class="btn-action-icon btn-action-edit" onclick="openPageModal(${p.id})" title="Edit Page Settings">
+                <i class="fas fa-pencil"></i>
+              </button>
+              ${p.page_type === 'custom' ? `
+                <button type="button" class="btn-action-icon btn-action-delete" onclick="deletePage(${p.id})" title="Delete Custom Page">
+                  <i class="fas fa-trash"></i>
+                </button>
+              ` : ''}
+            </div>
           </td>
         </tr>
       `;
@@ -8972,7 +8994,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const menuSelect = document.getElementById('page_menu_id');
     if (menuSelect) {
       menuSelect.innerHTML = '<option value="">-- Do Not Display in Header Menu --</option>' + 
-        menusData.map(m => `<option value="${m.id}">${escapeHtml(m.title_en)} (Row ${m.row_num} • ${m.col_side})</option>`).join('');
+        menusData.map(m => `<option value="${m.id}">${escapeHtml(m.title_en)} (Order: #${m.sort_order || 0})</option>`).join('');
     }
 
     const editId = document.getElementById('page_edit_id');

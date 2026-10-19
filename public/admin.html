@@ -1783,7 +1783,7 @@
              ========================================================================= -->
         <div class="tab-pane" id="tab-menus">
           <p class="tab-description-subtitle" style="font-size: 0.85rem; color: #64748B; margin-bottom: 20px;">
-            Manage the desktop dual-row header navigation and mobile drawer accordions. The dual-row layout displays items inline horizontally across the red (Row 1) and blue (Row 2) bars with the circular emblem centered.
+            Manage desktop header dropdown navigation and mobile drawer accordions. All menus are displayed in the unified red bar with dropdown links for all assigned pages. The circular emblem sits on the left across the announcement and navigation bars.
           </p>
 
           <!-- Top Metric Cards Grid -->
@@ -1791,8 +1791,8 @@
             <div class="metric-card">
               <div class="metric-icon" style="background: #FEE2E2; color: #991B1B;"><i class="fas fa-compass"></i></div>
               <div>
-                <div class="metric-value">4 Slots</div>
-                <div class="metric-label">Dual-Row Header Menus</div>
+                <div class="metric-value" id="metricTotalMenus">0 Menus</div>
+                <div class="metric-label">Red Bar Header Menus</div>
               </div>
             </div>
             <div class="metric-card">
@@ -1803,10 +1803,10 @@
               </div>
             </div>
             <div class="metric-card">
-              <div class="metric-icon" style="background: #ECFDF5; color: #065F46;"><i class="fas fa-align-left"></i></div>
+              <div class="metric-icon" style="background: #ECFDF5; color: #065F46;"><i class="fas fa-layer-group"></i></div>
               <div>
-                <div class="metric-value" style="font-size: 1.15rem; font-weight: 700; color: #065F46;">Inline Mode</div>
-                <div class="metric-label">Zero Dropdowns (Desktop)</div>
+                <div class="metric-value" style="font-size: 1.15rem; font-weight: 700; color: #065F46;">Dropdown Mode</div>
+                <div class="metric-label">Desktop Dropdown Menus</div>
               </div>
             </div>
             <div class="metric-card">
@@ -1821,39 +1821,31 @@
           <!-- Visual Layout Reference Box -->
           <div class="admin-card" style="margin-bottom: 24px; padding: 0; overflow: hidden; border-radius: 12px; border: 1.5px solid #CBD5E1;">
             <div style="background: #0F172A; color: #FFFFFF; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; font-size: 0.86rem; font-weight: 600;">
-              <span><i class="fas fa-desktop" style="color: #60A5FA; margin-right: 8px;"></i> Desktop Dual-Row Header Simulation (Continuous Stripes • Circular Emblem)</span>
+              <span><i class="fas fa-desktop" style="color: #60A5FA; margin-right: 8px;"></i> Desktop Header Simulation (Left Emblem • Red Bar • Dropdown Menus)</span>
               <span style="background: rgba(255,255,255,0.15); padding: 3px 10px; border-radius: 20px; font-size: 0.76rem; color: #E2E8F0;">Visual Guide</span>
             </div>
 
-            <div style="position: relative; width: 100%; background: #FFFFFF; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
-              <!-- Row 1 Red -->
-              <div style="background: #B91C1C; height: 48px; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; border-bottom: 1.5px solid rgba(255,255,255,0.22); color: #FFFFFF; font-weight: 700; font-size: 0.92rem;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; text-transform: uppercase;">Row 1 Left</span>
-                  <span id="previewMenu1Title">Menu 1 (Home, About Us)</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <span id="previewMenu2Title">Menu 2 (Projects, News)</span>
-                  <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; text-transform: uppercase;">Row 1 Right</span>
-                </div>
-              </div>
-
-              <!-- Row 2 Blue -->
-              <div style="background: #1D4ED8; height: 48px; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; color: #FFFFFF; font-weight: 700; font-size: 0.92rem;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; text-transform: uppercase;">Row 2 Left</span>
-                  <span id="previewMenu3Title">Menu 3 (Apply, Volunteer)</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <span id="previewMenu4Title">Menu 4 (Donate, Contact)</span>
-                  <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; text-transform: uppercase;">Row 2 Right</span>
-                </div>
-              </div>
-
-              <!-- Centered Circular Emblem -->
-              <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 10;">
-                <div style="width: 82px; height: 82px; border-radius: 50%; background: #FFFFFF; border: 3px solid #FFFFFF; box-shadow: 0 4px 16px rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; padding: 3px; overflow: hidden;">
+            <div style="position: relative; width: 100%; background: #FFFFFF; box-shadow: 0 4px 12px rgba(0,0,0,0.06); padding-left: 90px;">
+              <!-- Left Overlapping Circular Emblem -->
+              <div style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); z-index: 10;">
+                <div style="width: 68px; height: 68px; border-radius: 50%; background: #FFFFFF; border: 3px solid #FFFFFF; box-shadow: 0 4px 16px rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; padding: 2px; overflow: hidden;">
                   <img src="/media/branding/Qasr-e-Shabir_Foundation_Emble_1792086383401_940589.webp" alt="QSF Emblem" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;" onerror="this.src='/media/branding/logo.svg'" />
+                </div>
+              </div>
+
+              <!-- Announcement Bar Simulation -->
+              <div style="background: #000000; height: 32px; display: flex; align-items: center; padding: 0 18px; color: #FFFFFF; font-size: 0.74rem; border-bottom: 1px solid rgba(255,255,255,0.15);">
+                <span style="background: #B91C1C; padding: 2px 6px; border-radius: 3px; font-weight: 800; margin-right: 10px; font-size: 0.68rem;">ANNOUNCEMENTS</span>
+                <span style="color: #CBD5E1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">Continuous Announcements Scrolling Ticker (LTR / RTL)...</span>
+              </div>
+
+              <!-- Unified Red Bar Simulation -->
+              <div style="background: #B91C1C; height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; color: #FFFFFF; font-weight: 700; font-size: 0.88rem;">
+                <div id="desktopHeaderPreviewMenus" style="display: flex; align-items: center; gap: 10px; overflow-x: auto;">
+                  <!-- Dynamically rendered menu pills with dropdown chevrons -->
+                </div>
+                <div style="background: #FFFFFF; color: #B91C1C; font-size: 0.74rem; font-weight: 800; padding: 4px 12px; border-radius: 14px; white-space: nowrap; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
+                  DONATE NOW
                 </div>
               </div>
             </div>
@@ -1965,11 +1957,11 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
               <div>
                 <label class="form-label">Project Title (English) *</label>
-                <input type="text" id="proj_title_en" name="title_en" class="form-control" required placeholder="e.g. Orphan High School Education" />
+                <input type="text" id="proj_title_en" name="title_en" class="form-control" required placeholder="e.g. Orphan High School Education" data-translate-target="proj_title_ur" />
               </div>
               <div>
                 <label class="form-label">Project Title (Urdu) *</label>
-                <input type="text" id="proj_title_ur" name="title_ur" class="form-control" required placeholder="مثال: یتیم بچوں کی ہائی اسکول تعلیم" dir="rtl" />
+                <input type="text" id="proj_title_ur" name="title_ur" class="form-control" required placeholder="مثال: یتیم بچوں کی ہائی اسکول تعلیم" dir="rtl" data-translate-source="proj_title_en" />
               </div>
             </div>
 
@@ -2057,12 +2049,12 @@
           <div>
             <div style="margin-bottom: 12px;">
               <label class="form-label">Short Description (English)</label>
-              <textarea id="proj_short_desc_en" name="short_desc_en" class="form-control" rows="3" style="min-height: 80px;" placeholder="Brief summary of project..."></textarea>
+              <textarea id="proj_short_desc_en" name="short_desc_en" class="form-control" rows="3" style="min-height: 80px;" placeholder="Brief summary of project..." data-translate-target="proj_short_desc_ur"></textarea>
             </div>
 
             <div style="margin-bottom: 12px;">
               <label class="form-label">Short Description (Urdu)</label>
-              <textarea id="proj_short_desc_ur" name="short_desc_ur" class="form-control" rows="3" style="min-height: 80px;" placeholder="منصوبے کا مختصر تعارف..." dir="rtl"></textarea>
+              <textarea id="proj_short_desc_ur" name="short_desc_ur" class="form-control" rows="3" style="min-height: 80px;" placeholder="منصوبے کا مختصر تعارف..." dir="rtl" data-translate-source="proj_short_desc_en"></textarea>
             </div>
 
             <div style="margin-bottom: 12px;">
@@ -2121,11 +2113,11 @@
           <div>
             <div style="margin-bottom: 12px;">
               <label class="form-label">Article Title (English) *</label>
-              <input type="text" id="art_title_en" name="title_en" class="form-control" required placeholder="e.g. Free Eye Screening Camp Held" />
+              <input type="text" id="art_title_en" name="title_en" class="form-control" required placeholder="e.g. Free Eye Screening Camp Held" data-translate-target="art_title_ur" />
             </div>
             <div style="margin-bottom: 12px;">
               <label class="form-label">Article Title (Urdu) *</label>
-              <input type="text" id="art_title_ur" name="title_ur" class="form-control" required placeholder="مثال: فری آئی کیمپ کا کامیاب انعقاد" dir="rtl" />
+              <input type="text" id="art_title_ur" name="title_ur" class="form-control" required placeholder="مثال: فری آئی کیمپ کا کامیاب انعقاد" dir="rtl" data-translate-source="art_title_en" />
             </div>
             <div style="margin-bottom: 12px;">
               <label class="form-label">Category</label>
@@ -2167,12 +2159,12 @@
           <div>
             <div style="margin-bottom: 12px;">
               <label class="form-label">Short Summary (English) *</label>
-              <textarea id="art_short_desc_en" name="short_desc_en" class="form-control" rows="2" style="min-height: 56px;" required placeholder="Short summary for homepage cards..."></textarea>
+              <textarea id="art_short_desc_en" name="short_desc_en" class="form-control" rows="2" style="min-height: 56px;" required placeholder="Short summary for homepage cards..." data-translate-target="art_short_desc_ur"></textarea>
             </div>
 
             <div style="margin-bottom: 12px;">
               <label class="form-label">Short Summary (Urdu) *</label>
-              <textarea id="art_short_desc_ur" name="short_desc_ur" class="form-control" rows="2" style="min-height: 56px;" required placeholder="ہوم پیج کے لیے مختصر خلاصہ..." dir="rtl"></textarea>
+              <textarea id="art_short_desc_ur" name="short_desc_ur" class="form-control" rows="2" style="min-height: 56px;" required placeholder="ہوم پیج کے لیے مختصر خلاصہ..." dir="rtl" data-translate-source="art_short_desc_en"></textarea>
             </div>
 
             <div style="margin-bottom: 12px;">
@@ -3304,22 +3296,22 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
           <div>
             <label class="form-label">Department Name (English) *</label>
-            <input type="text" id="dept_name_en" name="name_en" class="form-control" required placeholder="e.g. Disaster & Emergency Relief" />
+            <input type="text" id="dept_name_en" name="name_en" class="form-control" required placeholder="e.g. Disaster & Emergency Relief" data-translate-target="dept_name_ur" />
           </div>
           <div>
             <label class="form-label">Department Name (Urdu) *</label>
-            <input type="text" id="dept_name_ur" name="name_ur" class="form-control" required placeholder="مثال: آفات و ہنگامی ریلیف" dir="rtl" />
+            <input type="text" id="dept_name_ur" name="name_ur" class="form-control" required placeholder="مثال: آفات و ہنگامی ریلیف" dir="rtl" data-translate-source="dept_name_en" />
           </div>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
           <div>
             <label class="form-label">Description / Mandate (English)</label>
-            <textarea id="dept_description_en" name="description_en" class="form-control" rows="3" style="min-height: 80px;" placeholder="Core functions, field operations, and responsibilities..."></textarea>
+            <textarea id="dept_description_en" name="description_en" class="form-control" rows="3" style="min-height: 80px;" placeholder="Core functions, field operations, and responsibilities..." data-translate-target="dept_description_ur"></textarea>
           </div>
           <div>
             <label class="form-label">Description / Mandate (Urdu)</label>
-            <textarea id="dept_description_ur" name="description_ur" class="form-control" rows="3" style="min-height: 80px;" placeholder="شعبے کے دفتری اور فیلڈ امور کی تفصیلات..." dir="rtl"></textarea>
+            <textarea id="dept_description_ur" name="description_ur" class="form-control" rows="3" style="min-height: 80px;" placeholder="شعبے کے دفتری اور فیلڈ امور کی تفصیلات..." dir="rtl" data-translate-source="dept_description_en"></textarea>
           </div>
         </div>
 
@@ -3690,7 +3682,7 @@
         
         <div style="margin-bottom: 14px;">
           <label class="form-label">Announcement Content (English) *</label>
-          <textarea id="ann_content_en" class="form-control" rows="3" placeholder="Enter one-line announcement in English..." required></textarea>
+          <textarea id="ann_content_en" class="form-control" rows="3" placeholder="Enter one-line announcement in English..." required data-translate-target="ann_content_ur"></textarea>
         </div>
 
         <div style="margin-bottom: 14px;">
@@ -3698,7 +3690,7 @@
             <span>اردو میں اعلان (Urdu Text)</span>
             <span style="font-size: 0.76rem; color: #64748B;">اختیاری (Optional)</span>
           </label>
-          <textarea id="ann_content_ur" class="form-control urdu-text" rows="3" dir="rtl" placeholder="اردو زبان میں اہم اعلان درج کریں..."></textarea>
+          <textarea id="ann_content_ur" class="form-control urdu-text" rows="3" dir="rtl" placeholder="اردو زبان میں اہم اعلان درج کریں..." data-translate-source="ann_content_en"></textarea>
         </div>
 
         <div style="margin-bottom: 14px;">
@@ -3756,7 +3748,7 @@
         
         <div style="margin-bottom: 14px;">
           <label class="form-label">Menu Title (English) *</label>
-          <input type="text" id="menu_title_en" class="form-control" placeholder="e.g. This our menu 1, About Us, Our Work" required />
+          <input type="text" id="menu_title_en" class="form-control" placeholder="e.g. This our menu 1, About Us, Our Work" required data-translate-target="menu_title_ur" />
         </div>
 
         <div style="margin-bottom: 14px;">
@@ -3764,24 +3756,26 @@
             <span>مینو کا عنوان (Urdu Title)</span>
             <span style="font-size: 0.76rem; color: #64748B;">اختیاری (Optional)</span>
           </label>
-          <input type="text" id="menu_title_ur" class="form-control urdu-text" dir="rtl" placeholder="اردو میں مینو کا نام لکھیں..." />
+          <input type="text" id="menu_title_ur" class="form-control urdu-text" dir="rtl" placeholder="اردو میں مینو کا نام لکھیں..." data-translate-source="menu_title_en" />
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
-          <div>
-            <label class="form-label">Header Row (Color Theme) *</label>
-            <select id="menu_row_num" class="form-control" required>
-              <option value="1">Row 1 (Red Bar - Top)</option>
-              <option value="2">Row 2 (Blue Bar - Bottom)</option>
-            </select>
-          </div>
-          <div>
-            <label class="form-label">Column Side *</label>
-            <select id="menu_col_side" class="form-control" required>
-              <option value="left">Left Side (Left of Logo)</option>
-              <option value="right">Right Side (Right of Logo)</option>
-            </select>
-          </div>
+        <div style="margin-bottom: 14px;">
+          <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+            <span><i class="fas fa-link" style="color: var(--admin-primary); margin-right: 4px;"></i> Direct Link / Redirect URL</span>
+            <span style="font-size: 0.74rem; color: #64748B;">Optional (Used when no subpages assigned)</span>
+          </label>
+          <input type="text" id="menu_link_url" class="form-control" placeholder="e.g. / (for Home) or /about or /contact" value="/" />
+          <small style="font-size: 0.75rem; color: #64748B; display: block; margin-top: 4px;">
+            If you create a menu like <strong>Home</strong> and do not assign other subpages to it, clicking it on the frontend will navigate directly to this URL.
+          </small>
+        </div>
+
+        <!-- Position: Unified Red Navigation Bar -->
+        <input type="hidden" id="menu_row_num" value="1" />
+        <input type="hidden" id="menu_col_side" value="left" />
+        <div style="background: #FFF1F2; border: 1px solid #FECDD3; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 0.84rem; color: #991B1B; display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-info-circle"></i>
+          <span>Appears in the <strong>Red Navigation Bar</strong>. If subpages are assigned, it opens a dropdown; if no subpages are assigned, it works as a direct link.</span>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px;">
@@ -3845,11 +3839,11 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
           <div>
             <label class="form-label">Link Label (English) *</label>
-            <input type="text" id="item_title_en" class="form-control" placeholder="e.g. Welfare Projects" required />
+            <input type="text" id="item_title_en" class="form-control" placeholder="e.g. Welfare Projects" required data-translate-target="item_title_ur" />
           </div>
           <div>
             <label class="form-label urdu-label">لنک کا عنوان (Urdu Label)</label>
-            <input type="text" id="item_title_ur" class="form-control urdu-text" dir="rtl" placeholder="اردو میں عنوان..." />
+            <input type="text" id="item_title_ur" class="form-control urdu-text" dir="rtl" placeholder="اردو میں عنوان..." data-translate-source="item_title_en" />
           </div>
         </div>
 
@@ -3930,11 +3924,11 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px;">
           <div class="form-group" style="margin-bottom: 0;">
             <label class="form-label">Eyebrow Badge (English - Optional)</label>
-            <input type="text" id="slide_eyebrow_en" class="form-control" placeholder="e.g. WELCOME TO OFFICIAL" />
+            <input type="text" id="slide_eyebrow_en" class="form-control" placeholder="e.g. WELCOME TO OFFICIAL" data-translate-target="slide_eyebrow_ur" />
           </div>
           <div class="form-group" style="margin-bottom: 0;">
             <label class="form-label" dir="rtl" style="text-align: right;">آئی برو بیج (Urdu - Optional)</label>
-            <input type="text" id="slide_eyebrow_ur" class="form-control" dir="rtl" placeholder="مثال: خوش آمدید" />
+            <input type="text" id="slide_eyebrow_ur" class="form-control" dir="rtl" placeholder="مثال: خوش آمدید" data-translate-source="slide_eyebrow_en" />
           </div>
         </div>
 
@@ -3942,11 +3936,11 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px;">
           <div class="form-group" style="margin-bottom: 0;">
             <label class="form-label">Slide Heading (English - Optional)</label>
-            <input type="text" id="slide_title_en" class="form-control" placeholder="e.g. Qasr-e-Shabir Foundation" />
+            <input type="text" id="slide_title_en" class="form-control" placeholder="e.g. Qasr-e-Shabir Foundation" data-translate-target="slide_title_ur" />
           </div>
           <div class="form-group" style="margin-bottom: 0;">
             <label class="form-label" dir="rtl" style="text-align: right;">سلائیڈ عنوان (Urdu - Optional)</label>
-            <input type="text" id="slide_title_ur" class="form-control" dir="rtl" placeholder="مثال: قصرِ شبیر فاؤنڈیشن" />
+            <input type="text" id="slide_title_ur" class="form-control" dir="rtl" placeholder="مثال: قصرِ شبیر فاؤنڈیشن" data-translate-source="slide_title_en" />
           </div>
         </div>
 
@@ -3954,11 +3948,11 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px;">
           <div class="form-group" style="margin-bottom: 0;">
             <label class="form-label">Subtitle (English - Optional)</label>
-            <input type="text" id="slide_subtitle_en" class="form-control" placeholder="e.g. Empowering Communities, Transforming Lives" />
+            <input type="text" id="slide_subtitle_en" class="form-control" placeholder="e.g. Empowering Communities, Transforming Lives" data-translate-target="slide_subtitle_ur" />
           </div>
           <div class="form-group" style="margin-bottom: 0;">
             <label class="form-label" dir="rtl" style="text-align: right;">ذیلی عنوان (Urdu - Optional)</label>
-            <input type="text" id="slide_subtitle_ur" class="form-control" dir="rtl" placeholder="ذیلی عنوان لکھیں" />
+            <input type="text" id="slide_subtitle_ur" class="form-control" dir="rtl" placeholder="ذیلی عنوان لکھیں" data-translate-source="slide_subtitle_en" />
           </div>
         </div>
 
@@ -3966,11 +3960,11 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px;">
           <div class="form-group" style="margin-bottom: 0;">
             <label class="form-label">Description (English - Optional)</label>
-            <textarea id="slide_description_en" class="form-control" rows="2" placeholder="Brief supporting paragraph..."></textarea>
+            <textarea id="slide_description_en" class="form-control" rows="2" placeholder="Brief supporting paragraph..." data-translate-target="slide_description_ur"></textarea>
           </div>
           <div class="form-group" style="margin-bottom: 0;">
             <label class="form-label" dir="rtl" style="text-align: right;">تفصیل (Urdu - Optional)</label>
-            <textarea id="slide_description_ur" class="form-control" dir="rtl" rows="2" placeholder="مختصر تفصیل لکھیں..."></textarea>
+            <textarea id="slide_description_ur" class="form-control" dir="rtl" rows="2" placeholder="مختصر تفصیل لکھیں..." data-translate-source="slide_description_en"></textarea>
           </div>
         </div>
 
@@ -3982,11 +3976,11 @@
           <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 10px;">
             <div class="form-group" style="margin-bottom: 0;">
               <label class="form-label" style="font-size: 0.8rem;">Button 1 Text (EN)</label>
-              <input type="text" id="slide_btn1_text_en" class="form-control" placeholder="e.g. Support Our Cause" />
+              <input type="text" id="slide_btn1_text_en" class="form-control" placeholder="e.g. Support Our Cause" data-translate-target="slide_btn1_text_ur" />
             </div>
             <div class="form-group" style="margin-bottom: 0;">
               <label class="form-label" style="font-size: 0.8rem;" dir="rtl">بٹن 1 متن (UR)</label>
-              <input type="text" id="slide_btn1_text_ur" class="form-control" dir="rtl" placeholder="مثال: عطیہ دیں" />
+              <input type="text" id="slide_btn1_text_ur" class="form-control" dir="rtl" placeholder="مثال: عطیہ دیں" data-translate-source="slide_btn1_text_en" />
             </div>
             <div class="form-group" style="margin-bottom: 0;">
               <label class="form-label" style="font-size: 0.8rem;">Button 1 Link</label>
@@ -3996,11 +3990,11 @@
           <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
             <div class="form-group" style="margin-bottom: 0;">
               <label class="form-label" style="font-size: 0.8rem;">Button 2 Text (EN)</label>
-              <input type="text" id="slide_btn2_text_en" class="form-control" placeholder="e.g. Explore Projects" />
+              <input type="text" id="slide_btn2_text_en" class="form-control" placeholder="e.g. Explore Projects" data-translate-target="slide_btn2_text_ur" />
             </div>
             <div class="form-group" style="margin-bottom: 0;">
               <label class="form-label" style="font-size: 0.8rem;" dir="rtl">بٹن 2 متن (UR)</label>
-              <input type="text" id="slide_btn2_text_ur" class="form-control" dir="rtl" placeholder="مثال: منصوبے دیکھیں" />
+              <input type="text" id="slide_btn2_text_ur" class="form-control" dir="rtl" placeholder="مثال: منصوبے دیکھیں" data-translate-source="slide_btn2_text_en" />
             </div>
             <div class="form-group" style="margin-bottom: 0;">
               <label class="form-label" style="font-size: 0.8rem;">Button 2 Link</label>
@@ -4050,11 +4044,11 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
           <div>
             <label class="form-label">Page Title (English) *</label>
-            <input type="text" id="page_title_en" class="form-control" placeholder="e.g. Annual Audit Report 2026" required oninput="autoGeneratePageSlug(this.value)" />
+            <input type="text" id="page_title_en" class="form-control" placeholder="e.g. Annual Audit Report 2026" required oninput="autoGeneratePageSlug(this.value)" data-translate-target="page_title_ur" />
           </div>
           <div>
             <label class="form-label urdu-label">صفحے کا عنوان (Urdu Title)</label>
-            <input type="text" id="page_title_ur" class="form-control urdu-text" dir="rtl" placeholder="اردو میں عنوان لکھیں..." />
+            <input type="text" id="page_title_ur" class="form-control urdu-text" dir="rtl" placeholder="اردو میں عنوان لکھیں..." data-translate-source="page_title_en" />
           </div>
         </div>
 
@@ -4125,6 +4119,7 @@
   </div>
 
   <script src="/js/html2canvas.min.js"></script>
-  <script src="/js/admin.js" defer></script>
+  <script src="/js/auto-translate.js?v=20261018_v1"></script>
+  <script src="/js/admin.js?v=2.6.2" defer></script>
 </body>
 </html>

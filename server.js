@@ -414,12 +414,18 @@ app.use(
   })
 );
 
-// Serve Public Static Assets with 30-day caching and ETag revalidation
+// Serve Public Static Assets with smart caching headers (instant update for JS/CSS, long cache for media)
 app.use(
   express.static(path.join(__dirname, 'public'), {
-    maxAge: '30d',
     etag: true,
-    lastModified: true
+    lastModified: true,
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('.html') || filePath.endsWith('.js') || filePath.endsWith('.css')) {
+        res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+      } else {
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+      }
+    }
   })
 );
 
@@ -427,6 +433,41 @@ app.use(
 app.use('/api/auth', authRoutes);
 app.use('/api/public', publicRoutes);
 app.use('/api/admin', adminRoutes);
+
+// Secure Auto-Translate API endpoint
+const { requireAuth } = require('./middleware/auth');
+const { translateText } = require('./services/translator');
+const rateLimit = require('express-rate-limit');
+
+const translateLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 120, // 120 translation requests per minute
+  message: { success: false, message: 'Translation rate limit exceeded. Please wait a moment.' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+app.post('/api/translate', requireAuth, translateLimiter, async (req, res) => {
+  try {
+    const { text, from = 'en', to = 'ur', skipCache = false } = req.body;
+    if (!text || typeof text !== 'string' || !text.trim()) {
+      return res.json({ success: true, original: '', translated: '', cached: true });
+    }
+    const cleanText = text.trim();
+    if (cleanText.length > 5000) {
+      return res.status(400).json({ success: false, message: 'Text exceeds maximum limit of 5,000 characters.' });
+    }
+    const result = await translateText(cleanText, { from, to, skipCache: !!skipCache });
+    return res.json(result);
+  } catch (err) {
+    console.error('[API Translate Error]', err.message);
+    return res.status(200).json({
+      success: false,
+      message: err.message || 'Translation unavailable. You can enter Urdu manually.',
+      canManual: true
+    });
+  }
+});
 
 // Clean Page Route Handlers
 app.get('/about', (req, res) => {
@@ -470,6 +511,7 @@ app.get('/page/:slug', (req, res) => {
 });
 
 app.get('/admin', (req, res) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 

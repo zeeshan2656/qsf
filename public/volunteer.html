@@ -15,8 +15,10 @@
   
   <!-- Inlined Critical Header CSS (Guarantees zero header disturbance) -->
   <style id="critical-header-css">
-    .announcement-bar{background:#000!important;color:#fff!important;min-height:40px;display:flex;align-items:center;position:relative;z-index:105;border-bottom:1px solid rgba(255,255,255,.12);overflow:hidden}
-    .announcement-container{width:100%;display:flex;align-items:center;padding:0 clamp(12px,3vw,36px);gap:14px}
+    .site-header-wrapper{position:relative;width:100%;z-index:100;background:transparent}
+    .announcement-bar{background:#000!important;color:#fff!important;min-height:40px;height:40px;display:flex;align-items:center;position:relative;z-index:105;border-bottom:1px solid rgba(255,255,255,.12);overflow:hidden}
+    .announcement-container{width:100%;display:flex;align-items:center;padding-left:clamp(120px,11vw,148px);padding-right:clamp(16px,3vw,40px);gap:14px}
+    body.urdu .announcement-container,[dir="rtl"] .announcement-container{padding-right:clamp(120px,11vw,148px);padding-left:clamp(16px,3vw,40px)}
     .announcement-badge{display:inline-flex;align-items:center;gap:7px;background:#b91c1c;color:#fff;font-size:.74rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:4px;white-space:nowrap;flex-shrink:0}
     .announcement-ticker-track{flex:1;overflow:hidden;white-space:nowrap;position:relative;display:flex;align-items:center}
     .announcement-marquee-content{display:inline-flex;align-items:center;gap:48px;white-space:nowrap;will-change:transform}
@@ -26,113 +28,140 @@
     @keyframes scroll-rtl{0%{transform:translateX(0)}to{transform:translateX(-50%)}}
     .announcement-item-link{color:#fff!important;text-decoration:none;font-size:.9rem;font-weight:600;display:inline-flex;align-items:center;gap:8px}
     .announcement-actions{display:flex;align-items:center;gap:10px;flex-shrink:0;margin-left:auto}
+    body.urdu .announcement-actions,[dir="rtl"] .announcement-actions{margin-left:0;margin-right:auto}
     .announcement-lang-toggle{display:flex;align-items:center;background:rgba(255,255,255,.15);border-radius:20px;padding:2px 4px}
     .announcement-lang-toggle .lang-btn{color:#e2e8f0;font-size:.74rem;padding:3px 8px;border-radius:14px;background:transparent;border:none;cursor:pointer}
     .announcement-lang-toggle .lang-btn.active{background:#b91c1c;color:#fff}
-    .header-dual-menu-wrap{display:block;width:100%;background:transparent;position:relative;z-index:100;box-shadow:0 4px 16px rgba(0,0,0,.12)}
-    .header-dual-container{position:relative;width:100%}
-    .nav-row-red{background:#b91c1c!important;min-height:48px;height:48px;display:flex;align-items:center;justify-content:space-between;position:relative;width:100%;border-bottom:1.5px solid rgba(255,255,255,.22)}
-    .nav-row-blue{background:#1d4ed8!important;min-height:48px;height:48px;display:flex;align-items:center;justify-content:space-between;position:relative;width:100%}
-    .nav-slot,.nav-slot-left,.nav-slot-right{flex:1;display:flex;align-items:center;height:100%;min-width:0}
-    .nav-slot-left{justify-content:flex-end;padding-right:68px;padding-left:24px}
-    .nav-slot-right{justify-content:flex-start;padding-left:68px;padding-right:24px}
-    body.urdu .nav-slot-left{justify-content:flex-start;padding-left:68px;padding-right:24px}
-    body.urdu .nav-slot-right{justify-content:flex-end;padding-right:68px;padding-left:24px}
-    .nav-center-emblem-wrap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:30;pointer-events:auto;display:flex;align-items:center;justify-content:center;background:transparent!important;border:none!important;box-shadow:none!important;padding:0!important;margin:0!important}
+    .desktop-header-wrap{display:block;width:100%;background:transparent;position:relative;z-index:100;box-shadow:0 4px 16px rgba(0,0,0,.12)}
+    .nav-row-red{background:#b91c1c!important;min-height:52px;height:52px;display:flex;align-items:center;position:relative;width:100%;z-index:100}
+    .nav-red-container{width:100%;display:flex;align-items:center;justify-content:space-between;height:100%;padding-left:clamp(120px,11vw,148px);padding-right:clamp(16px,3vw,40px)}
+    body.urdu .nav-red-container,[dir="rtl"] .nav-red-container{padding-right:clamp(120px,11vw,148px);padding-left:clamp(16px,3vw,40px)}
+    .nav-left-emblem-wrap{position:absolute;top:46px;transform:translateY(-50%);left:clamp(16px,3vw,40px);right:auto;z-index:120;pointer-events:auto;display:flex;align-items:center;justify-content:center}
+    body.urdu .nav-left-emblem-wrap,[dir="rtl"] .nav-left-emblem-wrap{left:auto;right:clamp(16px,3vw,40px)}
     .nav-emblem-link{display:block;text-decoration:none;border-radius:50%}
-    .nav-emblem-circle{width:96px;height:96px;border-radius:50%;background:#fff!important;border:3.5px solid #fff;box-shadow:0 4px 20px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;padding:4px;overflow:hidden;position:relative}
+    .nav-emblem-circle{width:82px;height:82px;border-radius:50%;background:#fff!important;border:3.5px solid #fff;box-shadow:0 4px 18px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
     .nav-emblem-img{width:100%;height:100%;object-fit:contain;display:block;border-radius:50%}
-    .nav-inline-group{display:inline-flex;align-items:center;gap:14px;list-style:none;margin:0;padding:0;flex-wrap:nowrap}
-    .nav-inline-link{color:#fff!important;font-family:"Outfit",sans-serif;font-size:clamp(.88rem,1.1vw,1.02rem);font-weight:700;padding:7px 14px;border-radius:6px;text-decoration:none!important;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-    .nav-inline-link:hover{background:rgba(255,255,255,.2)}
-    body.urdu .nav-inline-link{font-family:"Noto Nastaliq Urdu",Tahoma,sans-serif;font-size:1.05rem}
+    .nav-menus-group{display:flex;align-items:center;gap:4px;list-style:none;margin:0;padding:0;height:100%;flex-wrap:nowrap}
+    .nav-item-dropdown{position:relative;height:100%;display:flex;align-items:center}
+    .nav-menu-btn{color:#fff!important;font-family:"Outfit",sans-serif;font-size:clamp(.9rem,1.05vw,1.02rem);font-weight:700;padding:8px 14px;border-radius:6px;text-decoration:none!important;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer;background:transparent;border:none}
+    body.urdu .nav-menu-btn{font-family:"Noto Nastaliq Urdu",Tahoma,sans-serif;font-size:1.05rem}
+    .nav-menu-btn:hover,.nav-item-dropdown.open .nav-menu-btn{background:rgba(255,255,255,.2)}
+    .nav-dropdown-arrow{font-size:.7rem;transition:transform .25s ease;opacity:.85}
+    .nav-item-dropdown:hover .nav-dropdown-arrow,.nav-item-dropdown.open .nav-dropdown-arrow{transform:rotate(180deg)}
+    .nav-dropdown-menu{position:absolute;top:calc(100% - 2px);left:0;min-width:220px;background:#fff;border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.18);border:1px solid #e2e8f0;padding:6px 0;margin:0;list-style:none;opacity:0;visibility:hidden;transform:translateY(6px);transition:all .2s ease;z-index:250}
+    body.urdu .nav-dropdown-menu,[dir="rtl"] .nav-dropdown-menu{left:auto;right:0;text-align:right}
+    .nav-item-dropdown:hover .nav-dropdown-menu,.nav-item-dropdown.open .nav-dropdown-menu,.nav-item-dropdown:focus-within .nav-dropdown-menu{opacity:1;visibility:visible;transform:translateY(0)}
+    .nav-dropdown-link{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;font-size:.92rem;font-weight:600;color:#1e293b!important;text-decoration:none!important;white-space:nowrap}
+    body.urdu .nav-dropdown-link{font-family:"Noto Nastaliq Urdu",Tahoma,sans-serif;font-size:.98rem}
+    .nav-dropdown-link:hover{background:#fff1f2;color:#b91c1c!important;padding-left:22px}
+    body.urdu .nav-dropdown-link:hover,[dir="rtl"] .nav-dropdown-link:hover{padding-left:18px;padding-right:22px}
+    .nav-red-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
+    .btn-nav-donate{background:#fff;color:#b91c1c!important;font-family:"Outfit",sans-serif;font-weight:800;font-size:.9rem;padding:7px 18px;border-radius:20px;display:inline-flex;align-items:center;gap:7px;text-decoration:none!important;box-shadow:0 2px 8px rgba(0,0,0,.2);transition:all .2s ease;white-space:nowrap}
+    .btn-nav-donate:hover{background:#fff1f2;transform:translateY(-1px)}
     .mobile-site-header{display:none!important;align-items:center;justify-content:space-between;height:72px;padding:0 16px;background:#fff;border-bottom:1px solid #eef2f6;width:100%}
     .mobile-nav-drawer{position:fixed;top:0;right:-320px;width:300px;max-width:85vw;height:100vh;background:#fff;z-index:10000;display:flex;flex-direction:column;transition:right .3s ease;overflow-y:auto}
-    body.urdu .mobile-nav-drawer{right:auto;left:-320px}
+    body.urdu .mobile-nav-drawer{right:auto;left:-320px;transition:left .3s ease}
     .mobile-nav-drawer.open{right:0}
     body.urdu .mobile-nav-drawer.open{left:0}
     .mobile-drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;opacity:0;visibility:hidden;transition:all .3s ease}
     .mobile-drawer-backdrop.active{opacity:1;visibility:visible}
-    @media(max-width:900px){.header-dual-menu-wrap{display:none!important}.mobile-site-header{display:flex!important}}
+    @media(max-width:900px){
+      .desktop-header-wrap,.nav-left-emblem-wrap,.header-dual-menu-wrap{display:none!important}
+      .announcement-container,body.urdu .announcement-container,[dir="rtl"] .announcement-container{padding-left:clamp(12px,3vw,24px)!important;padding-right:clamp(12px,3vw,24px)!important}
+      .mobile-site-header{display:flex!important}
+    }
   </style>
   <link rel="stylesheet" href="/css/style.css?v=20261018_v1">
   <link rel="stylesheet" href="/css/rtl.css?v=20261018_v1">
 </head>
 <body>
 
-  <!-- ==================== TOP ANNOUNCEMENT BAR (CONTINUOUS SCROLLING) ==================== -->
-  <aside class="announcement-bar" id="announcementBar" aria-label="Announcements">
-    <div class="announcement-container">
-      <div class="announcement-badge">
-        <i class="fas fa-bullhorn" aria-hidden="true"></i>
-        <span data-i18n="announcementTitle">Announcements</span>
-      </div>
-      <div class="announcement-ticker-track" id="announcementTrack" dir="ltr">
-        <div class="announcement-marquee-content marquee-ltr" id="announcementMarquee">
-          <span class="announcement-item-link">Welcome to Qasr-e-Shabbir Foundation</span>
+  <!-- ==================== DESKTOP SITE HEADER (ANNOUNCEMENT + UNIFIED RED BAR + LEFT CIRCULAR LOGO) ==================== -->
+  <div class="site-header-wrapper" id="siteHeaderWrapper">
+    <!-- OVERLAPPING CIRCULAR LOGO (Sitting across 40px Black and 52px Red bars on left side in LTR, mirrored right in RTL) -->
+    <div class="nav-left-emblem-wrap">
+      <a href="/" class="nav-emblem-link" title="Qasr-e-Shabbir Foundation" aria-label="Qasr-e-Shabbir Foundation Home">
+        <div class="nav-emblem-circle">
+          <img src="/media/branding/Qasr-e-Shabir_Foundation_Emble_1792086383401_940589.webp" 
+               alt="Qasr-e-Shabbir Foundation Official Emblem" 
+               class="nav-emblem-img" 
+               width="82" height="82" 
+               fetchpriority="high" decoding="async"
+               onerror="this.onerror=null; this.src='/media/branding/logo.svg';">
         </div>
-      </div>
-      <div class="announcement-actions">
-        <div class="announcement-lang-toggle lang-toggle" title="Switch Language / زبان تبدیل کریں">
-          <button type="button" class="lang-btn active" data-lang="en">EN</button>
-          <button type="button" class="lang-btn" data-lang="ur">اردو</button>
-        </div>
-      </div>
+      </a>
     </div>
-  </aside>
 
-  <!-- ==================== DESKTOP DUAL-ROW HEADER (CIRCULAR EMBLEM ONLY, INLINE MENUS) ==================== -->
-  <header class="header-dual-menu-wrap" id="desktopHeader" role="banner">
-    <div class="header-dual-container">
-      
-      <!-- ROW 1 RED (Row 1 Left: Menu 1 | Row 1 Right: Menu 2) -->
-      <div class="nav-row-red">
-        <div class="nav-slot nav-slot-left" id="slotMenu1">
-          <nav class="nav-inline-group">
-            <a href="/" class="nav-inline-link">Home</a>
-            <a href="/about" class="nav-inline-link">About Us</a>
-          </nav>
+    <!-- 1. TOP ANNOUNCEMENT BAR (CONTINUOUS SCROLLING) -->
+    <aside class="announcement-bar" id="announcementBar" aria-label="Announcements">
+      <div class="announcement-container">
+        <div class="announcement-badge">
+          <i class="fas fa-bullhorn" aria-hidden="true"></i>
+          <span data-i18n="announcementTitle">Announcements</span>
         </div>
-        <div class="nav-slot nav-slot-right" id="slotMenu2">
-          <nav class="nav-inline-group">
-            <a href="/projects" class="nav-inline-link">Welfare Projects</a>
-            <a href="/news" class="nav-inline-link">News & Updates</a>
-          </nav>
-        </div>
-      </div>
-
-      <!-- ROW 2 BLUE (Row 2 Left: Menu 3 | Row 2 Right: Menu 4) -->
-      <div class="nav-row-blue">
-        <div class="nav-slot nav-slot-left" id="slotMenu3">
-          <nav class="nav-inline-group">
-            <a href="/apply" class="nav-inline-link">Apply for Assistance</a>
-            <a href="/volunteer" class="nav-inline-link">Become a Volunteer</a>
-          </nav>
-        </div>
-        <div class="nav-slot nav-slot-right" id="slotMenu4">
-          <nav class="nav-inline-group">
-            <a href="/donate" class="nav-inline-link">Donate Now</a>
-            <a href="/contact" class="nav-inline-link">Contact Us</a>
-          </nav>
-        </div>
-      </div>
-
-      <!-- CENTER EMBLEM (CIRCULAR ONLY - NO RECTANGULAR BOX) -->
-      <div class="nav-center-emblem-wrap">
-        <a href="/" class="nav-emblem-link" title="Qasr-e-Shabbir Foundation">
-          <div class="nav-emblem-circle">
-            <img src="/media/branding/Qasr-e-Shabir_Foundation_Emble_1792086383401_940589.webp" 
-                 alt="Qasr-e-Shabbir Foundation Official Emblem" 
-                 class="nav-emblem-img" 
-                 width="96" height="96" 
-                 fetchpriority="high" decoding="async"
-                 onerror="this.onerror=null; this.src='/media/branding/logo.svg';">
+        <div class="announcement-ticker-track" id="announcementTrack" dir="ltr">
+          <div class="announcement-marquee-content marquee-ltr" id="announcementMarquee">
+            <span class="announcement-item-link">Welcome to Qasr-e-Shabbir Foundation</span>
           </div>
-        </a>
+        </div>
+        <div class="announcement-actions">
+          <div class="announcement-lang-toggle lang-toggle" title="Switch Language / زبان تبدیل کریں">
+            <button type="button" class="lang-btn active" data-lang="en">EN</button>
+            <button type="button" class="lang-btn" data-lang="ur">اردو</button>
+          </div>
+        </div>
       </div>
+    </aside>
 
-    </div>
-  </header>
+    <!-- 2. RED NAVIGATION BAR (ALL MENUS WITH DROPDOWNS + DONATE BUTTON) -->
+    <header class="desktop-header-wrap" id="desktopHeader" role="banner">
+      <nav class="nav-row-red" role="navigation" aria-label="Main Navigation">
+        <div class="nav-red-container">
+          <ul class="nav-menus-group" id="desktopNavMenus">
+            <li class="nav-item-dropdown">
+              <a href="/" class="nav-menu-btn"><span>Home</span></a>
+            </li>
+            <li class="nav-item-dropdown">
+              <button type="button" class="nav-menu-btn has-dropdown" aria-haspopup="true" aria-expanded="false" id="menuBtn_2">
+                <span>Welfare Programs</span>
+                <i class="fas fa-chevron-down nav-dropdown-arrow" aria-hidden="true"></i>
+              </button>
+              <ul class="nav-dropdown-menu" role="menu" aria-labelledby="menuBtn_2">
+                <li role="none"><a href="/projects" class="nav-dropdown-link" role="menuitem"><span>Welfare Projects</span></a></li>
+                <li role="none"><a href="/news" class="nav-dropdown-link" role="menuitem"><span>News &amp; Updates</span></a></li>
+              </ul>
+            </li>
+            <li class="nav-item-dropdown">
+              <button type="button" class="nav-menu-btn has-dropdown" aria-haspopup="true" aria-expanded="false" id="menuBtn_3">
+                <span>Get Involved</span>
+                <i class="fas fa-chevron-down nav-dropdown-arrow" aria-hidden="true"></i>
+              </button>
+              <ul class="nav-dropdown-menu" role="menu" aria-labelledby="menuBtn_3">
+                <li role="none"><a href="/apply" class="nav-dropdown-link" role="menuitem"><span>Apply for Assistance</span></a></li>
+                <li role="none"><a href="/volunteer" class="nav-dropdown-link active" role="menuitem"><span>Become a Volunteer</span></a></li>
+              </ul>
+            </li>
+            <li class="nav-item-dropdown">
+              <button type="button" class="nav-menu-btn has-dropdown" aria-haspopup="true" aria-expanded="false" id="menuBtn_4">
+                <span>Support &amp; Donate</span>
+                <i class="fas fa-chevron-down nav-dropdown-arrow" aria-hidden="true"></i>
+              </button>
+              <ul class="nav-dropdown-menu" role="menu" aria-labelledby="menuBtn_4">
+                <li role="none"><a href="/donate" class="nav-dropdown-link" role="menuitem"><span>Donate Now</span></a></li>
+                <li role="none"><a href="/contact" class="nav-dropdown-link" role="menuitem"><span>Contact Us</span></a></li>
+              </ul>
+            </li>
+          </ul>
+          <div class="nav-red-actions">
+            <a href="/donate" class="btn-nav-donate trigger-donate-modal" aria-label="Donate Now">
+              <i class="fas fa-heart" aria-hidden="true" style="margin-inline-end: 5px;"></i>
+              <span data-i18n="btnDonateNow">DONATE NOW</span>
+            </a>
+          </div>
+        </div>
+      </nav>
+    </header>
+  </div>
 
   <!-- ==================== MOBILE SITE HEADER ==================== -->
   <header class="mobile-site-header" id="mobileSiteHeader">
@@ -481,9 +510,9 @@
     </div>
   </footer>
 
-  <script src="/js/translations.js?v=20261018_v1" defer></script>
+  <script src="/js/translations.js?v=20261018_v3" defer></script>
   <script src="/js/i18n.js"></script>
-  <script src="/js/main.js?v=20261018_v1" defer></script>
+  <script src="/js/main.js?v=20261018_v3" defer></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const volForm = document.getElementById('volunteerApplicationForm');

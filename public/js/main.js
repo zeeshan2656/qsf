@@ -417,66 +417,112 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderHeaderMenus(menus, isUrdu) {
-    if (!menus || menus.length === 0) return;
+    if (!menus || !Array.isArray(menus)) return;
 
-    const slotMap = {
-      'slotMenu1': menus.find(m => m.row_num === 1 && m.col_side === 'left'),
-      'slotMenu2': menus.find(m => m.row_num === 1 && m.col_side === 'right'),
-      'slotMenu3': menus.find(m => m.row_num === 2 && m.col_side === 'left'),
-      'slotMenu4': menus.find(m => m.row_num === 2 && m.col_side === 'right')
-    };
+    // Filter active menus and sort by sort_order ASC, id ASC
+    const activeMenus = menus
+      .filter(m => m.is_active === 1 || m.is_active === true || m.is_active === undefined || m.is_active === '1')
+      .sort((a, b) => (Number(a.sort_order) - Number(b.sort_order)) || (Number(a.id) - Number(b.id)));
 
-    // Render 4 desktop slots INLINE (Desktop: In-line Setup, No Dropdowns)
-    Object.entries(slotMap).forEach(([slotId, m]) => {
-      const slotEl = document.getElementById(slotId);
-      if (!slotEl) return;
+    // 1. Render Desktop Dropdown Menus in Unified Red Bar
+    const desktopContainer = document.getElementById('desktopNavMenus');
+    if (desktopContainer) {
+      desktopContainer.innerHTML = activeMenus.map(m => {
+        const title = isUrdu ? (m.title_ur || m.title_en) : m.title_en;
+        const rawItems = Array.isArray(m.items) ? m.items : [];
+        const items = rawItems
+          .filter(it => it.is_active === 1 || it.is_active === true || it.is_active === undefined)
+          .sort((a, b) => (Number(a.sort_order) - Number(b.sort_order)) || (Number(a.id) - Number(b.id)));
 
-      if (!m || m.is_active === 0) {
-        slotEl.style.visibility = 'hidden';
-        return;
-      }
+        if (items.length > 0) {
+          const hasCurrent = items.some(it => window.location.pathname === it.page_url);
+          return `
+            <li class="nav-item-dropdown ${hasCurrent ? 'has-active-child' : ''}">
+              <button type="button" class="nav-menu-btn has-dropdown" aria-haspopup="true" aria-expanded="false" id="menuBtn_${m.id}">
+                <span>${escapeHtml(title)}</span>
+                <i class="fas fa-chevron-down nav-dropdown-arrow" aria-hidden="true"></i>
+              </button>
+              <ul class="nav-dropdown-menu" role="menu" aria-labelledby="menuBtn_${m.id}">
+                ${items.map(it => {
+                  const itemTitle = isUrdu ? (it.title_ur || it.title_en) : it.title_en;
+                  const isCurrent = window.location.pathname === it.page_url;
+                  return `
+                    <li role="none">
+                      <a href="${it.page_url}" class="nav-dropdown-link ${isCurrent ? 'active' : ''}" role="menuitem" ${it.open_new_tab ? 'target="_blank" rel="noopener"' : ''}>
+                        <span>${escapeHtml(itemTitle)}</span>
+                      </a>
+                    </li>
+                  `;
+                }).join('')}
+              </ul>
+            </li>
+          `;
+        } else {
+          const linkUrl = m.link_url || (m.menu_key === 'home' || (m.title_en && m.title_en.toLowerCase() === 'home') ? '/' : '#');
+          const isCurrent = window.location.pathname === linkUrl;
+          return `
+            <li class="nav-item-dropdown">
+              <a href="${linkUrl}" class="nav-menu-btn ${isCurrent ? 'active' : ''}">
+                <span>${escapeHtml(title)}</span>
+              </a>
+            </li>
+          `;
+        }
+      }).join('');
 
-      slotEl.style.visibility = 'visible';
-      const title = isUrdu ? (m.title_ur || m.title_en) : m.title_en;
-      const items = Array.isArray(m.items) ? m.items.filter(it => it.is_active === 1 || it.is_active === true || it.is_active === undefined) : [];
+      // Setup click and keyboard accessibility for dropdown buttons
+      desktopContainer.querySelectorAll('.nav-menu-btn.has-dropdown').forEach(btn => {
+        btn.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const parent = btn.closest('.nav-item-dropdown');
+          const isCurrentlyOpen = parent.classList.contains('open');
 
-      if (items.length > 0) {
-        slotEl.innerHTML = `
-          <nav class="nav-inline-group" aria-label="${escapeHtml(title)}">
-            ${items.map(it => {
-              const itemTitle = isUrdu ? (it.title_ur || it.title_en) : it.title_en;
-              const isCurrent = window.location.pathname === it.page_url || (it.page_url !== '/' && window.location.pathname.startsWith(it.page_url));
-              return `
-                <a href="${it.page_url}" class="nav-inline-link ${isCurrent ? 'active' : ''}" ${it.open_new_tab ? 'target="_blank" rel="noopener"' : ''}>
-                  <span>${escapeHtml(itemTitle)}</span>
-                </a>
-              `;
-            }).join('')}
-          </nav>
-        `;
-      } else {
-        slotEl.innerHTML = `
-          <nav class="nav-inline-group">
-            <span class="nav-inline-link">${escapeHtml(title)}</span>
-          </nav>
-        `;
-      }
-    });
+          desktopContainer.querySelectorAll('.nav-item-dropdown.open').forEach(dd => {
+            if (dd !== parent) {
+              dd.classList.remove('open');
+              const b = dd.querySelector('.nav-menu-btn');
+              if (b) b.setAttribute('aria-expanded', 'false');
+            }
+          });
 
-    // Render Mobile Accordions
+          if (isCurrentlyOpen) {
+            parent.classList.remove('open');
+            btn.setAttribute('aria-expanded', 'false');
+          } else {
+            parent.classList.add('open');
+            btn.setAttribute('aria-expanded', 'true');
+          }
+        };
+      });
+    }
+
+    // 2. Render Mobile Accordions & Direct Links
     const accordionContainer = document.getElementById('mobileMenuAccordion');
     if (accordionContainer) {
-      const activeMenus = menus.filter(m => m.is_active === 1);
       accordionContainer.innerHTML = activeMenus.map((m, idx) => {
         const title = isUrdu ? (m.title_ur || m.title_en) : m.title_en;
         const items = Array.isArray(m.items) ? m.items.filter(it => it.is_active === 1 || it.is_active === true || it.is_active === undefined) : [];
         const isFirst = idx === 0;
 
+        if (items.length === 0) {
+          const directUrl = m.link_url || (m.menu_key === 'home' || (m.title_en && m.title_en.toLowerCase() === 'home') ? '/' : '#');
+          const isCurrent = window.location.pathname === directUrl;
+          return `
+            <div class="mobile-accordion-item">
+              <a href="${directUrl}" class="mobile-accordion-btn direct-link ${isCurrent ? 'active' : ''}" style="text-decoration: none;">
+                <span>${escapeHtml(title)}</span>
+                <i class="fas fa-arrow-right" style="font-size: 0.75rem; opacity: 0.6;"></i>
+              </a>
+            </div>
+          `;
+        }
+
         return `
           <div class="mobile-accordion-item">
             <button type="button" class="mobile-accordion-btn ${isFirst ? 'expanded' : ''}" onclick="toggleMobileAccordion(this)">
               <span>${escapeHtml(title)}</span>
-              ${items.length > 0 ? '<i class="fas fa-chevron-down mobile-accordion-icon"></i>' : ''}
+              <i class="fas fa-chevron-down mobile-accordion-icon"></i>
             </button>
             <div class="mobile-accordion-panel ${isFirst ? 'show' : ''}">
               ${items.map(it => {
@@ -801,4 +847,30 @@ document.addEventListener('DOMContentLoaded', () => {
       document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
+
+  // 11. Desktop Dropdown Menu Outside-Click & Escape Key Dismissal
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.nav-item-dropdown')) {
+      document.querySelectorAll('.nav-item-dropdown.open').forEach(dd => {
+        dd.classList.remove('open');
+        const b = dd.querySelector('.nav-menu-btn');
+        if (b) b.setAttribute('aria-expanded', 'false');
+      });
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const openDd = document.querySelector('.nav-item-dropdown.open');
+      if (openDd) {
+        openDd.classList.remove('open');
+        const b = openDd.querySelector('.nav-menu-btn');
+        if (b) {
+          b.setAttribute('aria-expanded', 'false');
+          b.focus();
+        }
+      }
+    }
+  });
 });
+

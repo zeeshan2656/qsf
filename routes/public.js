@@ -10,7 +10,7 @@ router.get('/bootstrap', async (req, res) => {
     const cacheKey = 'public:bootstrap';
     const cached = cache.get(cacheKey);
     if (cached) {
-      res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=600');
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
       res.setHeader('X-Cache', 'HIT');
       return res.json(cached);
     }
@@ -59,7 +59,7 @@ router.get('/bootstrap', async (req, res) => {
 
     // 7. Active Header Menus & Assigned Items
     const [menus] = await db.query(
-      'SELECT id, menu_key, title_en, title_ur, row_num, col_side, sort_order FROM header_menus WHERE is_active = 1 ORDER BY sort_order ASC, id ASC'
+      'SELECT id, menu_key, title_en, title_ur, link_url, is_active, row_num, col_side, sort_order FROM header_menus WHERE is_active = 1 ORDER BY sort_order ASC, id ASC'
     );
     const [menuItems] = await db.query(`
       SELECT mi.id, mi.menu_id, mi.title_en, mi.title_ur, mi.page_url, mi.open_new_tab, mi.is_active, mi.sort_order
@@ -99,7 +99,7 @@ router.get('/bootstrap', async (req, res) => {
 
     cache.set(cacheKey, payload, 10 * 60 * 1000); // 10 min TTL
 
-    res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=600');
+    res.setHeader('Cache-Control', 'no-cache, must-revalidate');
     res.setHeader('X-Cache', 'MISS');
     return res.json(payload);
   } catch (err) {
@@ -112,7 +112,7 @@ router.get('/bootstrap', async (req, res) => {
 router.get('/menus', async (req, res) => {
   try {
     const [menus] = await db.query(
-      'SELECT id, menu_key, title_en, title_ur, row_num, col_side, sort_order FROM header_menus WHERE is_active = 1 ORDER BY sort_order ASC, id ASC'
+      'SELECT id, menu_key, title_en, title_ur, link_url, is_active, row_num, col_side, sort_order FROM header_menus WHERE is_active = 1 ORDER BY sort_order ASC, id ASC'
     );
     const [menuItems] = await db.query(`
       SELECT mi.id, mi.menu_id, mi.title_en, mi.title_ur, mi.page_url, mi.open_new_tab, mi.is_active, mi.sort_order

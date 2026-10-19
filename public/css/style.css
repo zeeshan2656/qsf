@@ -108,14 +108,29 @@ button, input, select, textarea {
 }
 
 /* ==========================================================================
-   ANNOUNCEMENT BAR & DUAL-ROW HEADER NAVIGATION
+   DESKTOP HEADER: BLACK ANNOUNCEMENT + RED NAV BAR + LEFT CIRCULAR LOGO
    ========================================================================== */
+
+.desktop-header-wrap {
+  display: block;
+  width: 100%;
+  position: relative;
+  z-index: 100;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  background: transparent;
+}
+
+.header-inner-relative {
+  position: relative;
+  width: 100%;
+}
 
 /* 1. Top Black Announcement Bar */
 .announcement-bar {
   background: #000000 !important;
   color: #FFFFFF !important;
   min-height: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   position: relative;
@@ -128,8 +143,15 @@ button, input, select, textarea {
   width: 100%;
   display: flex;
   align-items: center;
-  padding: 0 clamp(12px, 3vw, 36px);
+  padding-left: clamp(120px, 11vw, 148px);
+  padding-right: clamp(16px, 3vw, 40px);
   gap: 14px;
+}
+
+body.urdu .announcement-container,
+[dir="rtl"] .announcement-container {
+  padding-right: clamp(120px, 11vw, 148px);
+  padding-left: clamp(16px, 3vw, 40px);
 }
 
 .announcement-badge {
@@ -223,6 +245,12 @@ button, input, select, textarea {
   margin-left: auto;
 }
 
+body.urdu .announcement-actions,
+[dir="rtl"] .announcement-actions {
+  margin-left: 0;
+  margin-right: auto;
+}
+
 .announcement-lang-toggle {
   display: flex;
   align-items: center;
@@ -247,87 +275,42 @@ button, input, select, textarea {
   color: #FFFFFF;
 }
 
-/* 2. Desktop Dual-Row Header (Edge-to-Edge Color Stripes) */
-.header-dual-menu-wrap {
-  display: block;
-  width: 100%;
-  background: transparent;
-  position: relative;
-  z-index: 100;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-}
-
-.header-dual-container {
-  position: relative;
-  width: 100%;
-}
-
-/* Row 1 Red Bar */
+/* 2. Red Navigation Bar */
 .nav-row-red {
   background: #B91C1C !important;
-  min-height: 48px;
-  height: 48px;
+  min-height: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  z-index: 100;
+}
+
+.nav-red-container {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  position: relative;
-  width: 100%;
-  border-bottom: 1.5px solid rgba(255, 255, 255, 0.22);
-}
-
-/* Row 2 Blue Bar */
-.nav-row-blue {
-  background: #1D4ED8 !important;
-  min-height: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: relative;
-  width: 100%;
-}
-
-.nav-slot,
-.nav-slot-left,
-.nav-slot-right {
-  flex: 1;
-  display: flex;
-  align-items: center;
   height: 100%;
-  min-width: 0;
+  padding-left: clamp(120px, 11vw, 148px);
+  padding-right: clamp(16px, 3vw, 40px);
 }
 
-.nav-slot-left {
-  justify-content: flex-end;
-  padding-right: 68px;
-  padding-left: 24px;
+body.urdu .nav-red-container,
+[dir="rtl"] .nav-red-container {
+  padding-right: clamp(120px, 11vw, 148px);
+  padding-left: clamp(16px, 3vw, 40px);
 }
 
-.nav-slot-right {
-  justify-content: flex-start;
-  padding-left: 68px;
-  padding-right: 24px;
-}
-
-body.urdu .nav-slot-left {
-  justify-content: flex-start;
-  padding-left: 68px;
-  padding-right: 24px;
-}
-
-body.urdu .nav-slot-right {
-  justify-content: flex-end;
-  padding-right: 68px;
-  padding-left: 24px;
-}
-
-/* Absolute Center Circular Emblem (No Rectangle) */
-.nav-center-emblem-wrap {
+/* Circular Logo Sitting Across Black and Red Bars (Left in LTR, Right in RTL) */
+.nav-left-emblem-wrap {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 30;
+  top: 46px;
+  transform: translateY(-50%);
+  left: clamp(16px, 3vw, 40px);
+  right: auto;
+  z-index: 120;
   pointer-events: auto;
   display: flex;
   align-items: center;
@@ -339,6 +322,12 @@ body.urdu .nav-slot-right {
   margin: 0 !important;
 }
 
+body.urdu .nav-left-emblem-wrap,
+[dir="rtl"] .nav-left-emblem-wrap {
+  left: auto;
+  right: clamp(16px, 3vw, 40px);
+}
+
 .nav-emblem-link {
   display: block;
   text-decoration: none;
@@ -347,20 +336,19 @@ body.urdu .nav-slot-right {
 }
 
 .nav-emblem-link:hover {
-  transform: scale(1.06);
+  transform: scale(1.05);
 }
 
 .nav-emblem-circle {
-  width: 96px;
-  height: 96px;
+  width: 82px;
+  height: 82px;
   border-radius: 50%;
   background: #FFFFFF !important;
   border: 3.5px solid #FFFFFF;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
   overflow: hidden;
   position: relative;
 }
@@ -373,24 +361,32 @@ body.urdu .nav-slot-right {
   border-radius: 50%;
 }
 
-/* In-line Navigation Links */
-.nav-inline-group {
-  display: inline-flex;
+/* 3. Navigation Menus & Dashboard-Controlled Dropdowns */
+.nav-menus-group {
+  display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 4px;
   list-style: none;
   margin: 0;
   padding: 0;
+  height: 100%;
   flex-wrap: nowrap;
 }
 
-.nav-inline-link {
+.nav-item-dropdown {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.nav-menu-btn {
   color: #FFFFFF !important;
   font-family: var(--font-en-title);
-  font-size: clamp(0.88rem, 1.1vw, 1.02rem);
+  font-size: clamp(0.9rem, 1.05vw, 1.02rem);
   font-weight: 700;
   letter-spacing: -0.01em;
-  padding: 7px 14px;
+  padding: 8px 14px;
   border-radius: 6px;
   text-decoration: none !important;
   display: inline-flex;
@@ -399,36 +395,132 @@ body.urdu .nav-slot-right {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
   position: relative;
+  cursor: pointer;
+  background: transparent;
+  border: none;
 }
 
-.nav-inline-link:hover {
+body.urdu .nav-menu-btn {
+  font-family: var(--font-ur);
+  font-size: 1.05rem;
+}
+
+.nav-menu-btn:hover,
+.nav-item-dropdown.open .nav-menu-btn,
+.nav-item-dropdown:focus-within .nav-menu-btn {
   background: rgba(255, 255, 255, 0.2);
   transform: translateY(-1px);
 }
 
-.nav-inline-link::after {
-  content: '';
+.nav-dropdown-arrow {
+  font-size: 0.7rem;
+  transition: transform 0.25s ease;
+  opacity: 0.85;
+}
+
+.nav-item-dropdown:hover .nav-dropdown-arrow,
+.nav-item-dropdown.open .nav-dropdown-arrow,
+.nav-item-dropdown:focus-within .nav-dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+/* The Dropdown Card Menu */
+.nav-dropdown-menu {
   position: absolute;
-  bottom: 2px;
-  left: 12px;
-  right: 12px;
-  height: 2px;
+  top: calc(100% - 2px);
+  left: 0;
+  min-width: 220px;
   background: #FFFFFF;
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  border: 1px solid #E2E8F0;
+  padding: 6px 0;
+  margin: 0;
+  list-style: none;
   opacity: 0;
-  transform: scaleX(0);
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  visibility: hidden;
+  transform: translateY(6px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+  z-index: 250;
 }
 
-.nav-inline-link:hover::after,
-.nav-inline-link.active::after {
-  opacity: 0.95;
-  transform: scaleX(1);
+body.urdu .nav-dropdown-menu,
+[dir="rtl"] .nav-dropdown-menu {
+  left: auto;
+  right: 0;
+  text-align: right;
 }
 
-body.urdu .nav-inline-link {
+.nav-item-dropdown:hover .nav-dropdown-menu,
+.nav-item-dropdown.open .nav-dropdown-menu,
+.nav-item-dropdown:focus-within .nav-dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.nav-dropdown-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #1E293B !important;
+  text-decoration: none !important;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+body.urdu .nav-dropdown-link {
   font-family: var(--font-ur);
-  font-size: 1.05rem;
-  line-height: 1.6;
+  font-size: 0.98rem;
+}
+
+.nav-dropdown-link:hover,
+.nav-dropdown-link:focus {
+  background: #FFF1F2;
+  color: #B91C1C !important;
+  padding-left: 22px;
+}
+
+body.urdu .nav-dropdown-link:hover,
+body.urdu .nav-dropdown-link:focus,
+[dir="rtl"] .nav-dropdown-link:hover,
+[dir="rtl"] .nav-dropdown-link:focus {
+  padding-left: 18px;
+  padding-right: 22px;
+}
+
+/* Nav Actions (Donate Now button in Red Bar) */
+.nav-red-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.btn-nav-donate {
+  background: #FFFFFF;
+  color: #B91C1C !important;
+  font-family: var(--font-en-title);
+  font-weight: 800;
+  font-size: 0.9rem;
+  padding: 7px 18px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  text-decoration: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-nav-donate:hover {
+  background: #FFF1F2;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 /* 3. Mobile Header & Drawer (Hidden on Desktop by Default) */
@@ -545,8 +637,16 @@ body.urdu .mobile-nav-drawer.open {
 
 /* Breakpoint for Mobile Header Switch */
 @media (max-width: 900px) {
-  .header-dual-menu-wrap {
+  .header-dual-menu-wrap,
+  .desktop-header-wrap,
+  .nav-left-emblem-wrap {
     display: none !important;
+  }
+  .announcement-container,
+  body.urdu .announcement-container,
+  [dir="rtl"] .announcement-container {
+    padding-left: clamp(12px, 3vw, 24px) !important;
+    padding-right: clamp(12px, 3vw, 24px) !important;
   }
   .mobile-site-header {
     display: flex !important;
@@ -2374,7 +2474,13 @@ body.urdu .mobile-nav-drawer.open {
   color: #1E293B;
   cursor: pointer;
   text-align: left;
+  text-decoration: none;
   transition: background 0.2s ease, color 0.2s ease;
+}
+
+.mobile-accordion-btn:hover {
+  color: #B91C1C;
+  background: #FFF1F2;
 }
 
 body.urdu .mobile-accordion-btn {

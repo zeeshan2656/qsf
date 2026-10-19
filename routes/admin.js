@@ -12,9 +12,11 @@ const cache = require('../config/cache');
 // Apply auth middleware to all admin endpoints
 router.use(requireAuth);
 
-// Automatically invalidate public cache on any mutating admin action (POST/PUT/DELETE/PATCH)
+const { translateText } = require('../services/translator');
+
+// Automatically invalidate public cache on any mutating admin action (POST/PUT/DELETE/PATCH), excluding translation
 router.use((req, res, next) => {
-  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
+  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method) && req.path !== '/translate') {
     res.on('finish', () => {
       if (res.statusCode >= 200 && res.statusCode < 400) {
         cache.invalidateGroup('public');
@@ -22,6 +24,29 @@ router.use((req, res, next) => {
     });
   }
   next();
+});
+
+// POST /api/admin/translate (Secure bilingual auto-translation)
+router.post('/translate', async (req, res) => {
+  try {
+    const { text, from = 'en', to = 'ur', skipCache = false } = req.body;
+    if (!text || typeof text !== 'string' || !text.trim()) {
+      return res.json({ success: true, original: '', translated: '', cached: true });
+    }
+    const cleanText = text.trim();
+    if (cleanText.length > 5000) {
+      return res.status(400).json({ success: false, message: 'Text exceeds maximum limit of 5,000 characters.' });
+    }
+    const result = await translateText(cleanText, { from, to, skipCache: !!skipCache });
+    return res.json(result);
+  } catch (err) {
+    console.error('[Admin Translate Error]', err.message);
+    return res.status(200).json({
+      success: false,
+      message: err.message || 'Translation unavailable. You can enter Urdu manually.',
+      canManual: true
+    });
+  }
 });
 
 // GET /api/admin/overview
@@ -3947,7 +3972,7 @@ router.get('/menus', async (req, res) => {
 // POST /api/admin/menus
 router.post('/menus', async (req, res) => {
   try {
-    const { title_en, title_ur, row_num, col_side, is_active, sort_order, menu_key } = req.body;
+    const { title_en, title_ur, link_url, row_num, col_side, is_active, sort_order, menu_key } = req.body;
     if (!title_en || !title_en.trim()) {
       return res.status(400).json({ success: false, message: 'Menu title (English) is required.' });
     }
@@ -3957,16 +3982,17 @@ router.post('/menus', async (req, res) => {
     const activeFlag = is_active === undefined || is_active === null ? 1 : (is_active ? 1 : 0);
     const orderVal = parseInt(sort_order, 10) || 0;
     const keyVal = menu_key ? menu_key.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_') : `menu_${Date.now()}`;
+    const linkVal = link_url && link_url.trim() ? link_url.trim() : '/';
 
     const [result] = await db.query(
-      `INSERT INTO header_menus (menu_key, title_en, title_ur, row_num, col_side, is_active, sort_order)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [keyVal, title_en.trim(), title_ur ? title_ur.trim() : null, rowVal, sideVal, activeFlag, orderVal]
+      `INSERT INTO header_menus (menu_key, title_en, title_ur, link_url, row_num, col_side, is_active, sort_order)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [keyVal, title_en.trim(), title_ur ? title_ur.trim() : null, linkVal, rowVal, sideVal, activeFlag, orderVal]
     );
 
     await db.query(
       'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
-      [req.session.user?.id, 'CREATE_MENU', 'menu', String(result.insertId), JSON.stringify({ title_en: title_en.trim() })]
+      [req.session.user?.id, 'CREATE_MENU', 'menu', String(result.insertId), JSON.stringify({ title_en: title_en.trim(), link_url: linkVal })]
     ).catch(() => {});
 
     cache.invalidateAll();
@@ -3986,7 +4012,7 @@ router.post('/menus', async (req, res) => {
 router.put('/menus/:id', async (req, res) => {
   try {
     const menuId = req.params.id;
-    const { title_en, title_ur, row_num, col_side, is_active, sort_order } = req.body;
+    const { title_en, title_ur, link_url, row_num, col_side, is_active, sort_order } = req.body;
     if (!title_en || !title_en.trim()) {
       return res.status(400).json({ success: false, message: 'Menu title (English) is required.' });
     }
@@ -3995,17 +4021,18 @@ router.put('/menus/:id', async (req, res) => {
     const sideVal = col_side === 'right' ? 'right' : 'left';
     const activeFlag = is_active === undefined || is_active === null ? 1 : (is_active ? 1 : 0);
     const orderVal = parseInt(sort_order, 10) || 0;
+    const linkVal = link_url && link_url.trim() ? link_url.trim() : '/';
 
     await db.query(
       `UPDATE header_menus 
-       SET title_en = ?, title_ur = ?, row_num = ?, col_side = ?, is_active = ?, sort_order = ?
+       SET title_en = ?, title_ur = ?, link_url = ?, row_num = ?, col_side = ?, is_active = ?, sort_order = ?
        WHERE id = ?`,
-      [title_en.trim(), title_ur ? title_ur.trim() : null, rowVal, sideVal, activeFlag, orderVal, menuId]
+      [title_en.trim(), title_ur ? title_ur.trim() : null, linkVal, rowVal, sideVal, activeFlag, orderVal, menuId]
     );
 
     await db.query(
       'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
-      [req.session.user?.id, 'UPDATE_MENU', 'menu', String(menuId), JSON.stringify({ title_en: title_en.trim() })]
+      [req.session.user?.id, 'UPDATE_MENU', 'menu', String(menuId), JSON.stringify({ title_en: title_en.trim(), link_url: linkVal })]
     ).catch(() => {});
 
     cache.invalidateAll();

@@ -3385,4 +3385,319 @@ select.form-control[dir="rtl"] {
   }
 }
 
+/* =========================================================================
+   PROFESSIONAL ACTION ICON BUTTONS (Fixes Clunky / Boxy Default Buttons)
+   ========================================================================= */
+.btn-action-icon {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  color: #64748B;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  position: relative;
+  outline: none;
+}
 
+.btn-action-icon:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.btn-action-icon:active {
+  transform: translateY(0);
+}
+
+.btn-action-icon i {
+  font-size: 0.88rem;
+  line-height: 1;
+  transition: transform 0.15s ease;
+}
+
+.btn-action-icon:hover i {
+  transform: scale(1.1);
+}
+
+/* Edit action */
+.btn-action-icon.btn-action-edit,
+.btn-action-icon[title*="Edit"] {
+  color: #2563EB;
+  background: #F0F7FF;
+  border-color: #BFDBFE;
+}
+.btn-action-icon.btn-action-edit:hover,
+.btn-action-icon[title*="Edit"]:hover {
+  background: #2563EB;
+  color: #FFFFFF;
+  border-color: #2563EB;
+}
+
+/* Delete / Remove action */
+.btn-action-icon.btn-action-delete,
+.btn-action-icon[title*="Delete"],
+.btn-action-icon[title*="Remove"] {
+  color: #DC2626;
+  background: #FEF2F2;
+  border-color: #FECDD3;
+}
+.btn-action-icon.btn-action-delete:hover,
+.btn-action-icon[title*="Delete"]:hover,
+.btn-action-icon[title*="Remove"]:hover {
+  background: #DC2626;
+  color: #FFFFFF;
+  border-color: #DC2626;
+}
+
+/* Toggle Active action */
+.btn-action-icon.is-active,
+.btn-action-icon[title*="Deactivate"] {
+  color: #16A34A;
+  background: #F0FDF4;
+  border-color: #BBF7D0;
+}
+.btn-action-icon.is-active:hover,
+.btn-action-icon[title*="Deactivate"]:hover {
+  background: #16A34A;
+  color: #FFFFFF;
+  border-color: #16A34A;
+}
+
+/* Toggle Inactive action */
+.btn-action-icon.is-inactive,
+.btn-action-icon[title*="Activate"] {
+  color: #94A3B8;
+  background: #F8FAFC;
+  border-color: #E2E8F0;
+}
+.btn-action-icon.is-inactive:hover,
+.btn-action-icon[title*="Activate"]:hover {
+  background: #64748B;
+  color: #FFFFFF;
+  border-color: #64748B;
+}
+
+/* Menu card styling refinements */
+.menu-card-header {
+  padding: 16px 18px;
+  background: #FFFFFF;
+  border-top: 4px solid #B91C1C;
+  border-bottom: 1px solid #EEF2F6;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.menu-card-badge-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.menu-order-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.menu-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.menu-status-badge.active {
+  background: #DCFCE7;
+  color: #15803D;
+  border: 1px solid #BBF7D0;
+}
+.menu-status-badge.inactive {
+  background: #FEE2E2;
+  color: #B91C1C;
+  border: 1px solid #FECDD3;
+}
+
+.menu-card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.menu-card-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.menu-card-urdu {
+  font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', 'Urdu Typesetting', serif;
+  font-size: 1.05rem;
+  color: #475569;
+  font-weight: 600;
+}
+
+.menu-type-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748B;
+  margin-top: 4px;
+}
+.menu-type-indicator a {
+  color: #B91C1C;
+  text-decoration: underline;
+  font-weight: 700;
+}
+
+.menu-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.menu-items-container {
+  padding: 16px 18px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-items-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.menu-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+  margin-bottom: 8px;
+}
+.menu-item-row:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.04);
+}
+
+/* ==========================================================================
+   BILINGUAL AUTO-TRANSLATION & MANUAL OVERRIDE UI
+   ========================================================================== */
+.translate-btn-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  vertical-align: middle;
+}
+
+.translate-status-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.translate-status-badge.manual {
+  background: #FEF3C7;
+  color: #B45309;
+  border: 1px solid #FDE68A;
+}
+
+.translate-status-badge.auto {
+  background: #ECFDF5;
+  color: #047857;
+  border: 1px solid #A7F3D0;
+}
+
+.btn-retranslate {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #F8FAFC;
+  color: #475569;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  line-height: 1.3;
+}
+
+.btn-retranslate:hover {
+  background: #FFF1F2;
+  color: #B91C1C;
+  border-color: #FECDD3;
+  transform: translateY(-0.5px);
+}
+
+.btn-retranslate:active {
+  transform: translateY(0);
+}
+
+.btn-retranslate:focus-visible {
+  outline: 2px solid #B91C1C;
+  outline-offset: 1px;
+}
+
+.btn-retranslate.translating {
+  background: #FFF1F2;
+  color: #B91C1C;
+  border-color: #FCA5A5;
+  cursor: wait;
+  pointer-events: none;
+}
+
+.btn-retranslate.translating .btn-retranslate-icon {
+  animation: fa-spin 0.8s linear infinite;
+}
+
+/* Ensure proper font and direction for Urdu inputs */
+.urdu-text,
+input[dir="rtl"],
+textarea[dir="rtl"] {
+  direction: rtl !important;
+  text-align: right !important;
+  font-family: var(--font-ur, 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', Tahoma, sans-serif) !important;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
