@@ -1,0 +1,6 @@
+2026/11/20-19:14:15.897 42b4 Reusing MANIFEST C:\Users\Basharat\Desktop\qasreshabbir\qsf\scratch\edge_single_screen_test\Default\EdgeCoupons/coupons_data.db/MANIFEST-000001
+2026/11/20-19:14:15.899 42b4 Recovering log #4
+2026/11/20-19:14:15.900 42b4 Reusing old log C:\Users\Basharat\Desktop\qasreshabbir\qsf\scratch\edge_single_screen_test\Default\EdgeCoupons/coupons_data.db/000004.log 
+2026/11/20-19:14:16.164 8898 Level-0 table #8: started
+2026/11/20-19:14:16.175 8898 Level-0 table #8: 683376 bytes OK
+2026/11/20-19:14:16.181 8898 Delete type=0 #4

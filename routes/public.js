@@ -3,10 +3,14 @@ const router = express.Router();
 const db = require('../config/db');
 const cache = require('../config/cache');
 const { upload, processProfilePhoto } = require('../middleware/upload');
+const { ensureMartyrsSchema, publicMartyrsRouter } = require('./martyrs');
+
+router.use('/martyrs', publicMartyrsRouter);
 
 // GET /api/public/bootstrap (Cached with stale-while-revalidate for maximum speed)
 router.get('/bootstrap', async (req, res) => {
   try {
+    await ensureMartyrsSchema().catch(e => console.warn('[Martyrs Schema Init Warning]', e.message));
     const cacheKey = 'public:bootstrap';
     const cached = cache.get(cacheKey);
     if (cached) {

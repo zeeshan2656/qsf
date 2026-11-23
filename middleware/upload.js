@@ -42,7 +42,7 @@ function resolveMediaRoot() {
 const mediaRoot = resolveMediaRoot();
 
 // Ensure destination base directories exist
-['branding', 'hero', 'projects', 'news', 'uploads', 'categories'].forEach(sub => {
+['branding', 'hero', 'projects', 'news', 'uploads', 'categories', 'videos', 'audio', 'sfx', 'martyrs', 'wars'].forEach(sub => {
   const d = path.join(mediaRoot, sub);
   if (!fs.existsSync(d)) {
     fs.mkdirSync(d, { recursive: true });
@@ -61,6 +61,8 @@ const storage = multer.diskStorage({
       if (fullUrl.includes('branding')) subfolder = 'branding';
       else if (fullUrl.includes('project')) subfolder = 'projects';
       else if (fullUrl.includes('article') || fullUrl.includes('news')) subfolder = 'news';
+      else if (fullUrl.includes('martyr') && fullUrl.includes('war')) subfolder = 'wars';
+      else if (fullUrl.includes('martyr')) subfolder = 'martyrs';
       else if (fullUrl.includes('categor')) subfolder = 'categories';
     }
 
@@ -101,6 +103,109 @@ const upload = multer({
   storage,
   limits: { fileSize: 15 * 1024 * 1024 }, // 15MB max
   fileFilter
+});
+
+const videoStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const targetDir = path.join(mediaRoot, 'videos');
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
+    file.subfolder = 'videos';
+    cb(null, targetDir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase() || '.mp4';
+    const baseName = path.basename(file.originalname, ext)
+      .replace(/[^a-zA-Z0-9_-]/g, '_')
+      .substring(0, 32) || 'video';
+    const uniqueSuffix = `${Date.now()}_${Math.round(Math.random() * 1e6)}`;
+    const finalFilename = `${baseName}_${uniqueSuffix}${ext}`;
+    file.publicUrl = `/media/videos/${finalFilename}`;
+    cb(null, finalFilename);
+  }
+});
+
+const videoFileFilter = (req, file, cb) => {
+  const allowedExts = ['.mp4', '.webm', '.mov', '.m4v'];
+  const ext = path.extname(file.originalname).toLowerCase();
+  const mime = (file.mimetype || '').toLowerCase();
+  if (allowedExts.includes(ext) || mime.startsWith('video/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only video files (.mp4, .webm, .mov, .m4v) are permitted'));
+  }
+};
+
+const videoUpload = multer({
+  storage: videoStorage,
+  limits: { fileSize: 250 * 1024 * 1024 }, // 250MB max video upload
+  fileFilter: videoFileFilter
+});
+
+const audioStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const targetDir = path.join(mediaRoot, 'audio');
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
+    file.subfolder = 'audio';
+    cb(null, targetDir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase() || '.mp3';
+    const baseName = path.basename(file.originalname, ext)
+      .replace(/[^a-zA-Z0-9_-]/g, '_')
+      .substring(0, 32) || 'audio';
+    const uniqueSuffix = `${Date.now()}_${Math.round(Math.random() * 1e6)}`;
+    const finalFilename = `${baseName}_${uniqueSuffix}${ext}`;
+    file.publicUrl = `/media/audio/${finalFilename}`;
+    cb(null, finalFilename);
+  }
+});
+
+const audioFileFilter = (req, file, cb) => {
+  const allowedExts = ['.mp3', '.wav', '.m4a', '.aac', '.ogg', '.webm'];
+  const ext = path.extname(file.originalname).toLowerCase();
+  const mime = (file.mimetype || '').toLowerCase();
+  if (allowedExts.includes(ext) || mime.startsWith('audio/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only audio files (.mp3, .wav, .m4a, .aac, .ogg, .webm) are permitted'));
+  }
+};
+
+const audioUpload = multer({
+  storage: audioStorage,
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB max audio upload
+  fileFilter: audioFileFilter
+});
+
+const sfxStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const targetDir = path.join(mediaRoot, 'sfx');
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
+    file.subfolder = 'sfx';
+    cb(null, targetDir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase() || '.wav';
+    const baseName = path.basename(file.originalname, ext)
+      .replace(/[^a-zA-Z0-9_-]/g, '_')
+      .substring(0, 32) || 'sfx';
+    const uniqueSuffix = `${Date.now()}_${Math.round(Math.random() * 1e6)}`;
+    const finalFilename = `${baseName}_${uniqueSuffix}${ext}`;
+    file.publicUrl = `/media/sfx/${finalFilename}`;
+    cb(null, finalFilename);
+  }
+});
+
+const sfxUpload = multer({
+  storage: sfxStorage,
+  limits: { fileSize: 15 * 1024 * 1024 }, // 15MB max sound effect upload
+  fileFilter: audioFileFilter
 });
 
 const sharp = require('sharp');
@@ -222,6 +327,9 @@ async function optimizeUploadedImage(file, options = {}) {
 
 module.exports = {
   upload,
+  videoUpload,
+  audioUpload,
+  sfxUpload,
   mediaRoot,
   processProfilePhoto,
   optimizeUploadedImage

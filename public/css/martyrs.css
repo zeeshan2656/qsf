@@ -1,0 +1,1595 @@
+/* ==========================================================================
+   QSF MARTYRS (شہداء) MANAGEMENT & HISTORICAL MEMORIAL ARCHIVE
+   Dignified, Editorial, Respectful Memorial Design — LTR & Urdu Nastaliq RTL
+   ========================================================================== */
+
+.martyrs-module-root {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  color: #0F172A;
+}
+
+/* ==========================================================================
+   FULL-WIDTH ALL MARTYRS WORKSPACE & DEDICATED LOCATIONS SIDEBAR
+   ========================================================================== */
+.martyrs-workspace-split {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  width: 100%;
+  min-width: 0;
+}
+
+.martyrs-locations-sidebar {
+  width: 292px;
+  flex-shrink: 0;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+  position: sticky;
+  top: 14px;
+  max-height: calc(100vh - 108px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: width 0.18s ease;
+}
+
+.martyrs-locations-sidebar.collapsed {
+  width: 46px;
+}
+
+.martyrs-locations-sidebar.collapsed .martyrs-loc-body,
+.martyrs-locations-sidebar.collapsed .martyrs-loc-header-title {
+  display: none;
+}
+
+.martyrs-loc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 11px 12px;
+  border-bottom: 1px solid #E2E8F0;
+  background: #F8FAFC;
+  flex-shrink: 0;
+}
+
+.martyrs-loc-header-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: #0F172A;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.martyrs-loc-header-title i {
+  color: #881337;
+}
+
+.martyrs-loc-toggle-btn {
+  border: 1px solid #CBD5E1;
+  background: #FFFFFF;
+  color: #475569;
+  width: 26px;
+  height: 26px;
+  border-radius: 3px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.76rem;
+  flex-shrink: 0;
+}
+
+.martyrs-loc-toggle-btn:hover {
+  border-color: #881337;
+  color: #881337;
+}
+
+.martyrs-loc-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.martyrs-loc-controls {
+  padding: 10px 10px 8px;
+  border-bottom: 1px solid #F1F5F9;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.martyrs-loc-search {
+  width: 100%;
+  height: 32px;
+  font-size: 0.8rem;
+  padding: 4px 9px;
+  border: 1px solid #CBD5E1;
+  border-radius: 3px;
+  box-sizing: border-box;
+}
+
+.martyrs-loc-search:focus {
+  outline: none;
+  border-color: #881337;
+}
+
+.martyrs-loc-scope-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  background: #F1F5F9;
+  padding: 3px;
+  border-radius: 3px;
+}
+
+.martyrs-loc-scope-btn {
+  border: none;
+  background: transparent;
+  color: #475569;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 4px;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.martyrs-loc-scope-btn.active {
+  background: #881337;
+  color: #FFFFFF;
+}
+
+.martyrs-loc-tree-scroll {
+  overflow-y: auto;
+  flex: 1;
+  padding: 8px 8px 14px;
+}
+
+.martyrs-loc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.81rem;
+  color: #334155;
+  transition: background 0.14s ease, color 0.14s ease;
+  user-select: none;
+}
+
+.martyrs-loc-row:hover {
+  background: #F8FAFC;
+  color: #0F172A;
+}
+
+.martyrs-loc-row.active {
+  background: #FFF1F2;
+  color: #881337;
+  font-weight: 700;
+  border-left: 3px solid #881337;
+}
+
+.martyrs-loc-row.level-district {
+  font-weight: 800;
+  color: #0F172A;
+  font-size: 0.82rem;
+  margin-top: 4px;
+}
+
+.martyrs-loc-row.level-tehsil {
+  font-weight: 700;
+  color: #1E293B;
+  font-size: 0.8rem;
+  padding-left: 12px;
+}
+
+.martyrs-loc-row.level-village {
+  padding-left: 26px;
+  font-size: 0.79rem;
+}
+
+.martyrs-loc-row-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.martyrs-loc-caret {
+  width: 14px;
+  text-align: center;
+  color: #94A3B8;
+  font-size: 0.68rem;
+  flex-shrink: 0;
+}
+
+.martyrs-loc-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.martyrs-loc-review-dot {
+  color: #D97706;
+  font-size: 0.66rem;
+  flex-shrink: 0;
+}
+
+.martyrs-loc-count {
+  font-size: 0.71rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: #F1F5F9;
+  color: #475569;
+  flex-shrink: 0;
+}
+
+.martyrs-loc-count.has-records {
+  background: #FFE4E6;
+  color: #881337;
+}
+
+.martyrs-loc-row.active .martyrs-loc-count {
+  background: #881337;
+  color: #FFFFFF;
+}
+
+.martyrs-loc-footer {
+  padding: 8px 10px;
+  border-top: 1px solid #E2E8F0;
+  background: #F8FAFC;
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.martyrs-workspace-main {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+/* Unboxed Full-Width Listing Sub-header & Active Filter Chips */
+.martyrs-directory-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.martyrs-directory-toolbar select.form-control {
+  width: auto !important;
+  display: inline-block;
+}
+
+.martyrs-active-chips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.martyrs-active-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #FFF1F2;
+  color: #881337;
+  border: 1px solid #FECDD3;
+  border-radius: 3px;
+  padding: 3px 9px;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.martyrs-active-chip button {
+  border: none;
+  background: transparent;
+  color: #881337;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.9rem;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.martyrs-header-filter-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin-left: 5px;
+  border-radius: 3px;
+  background: #881337;
+  color: #FFFFFF;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.martyrs-mobile-loc-btn {
+  display: none;
+}
+
+.martyrs-loc-mobile-backdrop {
+  display: none;
+}
+
+/* Dependent Location Picker Fieldset */
+.martyr-loc-fieldset {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.martyr-loc-fieldset-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.martyr-loc-fieldset-head strong {
+  font-size: 0.85rem;
+  color: #0F172A;
+}
+
+.martyr-loc-fieldset-head strong i {
+  color: #881337;
+  margin-right: 5px;
+}
+
+/* Attribution & Activity History */
+.martyr-attribution-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed #E2E8F0;
+  font-size: 0.76rem;
+  color: #64748B;
+}
+
+.martyr-attr-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.martyr-attr-tag strong {
+  color: #334155;
+}
+
+.martyr-attr-tag i {
+  color: #881337;
+  font-size: 0.72rem;
+}
+
+.martyr-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.martyr-activity-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #F1F5F9;
+  font-size: 0.82rem;
+}
+
+.martyr-activity-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.martyr-activity-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 3px;
+  background: #FFF1F2;
+  color: #881337;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.martyr-activity-meta {
+  font-size: 0.72rem;
+  color: #64748B;
+  margin-top: 2px;
+}
+
+/* Affected Locations Clickable Pills on War Detail Page */
+.martyr-affected-locs-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.martyr-affected-loc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  border-left: 3px solid #881337;
+  border-radius: 3px;
+  padding: 6px 11px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0F172A;
+  cursor: pointer;
+  transition: background 0.14s ease, border-color 0.14s ease;
+}
+
+.martyr-affected-loc-chip:hover {
+  background: #FFF1F2;
+  border-color: #881337;
+  color: #881337;
+}
+
+.martyr-affected-loc-chip .cnt {
+  background: #881337;
+  color: #FFFFFF;
+  font-size: 0.7rem;
+  padding: 1px 6px;
+  border-radius: 2px;
+}
+
+.martyr-urdu,
+[dir="rtl"].martyr-rtl-block,
+.martyr-richtext-content[dir="rtl"],
+.martyr-editor-area[dir="rtl"] {
+  font-family: 'Noto Nastaliq Urdu', 'Noto Naskh Arabic', Tahoma, sans-serif !important;
+  direction: rtl;
+  text-align: right;
+  line-height: 2.15 !important;
+}
+
+/* Editorial Section Header & Archive Summary Strip */
+.martyr-summary-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.martyr-stat-item {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-left: 3px solid #881337;
+  border-radius: 4px;
+  padding: 14px 16px;
+}
+
+.martyr-stat-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748B;
+  margin-bottom: 4px;
+}
+
+.martyr-stat-value {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1.15;
+}
+
+/* Filter & Search Bar */
+.martyr-filter-bar {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+}
+
+.martyr-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.martyr-filter-grid-5 {
+  grid-template-columns: 1.4fr 1.1fr 1fr 1fr 1fr;
+}
+
+.martyr-filter-field label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 4px;
+}
+
+.martyr-filter-field .form-control {
+  height: 36px;
+  font-size: 0.84rem;
+  border-radius: 4px;
+  border: 1px solid #CBD5E1;
+  padding: 5px 10px;
+}
+
+.martyr-filter-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #F1F5F9;
+}
+
+/* Status Badges */
+.martyr-status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: 1px solid transparent;
+}
+
+.martyr-status-tag.active {
+  background: #FEF2F2;
+  color: #991B1B;
+  border-color: #FECACA;
+}
+
+.martyr-status-tag.completed {
+  background: #F0FDF4;
+  color: #166534;
+  border-color: #BBF7D0;
+}
+
+.martyr-status-tag.archived {
+  background: #F1F5F9;
+  color: #475569;
+  border-color: #CBD5E1;
+}
+
+/* ==========================================================================
+   WARS HISTORICAL ARCHIVE GRID & DETAIL PAGE
+   ========================================================================== */
+.martyr-wars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 18px;
+}
+
+.martyr-war-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.martyr-war-card:hover {
+  border-color: #94A3B8;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.07);
+}
+
+.martyr-war-cover {
+  position: relative;
+  height: 168px;
+  background: linear-gradient(135deg, #1E293B 0%, #450A0A 100%);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.martyr-war-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.martyr-war-cover-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.45);
+  gap: 6px;
+}
+
+.martyr-war-count-chip {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(15, 23, 42, 0.88);
+  color: #FFFFFF;
+  padding: 4px 10px;
+  border-radius: 3px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  border-left: 3px solid #B91C1C;
+}
+
+.martyr-war-card-body {
+  padding: 15px 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.martyr-war-card-title {
+  margin: 0 0 6px;
+  font-size: 1.06rem;
+  font-weight: 800;
+  color: #0F172A;
+  cursor: pointer;
+  line-height: 1.35;
+}
+
+.martyr-war-card-title:hover {
+  color: #881337;
+}
+
+.martyr-war-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.77rem;
+  color: #475569;
+  margin-bottom: 10px;
+}
+
+.martyr-war-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.martyr-war-meta i {
+  color: #881337;
+  font-size: 0.74rem;
+}
+
+.martyr-war-desc {
+  font-size: 0.84rem;
+  color: #334155;
+  line-height: 1.55;
+  margin: 0 0 14px;
+  flex: 1;
+}
+
+.martyr-war-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid #F1F5F9;
+}
+
+/* War Detail Hero & Editorial Archive Page */
+.martyr-page-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.martyr-war-hero {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 22px;
+}
+
+.martyr-war-hero-media {
+  position: relative;
+  height: 260px;
+  background: linear-gradient(135deg, #0F172A 0%, #450A0A 100%);
+}
+
+.martyr-war-hero-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.martyr-war-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.15) 0%, rgba(15, 23, 42, 0.84) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 24px 28px;
+  color: #FFFFFF;
+}
+
+.martyr-war-hero-overlay h2 {
+  margin: 6px 0 4px;
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: #FFFFFF;
+}
+
+.martyr-war-hero-meta-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border-top: 1px solid #E2E8F0;
+  background: #F8FAFC;
+}
+
+.martyr-war-hero-meta-cell {
+  padding: 14px 18px;
+  border-right: 1px solid #E2E8F0;
+}
+
+.martyr-war-hero-meta-cell:last-child {
+  border-right: none;
+  background: #FFF1F2;
+}
+
+.martyr-war-hero-meta-cell small {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748B;
+  margin-bottom: 3px;
+}
+
+.martyr-war-hero-meta-cell strong {
+  font-size: 0.94rem;
+  color: #0F172A;
+}
+
+.martyr-war-hero-meta-cell.count-cell strong {
+  font-size: 1.25rem;
+  color: #881337;
+}
+
+.martyr-editorial-section {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+  padding: 24px 28px;
+  margin-bottom: 20px;
+}
+
+.martyr-section-heading {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: 0.02em;
+  padding-bottom: 10px;
+  margin: 0 0 16px;
+  border-bottom: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.martyr-section-heading i {
+  color: #881337;
+  margin-right: 6px;
+}
+
+/* ==========================================================================
+   ALL MARTYRS DIRECTORY – PROFILE CARDS & PAGINATION
+   ========================================================================== */
+.martyrs-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 16px;
+}
+
+.martyr-profile-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+  padding: 16px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  cursor: pointer;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.martyr-profile-card:hover {
+  border-color: #881337;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.07);
+}
+
+.martyr-card-avatar {
+  width: 78px;
+  height: 94px;
+  border-radius: 4px;
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94A3B8;
+  font-size: 1.8rem;
+}
+
+.martyr-card-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.martyr-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.martyr-card-name {
+  margin: 0 0 3px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1.3;
+}
+
+.martyr-card-father {
+  font-size: 0.78rem;
+  color: #64748B;
+  margin-bottom: 8px;
+}
+
+.martyr-card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.76rem;
+  color: #334155;
+}
+
+.martyr-card-details span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.martyr-card-details i {
+  width: 13px;
+  color: #881337;
+  font-size: 0.72rem;
+  flex-shrink: 0;
+}
+
+.martyr-card-war-link {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #881337;
+  background: #FFF1F2;
+  border: 1px solid #FECDD3;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+
+/* Pagination */
+.martyr-pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 12px 16px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+}
+
+.martyr-page-btns {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.martyr-page-btn {
+  border: 1px solid #CBD5E1;
+  background: #FFFFFF;
+  color: #334155;
+  padding: 5px 11px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.martyr-page-btn.active {
+  background: #881337;
+  border-color: #881337;
+  color: #FFFFFF;
+}
+
+.martyr-page-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ==========================================================================
+   INDIVIDUAL MARTYR DIGITAL MEMORIAL PROFILE PAGE
+   ========================================================================== */
+.martyr-memorial-header {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-top: 4px solid #881337;
+  border-radius: 4px;
+  padding: 28px 32px;
+  margin-bottom: 20px;
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+}
+
+.martyr-memorial-portrait {
+  width: 175px;
+  height: 215px;
+  border-radius: 4px;
+  border: 1px solid #CBD5E1;
+  background: #F8FAFC;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94A3B8;
+  font-size: 3rem;
+  cursor: pointer;
+}
+
+.martyr-memorial-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.martyr-memorial-identity {
+  flex: 1;
+  min-width: 0;
+}
+
+.martyr-memorial-kicker {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #881337;
+  margin-bottom: 6px;
+}
+
+.martyr-memorial-name {
+  margin: 0 0 6px;
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1.25;
+}
+
+.martyr-memorial-sub {
+  font-size: 0.96rem;
+  color: #475569;
+  margin: 0 0 16px;
+}
+
+.martyr-memorial-keyfacts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #E2E8F0;
+}
+
+.martyr-keyfact small {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748B;
+  margin-bottom: 3px;
+}
+
+.martyr-keyfact strong {
+  font-size: 0.9rem;
+  color: #0F172A;
+}
+
+.martyr-profile-2col {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.martyr-info-dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 24px;
+  margin: 0;
+}
+
+.martyr-info-pair {
+  padding-bottom: 10px;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.martyr-info-pair dt {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748B;
+  margin-bottom: 2px;
+}
+
+.martyr-info-pair dd {
+  margin: 0;
+  font-size: 0.92rem;
+  color: #0F172A;
+  font-weight: 600;
+}
+
+.martyr-richtext-content {
+  font-size: 0.96rem;
+  line-height: 1.78;
+  color: #1E293B;
+}
+
+.martyr-richtext-content h2,
+.martyr-richtext-content h3 {
+  color: #0F172A;
+  margin: 16px 0 8px;
+}
+
+.martyr-richtext-content blockquote {
+  margin: 14px 0;
+  padding: 10px 16px;
+  border-left: 3px solid #881337;
+  background: #F8FAFC;
+  color: #334155;
+}
+
+.martyr-richtext-content[dir="rtl"] blockquote {
+  border-left: none;
+  border-right: 3px solid #881337;
+}
+
+/* Associated War Card Inside Martyr Profile */
+.martyr-linked-war-box {
+  border: 1px solid #E2E8F0;
+  border-left: 3px solid #881337;
+  border-radius: 4px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  background: #F8FAFC;
+}
+
+.martyr-linked-war-box h4 {
+  margin: 0 0 6px;
+  font-size: 0.98rem;
+  color: #0F172A;
+}
+
+/* Photo Gallery & Lightbox */
+.martyr-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.martyr-gallery-tile {
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #FFFFFF;
+  cursor: pointer;
+}
+
+.martyr-gallery-tile img {
+  width: 100%;
+  height: 138px;
+  object-fit: cover;
+  display: block;
+}
+
+.martyr-gallery-tile figcaption {
+  padding: 7px 9px;
+  font-size: 0.75rem;
+  color: #475569;
+  line-height: 1.35;
+}
+
+/* Confidential Family Contact Cards */
+.martyr-family-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.martyr-family-card {
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+  padding: 12px 14px;
+  background: #FAFAFA;
+}
+
+.martyr-family-rel {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #881337;
+}
+
+.martyr-privacy-notice {
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  color: #92400E;
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: 0.82rem;
+}
+
+/* ==========================================================================
+   ADD / EDIT MARTYR PROFILE FORM & RICH TEXT EDITOR
+   ========================================================================== */
+.martyr-form-shell {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+  padding: 24px 28px;
+}
+
+.martyr-form-section {
+  padding-bottom: 22px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.martyr-form-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.martyr-form-section-title {
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.martyr-form-section-title span i {
+  color: #881337;
+  margin-right: 6px;
+}
+
+.martyr-form-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.martyr-form-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.martyr-photo-upload-row {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.martyr-photo-preview-box {
+  width: 112px;
+  height: 132px;
+  border: 1px dashed #94A3B8;
+  border-radius: 4px;
+  background: #F8FAFC;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94A3B8;
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.martyr-photo-preview-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Searchable War Selector */
+.martyr-war-picker {
+  position: relative;
+}
+
+.martyr-war-dropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 4px;
+  max-height: 230px;
+  overflow-y: auto;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+}
+
+.martyr-war-dropdown-item {
+  padding: 9px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #F1F5F9;
+  font-size: 0.84rem;
+}
+
+.martyr-war-dropdown-item:hover,
+.martyr-war-dropdown-item.selected {
+  background: #FFF1F2;
+  color: #881337;
+}
+
+/* Rich Text Editor */
+.martyr-editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  padding: 6px 8px;
+}
+
+.martyr-editor-toolbar button {
+  border: 1px solid #CBD5E1;
+  background: #FFFFFF;
+  color: #334155;
+  padding: 4px 8px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.martyr-editor-toolbar button:hover,
+.martyr-editor-toolbar button.active {
+  background: #881337;
+  border-color: #881337;
+  color: #FFFFFF;
+}
+
+.martyr-editor-area {
+  min-height: 210px;
+  border: 1px solid #CBD5E1;
+  border-radius: 0 0 4px 4px;
+  padding: 14px 16px;
+  font-size: 0.94rem;
+  line-height: 1.72;
+  color: #0F172A;
+  background: #FFFFFF;
+  outline: none;
+}
+
+.martyr-editor-area:focus {
+  border-color: #881337;
+}
+
+/* Gallery Upload Editor List */
+.martyr-gallery-edit-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.martyr-gallery-edit-item {
+  border: 1px solid #CBD5E1;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #F8FAFC;
+}
+
+.martyr-gallery-edit-item img {
+  width: 100%;
+  height: 128px;
+  object-fit: cover;
+  display: block;
+  cursor: pointer;
+}
+
+.martyr-gallery-edit-controls {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Family Member Dynamic Rows */
+.martyr-family-row {
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+  padding: 14px;
+  margin-bottom: 10px;
+  background: #F8FAFC;
+}
+
+/* Duplicate Warning Banner */
+.martyr-dup-banner {
+  background: #FFFBEB;
+  border: 1px solid #F59E0B;
+  border-radius: 4px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-size: 0.82rem;
+  color: #92400E;
+}
+
+/* Modals & Lightbox */
+.martyr-modal-backdrop.hidden,
+.martyr-lightbox-backdrop.hidden {
+  display: none !important;
+}
+
+.martyr-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.62);
+  z-index: 12000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  overflow-y: auto;
+}
+
+.martyr-modal-dialog {
+  background: #FFFFFF;
+  border-radius: 4px;
+  width: 100%;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.28);
+  overflow: hidden;
+}
+
+.martyr-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 22px;
+  border-bottom: 1px solid #E2E8F0;
+  background: #F8FAFC;
+}
+
+.martyr-modal-header h3 {
+  margin: 0 0 3px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.martyr-modal-header h3 i {
+  color: #881337;
+  margin-right: 6px;
+}
+
+.martyr-modal-header p {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #64748B;
+}
+
+.martyr-modal-close {
+  border: none;
+  background: transparent;
+  font-size: 1.4rem;
+  color: #64748B;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.martyr-modal-body {
+  padding: 18px 22px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.martyr-lightbox-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.92);
+  z-index: 13000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.martyr-lb-stage {
+  max-width: 90vw;
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.martyr-lb-stage img {
+  max-width: 100%;
+  max-height: 78vh;
+  border-radius: 3px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+}
+
+.martyr-lb-caption {
+  color: #E2E8F0;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.martyr-lb-close,
+.martyr-lb-nav {
+  position: fixed;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+  width: 42px;
+  height: 42px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.martyr-lb-close { top: 18px; right: 20px; font-size: 1.5rem; }
+.martyr-lb-nav.prev { left: 18px; top: 50%; transform: translateY(-50%); }
+.martyr-lb-nav.next { right: 18px; top: 50%; transform: translateY(-50%); }
+
+/* Responsive Breakpoints */
+@media (max-width: 1024px) {
+  .martyr-summary-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .martyr-filter-grid,
+  .martyr-filter-grid-5 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .martyr-war-hero-meta-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .martyr-profile-2col { grid-template-columns: 1fr; }
+  .martyr-form-grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .martyr-memorial-keyfacts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .martyrs-mobile-loc-btn {
+    display: inline-flex;
+  }
+
+  .martyrs-locations-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 300px !important;
+    max-width: 86vw;
+    max-height: 100vh;
+    z-index: 11500;
+    border-radius: 0;
+    transform: translateX(-105%);
+    transition: transform 0.22s ease;
+    box-shadow: 0 12px 36px rgba(15, 23, 42, 0.28);
+  }
+
+  .martyrs-locations-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .martyrs-locations-sidebar.mobile-open .martyrs-loc-body,
+  .martyrs-locations-sidebar.mobile-open .martyrs-loc-header-title {
+    display: flex;
+  }
+
+  .martyrs-loc-mobile-backdrop.open {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    z-index: 11400;
+  }
+}
+
+@media (max-width: 640px) {
+  .martyr-summary-strip,
+  .martyr-filter-grid,
+  .martyr-filter-grid-5,
+  .martyr-war-hero-meta-strip,
+  .martyr-form-grid-3,
+  .martyr-form-grid-2,
+  .martyr-info-dl,
+  .martyr-memorial-keyfacts {
+    grid-template-columns: 1fr;
+  }
+
+  .martyr-memorial-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .martyr-photo-upload-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .martyr-editorial-section,
+  .martyr-form-shell {
+    padding: 16px;
+  }
+}

@@ -6,11 +6,11 @@
   <title>Admin Dashboard | Qasr-e-Shabbir Foundation</title>
   <link rel="icon" type="image/webp" href="/media/branding/favicon-64.webp">
   <link rel="alternate icon" type="image/png" href="/media/branding/favicon-32.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/fonts/fa.min.css">
+  <link rel="stylesheet" href="/css/admin.css?v=4.0.0">
+  <link rel="stylesheet" href="/css/video-studio.css?v=4.0.0">
+  <link rel="stylesheet" href="/css/martyrs.css?v=2.0.0">
 </head>
 <body class="admin-body">
 
@@ -29,9 +29,20 @@
           <input type="text" id="loginUsername" class="form-control" placeholder="Enter authorized username or email" autocomplete="username" required />
         </div>
 
-        <div style="margin-bottom: 22px; text-align: left;">
+        <div style="margin-bottom: 14px; text-align: left;">
           <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">Password</label>
-          <input type="password" id="loginPassword" class="form-control" placeholder="Enter password" autocomplete="current-password" required />
+          <div style="position: relative;">
+            <input type="password" id="loginPassword" class="form-control" placeholder="Enter password" autocomplete="current-password" style="padding-right: 40px;" required />
+            <button type="button" id="btnToggleLoginPassword" aria-label="Show or hide password" title="Show / Hide Password" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: #64748B; cursor: pointer; padding: 4px;">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <div style="text-align: right; margin-bottom: 18px;">
+          <button type="button" id="btnShowForgotPassword" style="background: transparent; border: none; color: var(--admin-primary); font-size: 0.82rem; font-weight: 600; cursor: pointer; text-decoration: underline;">
+            Forgot Password?
+          </button>
         </div>
 
         <button type="submit" class="btn-admin btn-admin-primary" style="width: 100%; justify-content: center; padding: 12px; font-size: 0.95rem;">
@@ -42,6 +53,46 @@
           <i class="fas fa-shield-halved" style="color: var(--admin-primary);"></i> Authorized personnel only. Please sign in with your individual staff or administrator account credentials.
         </p>
       </form>
+
+      <!-- Secure Two-Step Password Recovery Panel (Hidden by Default) -->
+      <div id="passwordRecoveryPanel" style="display: none; text-align: left;">
+        <h3 style="font-size: 1rem; font-weight: 700; color: #1E293B; margin-bottom: 6px;">
+          <i class="fas fa-key" style="color: var(--admin-primary); margin-right: 6px;"></i> Password Recovery
+        </h3>
+        <p style="font-size: 0.8rem; color: #64748B; margin-bottom: 14px; line-height: 1.45;">
+          Enter your existing username or email to generate a single-use recovery code in the server console (valid for 15 minutes).
+        </p>
+
+        <form id="requestResetForm" style="margin-bottom: 14px;">
+          <div style="margin-bottom: 12px;">
+            <label style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 5px;">Username or Registered Email</label>
+            <input type="text" id="resetIdentifier" class="form-control" placeholder="e.g. admin or admin@qesf.org.pk" required />
+          </div>
+          <button type="submit" class="btn-admin btn-admin-primary" style="width: 100%; justify-content: center; padding: 10px; font-size: 0.88rem;">
+            <i class="fas fa-paper-plane"></i> Generate Recovery Code
+          </button>
+        </form>
+
+        <form id="confirmResetForm" style="display: none; border-top: 1px solid #E2E8F0; padding-top: 14px; margin-top: 14px;">
+          <div style="margin-bottom: 12px;">
+            <label style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 5px;">Server Console Recovery Code</label>
+            <input type="text" id="resetCodeInput" class="form-control" placeholder="8-character code from server log" style="font-family: monospace; letter-spacing: 1px; text-transform: uppercase;" required />
+          </div>
+          <div style="margin-bottom: 14px;">
+            <label style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 5px;">New Password (min 8 characters)</label>
+            <input type="password" id="resetNewPassword" class="form-control" placeholder="Enter new strong password" minlength="8" autocomplete="new-password" required />
+          </div>
+          <button type="submit" class="btn-admin btn-admin-primary" style="width: 100%; justify-content: center; padding: 10px; font-size: 0.88rem;">
+            <i class="fas fa-check-circle"></i> Verify Code &amp; Update Password
+          </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 14px;">
+          <button type="button" id="btnBackToLogin" style="background: transparent; border: none; color: #475569; font-size: 0.82rem; font-weight: 600; cursor: pointer;">
+            <i class="fas fa-arrow-left"></i> Back to Sign In
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -52,48 +103,83 @@
     <aside class="admin-sidebar" id="adminSidebar">
       <div class="sidebar-header">
         <img src="/media/branding/logo.svg" alt="Qasr-e-Shabbir Logo" class="sidebar-logo" onerror="this.onerror=null; this.src='/media/branding/logo.svg';" style="width: auto; max-width: 64px; height: 58px; border-radius: 6px; object-fit: contain; background: #FFFFFF; padding: 3px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); flex-shrink: 0;" />
-        <div style="flex-grow: 1; min-width: 0;">
+        <div class="sidebar-brand-text" style="flex-grow: 1; min-width: 0;">
           <div class="sidebar-title">QASR-E-SHABBIR</div>
           <span class="sidebar-badge"><i class="fas fa-shield-halved"></i> Admin CMS</span>
         </div>
+        <button type="button" class="sidebar-collapse-btn" id="btnSidebarCollapseToggle" title="Collapse / Expand Sidebar" aria-label="Collapse or expand navigation sidebar" aria-expanded="true">
+          <i class="fas fa-angles-left"></i>
+        </button>
         <button type="button" class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close sidebar">✕</button>
       </div>
 
       <ul class="sidebar-menu">
         <li class="sidebar-item active">
-          <a href="#" data-tab="overview"><i class="fas fa-chart-pie"></i> <span>Overview</span></a>
+          <a href="#" data-tab="overview" data-tooltip="Overview"><i class="fas fa-chart-pie"></i> <span>Overview</span></a>
         </li>
         <li class="sidebar-item">
-          <a href="#" data-tab="users"><i class="fas fa-users-gear"></i> <span>Users & Staff</span></a>
+          <a href="#" data-tab="users" data-tooltip="Users & Staff"><i class="fas fa-users-gear"></i> <span>Users & Staff</span></a>
         </li>
         <li class="sidebar-item">
-          <a href="#" data-tab="accounts"><i class="fas fa-file-invoice-dollar"></i> <span>Accounts</span></a>
+          <a href="#" data-tab="accounts" data-tooltip="Accounts"><i class="fas fa-file-invoice-dollar"></i> <span>Accounts</span></a>
         </li>
         <li class="sidebar-item">
-          <a href="#" data-tab="projects"><i class="fas fa-hand-holding-heart"></i> <span>Welfare Projects</span></a>
+          <a href="#" data-tab="projects" data-tooltip="Welfare Projects"><i class="fas fa-hand-holding-heart"></i> <span>Welfare Projects</span></a>
         </li>
         <li class="sidebar-item">
-          <a href="#" data-tab="volunteers"><i class="fas fa-handshake-angle"></i> <span>Volunteer Applications</span></a>
+          <a href="#" data-tab="volunteers" data-tooltip="Volunteer Applications"><i class="fas fa-handshake-angle"></i> <span>Volunteer Applications</span></a>
         </li>
         <li class="sidebar-item">
-          <a href="#" data-tab="articles"><i class="fas fa-newspaper"></i> <span>News & Updates</span></a>
+          <a href="#" data-tab="articles" data-tooltip="News & Updates"><i class="fas fa-newspaper"></i> <span>News & Updates</span></a>
         </li>
         <li class="sidebar-item">
-          <a href="#" data-tab="applications"><i class="fas fa-file-shield"></i> <span>Assistance Requests</span></a>
+          <a href="#" data-tab="applications" data-tooltip="Assistance Requests"><i class="fas fa-file-shield"></i> <span>Assistance Requests</span></a>
         </li>
         <li class="sidebar-item">
-          <a href="#" data-tab="donations"><i class="fas fa-receipt"></i> <span>Donations & Receipts</span></a>
+          <a href="#" data-tab="donations" data-tooltip="Donations & Receipts"><i class="fas fa-receipt"></i> <span>Donations & Receipts</span></a>
         </li>
         <li class="sidebar-item">
-          <a href="#" data-tab="submissions"><i class="fas fa-envelope"></i> <span>Contact Messages</span></a>
+          <a href="#" data-tab="submissions" data-tooltip="Contact Messages"><i class="fas fa-envelope"></i> <span>Contact Messages</span></a>
         </li>
         <li class="sidebar-item">
-          <a href="#" data-tab="pages"><i class="fas fa-file-lines"></i> <span>Pages</span></a>
+          <a href="#" data-tab="pages" data-tooltip="Pages"><i class="fas fa-file-lines"></i> <span>Pages</span></a>
+        </li>
+        <li class="sidebar-item">
+          <a href="#" data-tab="social-media" data-tooltip="Social Media Studios"><i class="fas fa-share-nodes"></i> <span>Social Media</span></a>
+        </li>
+
+        <!-- Collapsible Martyrs (شہداء) Archive Menu -->
+        <li class="sidebar-item sidebar-item-has-submenu" id="sidebarMartyrsItem">
+          <a href="#" class="sidebar-submenu-toggle" id="btnToggleMartyrs" data-tooltip="Martyrs (شہداء)">
+            <i class="fas fa-monument"></i>
+            <span style="flex-grow: 1;">Martyrs</span>
+            <i class="fas fa-chevron-down submenu-caret"></i>
+          </a>
+          <ul class="sidebar-submenu" id="sidebarMartyrsSubmenu">
+            <li class="submenu-item">
+              <a href="#" data-tab="martyrs-wars" title="Wars, Conflicts & Historical Incidents">
+                <i class="fas fa-landmark"></i>
+                <span>Wars</span>
+              </a>
+            </li>
+            <li class="submenu-item">
+              <a href="#" data-tab="martyrs-all" title="All Registered Martyrs & Profiles">
+                <i class="fas fa-users"></i>
+                <span>All Martyrs</span>
+              </a>
+            </li>
+            <li class="submenu-item">
+              <a href="#" data-tab="martyrs-add" title="Add New Martyr Memorial Profile">
+                <i class="fas fa-user-plus"></i>
+                <span>Add New Martyr</span>
+              </a>
+            </li>
+          </ul>
         </li>
 
         <!-- Collapsible Organization Setup Menu -->
         <li class="sidebar-item sidebar-item-has-submenu" id="sidebarOrgItem">
-          <a href="#" class="sidebar-submenu-toggle" id="btnToggleOrg">
+          <a href="#" class="sidebar-submenu-toggle" id="btnToggleOrg" data-tooltip="Organization Setup">
             <i class="fas fa-sitemap"></i>
             <span style="flex-grow: 1;">Organization Setup</span>
             <i class="fas fa-chevron-down submenu-caret"></i>
@@ -128,7 +214,7 @@
 
         <!-- Collapsible Settings Menu -->
         <li class="sidebar-item sidebar-item-has-submenu" id="sidebarSettingsItem">
-          <a href="#" class="sidebar-submenu-toggle" id="btnToggleSettings">
+          <a href="#" class="sidebar-submenu-toggle" id="btnToggleSettings" data-tooltip="Settings">
             <i class="fas fa-gear"></i>
             <span style="flex-grow: 1;">Settings</span>
             <i class="fas fa-chevron-down submenu-caret"></i>
@@ -181,11 +267,14 @@
       </ul>
 
       <div class="sidebar-footer">
-        <button type="button" class="btn-sidebar-logout" id="adminLogoutBtn">
-          <i class="fas fa-arrow-right-from-bracket"></i> Sign Out
+        <button type="button" class="btn-sidebar-logout" id="adminLogoutBtn" data-tooltip="Sign Out">
+          <i class="fas fa-arrow-right-from-bracket"></i> <span class="logout-label">Sign Out</span>
         </button>
       </div>
     </aside>
+
+    <!-- Floating Collapsed-Sidebar Tooltip -->
+    <div id="qsfSidebarTooltip" class="qsf-sidebar-tooltip" role="tooltip" aria-hidden="true"></div>
 
     <!-- Mobile Backdrop -->
     <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
@@ -1159,6 +1248,1744 @@
           </div>
         </div>
 
+        <!-- =========================================================================
+             TAB PANE: SOCIAL MEDIA MANAGEMENT (STUDIO & CAMPAIGNS)
+             ========================================================================= -->
+        <div class="tab-pane" id="tab-social-media">
+          <!-- Social Media Creative Studios Launcher Hub (Shown when outside Full-Screen Studio) -->
+          <div class="social-studio-hub-view" id="socialStudioHubView">
+            <div class="social-hub-hero-grid">
+              <div class="admin-card social-hub-card">
+                <div class="social-hub-card-icon" style="background: #FEF2F2; color: #B91C1C;"><i class="fas fa-newspaper"></i></div>
+                <div class="social-hub-card-body">
+                  <h3>Graphics &amp; Image Studio</h3>
+                  <p>Design broadcast news graphics, announcements, quotes, and welfare posts with 20 ready-made QSF templates, Urdu Nastaliq RTL/LTR, and 300 DPI PNG/JPG export.</p>
+                  <div class="social-hub-badges">
+                    <span>20 Templates</span><span>Urdu &amp; English RTL/LTR</span><span>300 DPI PNG/JPG</span>
+                  </div>
+                  <button type="button" class="btn-admin btn-admin-primary" id="btnLaunchImageStudio" onclick="enterSocialStudio('image')" style="margin-top: 12px;">
+                    <i class="fas fa-expand"></i> Open Graphics Studio (Full Screen)
+                  </button>
+                </div>
+              </div>
+
+              <div class="admin-card social-hub-card">
+                <div class="social-hub-card-icon" style="background: #EFF6FF; color: #1D4ED8;"><i class="fas fa-clapperboard"></i></div>
+                <div class="social-hub-card-body">
+                  <h3>Multi-Track Video Studio</h3>
+                  <p>Edit unlimited video, image, logo, Urdu/English animated text, effects, and audio tracks with 15 built-in sound effects, color grading, keyframes, transitions, and H.264/AAC MP4 export.</p>
+                  <div class="social-hub-badges">
+                    <span>Unlimited Tracks</span><span>15 Built-in SFX</span><span>Keyframes &amp; Filters</span><span>MP4 + Audio</span>
+                  </div>
+                  <button type="button" class="btn-admin btn-admin-primary" id="btnLaunchVideoStudio" onclick="enterSocialStudio('video')" style="margin-top: 12px; background: #1D4ED8; border-color: #1D4ED8;">
+                    <i class="fas fa-film"></i> Open Video Studio (Full Screen)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Full-Screen Integrated Studio Switcher & Exit Bar -->
+          <div class="social-studio-mode-bar hidden" id="socialStudioModeBar">
+            <div class="social-studio-mode-tabs" role="tablist" aria-label="QSF Social Media Studios">
+              <button type="button" class="btn-exit-studio" id="btnExitSocialStudio" onclick="exitSocialStudio()" title="Exit Full-Screen Studio & Return to Social Media">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Social Media</span>
+              </button>
+              <button type="button" class="social-mode-tab-btn active" id="btnModeImageStudio" role="tab" aria-selected="true" onclick="switchSocialStudioMode('image')">
+                <i class="fas fa-newspaper"></i>
+                <span>Graphics / Image Studio</span>
+                <small>20 News Templates</small>
+              </button>
+              <button type="button" class="social-mode-tab-btn" id="btnModeVideoStudio" role="tab" aria-selected="false" onclick="switchSocialStudioMode('video')">
+                <i class="fas fa-film"></i>
+                <span>Video Studio</span>
+                <small>Unlimited Tracks • MP4</small>
+              </button>
+            </div>
+            <div class="social-studio-mode-meta">
+              <span class="badge badge-info" style="font-size: 0.72rem; padding: 4px 9px;"><i class="fas fa-shield-halved"></i> Full-Screen QSF Creative Workspace</span>
+            </div>
+          </div>
+
+          <!-- =========================================================================
+               QSF NEWS – GRAPHICS AND BROADCAST STUDIO (SINGLE-SCREEN 3-COLUMN WORKSPACE)
+               ========================================================================= -->
+          <div class="admin-card news-studio-wrapper hidden" id="newsGraphicsStudioCard">
+            <!-- Second Header: QSF News – Graphics and Broadcast Studio -->
+            <div class="page-action-toolbar studio-compact-header">
+              <div class="studio-header-title-area">
+                <div class="studio-second-header-title">
+                  <i class="fas fa-satellite-dish" style="color: var(--admin-primary);"></i>
+                  <span>QSF News – Graphics and Broadcast Studio</span>
+                </div>
+                <span class="badge badge-danger" style="background: #B91C1C; color: #FFFFFF; font-size: 0.7rem; padding: 3px 8px;"><i class="fas fa-bolt"></i> 20 Templates</span>
+                <span class="badge badge-info" style="font-size: 0.7rem; padding: 3px 8px;"><i class="fas fa-language"></i> Urdu & English RTL/LTR</span>
+                <span class="badge badge-secondary" style="background: #F1F5F9; color: #475569; font-size: 0.7rem; padding: 3px 8px;"><i class="fas fa-check-double"></i> 300 DPI Broadcast Engine</span>
+              </div>
+              <div class="studio-header-actions-area">
+                <button type="button" class="btn-admin btn-output-settings-shortcut" id="btnBrandingSettingsHeader" onclick="openBrandingSettingsModal()" title="Customize Official Branding Tag (One-Time Global or Per-Template)">
+                  <i class="fas fa-award" style="color: #FDE047;"></i>
+                  <span>Branding Tag</span>
+                </button>
+                <button type="button" class="btn-admin btn-output-settings-shortcut" id="btnElementCustomizerHeader" onclick="openElementCustomizerModal('headlineBox')" title="Customize Any Grid, Box, Banner, Text, Ticker or Footer Element">
+                  <i class="fas fa-sliders" style="color: #38BDF8;"></i>
+                  <span>Customize Elements</span>
+                </button>
+                <button type="button" class="btn-admin btn-output-settings-shortcut" id="btnOutputSettingsHeader" onclick="toggleOutputSettingsModal()" title="Configure Output Dimensions & Social Media Formats">
+                  <i class="fas fa-sliders"></i>
+                  <span>Output Settings</span>
+                  <small id="headerOutputDimTag">1920×1080</small>
+                </button>
+                <div class="lang-segment-control" title="Toggle Language / زبان تبدیل کریں">
+                  <button type="button" class="lang-segment-btn" id="btnNewsLangEn" onclick="setNewsLang('en')">English</button>
+                  <button type="button" class="lang-segment-btn active" id="btnNewsLangUr" onclick="setNewsLang('ur')">اردو</button>
+                </div>
+                <button type="button" class="btn-admin btn-admin-secondary" onclick="resetNewsStudio()" title="Reset to defaults" style="padding: 5px 10px; font-size: 0.76rem;">
+                  <i class="fas fa-rotate-left"></i>
+                  <span>Reset</span>
+                </button>
+                <button type="button" class="btn-admin btn-admin-secondary" onclick="downloadNewsGraphic('jpeg')" title="Export as JPG for Social Media" style="padding: 5px 10px; font-size: 0.76rem;">
+                  <i class="fas fa-file-image"></i>
+                  <span>JPG</span>
+                </button>
+                <button type="button" class="btn-admin btn-admin-primary" id="btnDownloadNewsPng" onclick="downloadNewsGraphic('png')" style="padding: 5px 12px; font-size: 0.76rem; font-weight: 700;">
+                  <i class="fas fa-download"></i>
+                  <span>Download PNG (300 DPI)</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 3-COLUMN STUDIO WORKSPACE (Left: Settings | Center: Live Preview | Right: Templates) -->
+            <div class="broadcast-studio-3col-grid" id="broadcastStudioWorkspaceGrid">
+              
+              <!-- ===============================================================
+                   LEFT COLUMN: Organized Configuration Panel
+                   =============================================================== -->
+              <div class="broadcast-left-col" id="broadcastLeftControlsCol">
+                <!-- 1. Output Format & Branding Tag Cards -->
+                <div class="left-shortcuts-dual-stack">
+                  <div class="left-output-shortcut-bar">
+                    <div class="left-output-info">
+                      <span class="left-output-label"><i class="fas fa-crop-simple" style="color: var(--admin-primary);"></i> OUTPUT FORMAT</span>
+                      <span class="left-output-value" id="leftOutputSummaryText">Landscape • 1920 × 1080 px</span>
+                    </div>
+                    <button type="button" class="btn-output-settings-trigger" id="btnOutputSettingsLeft" onclick="toggleOutputSettingsModal()" title="Open Output Dimensions & Platform Formats">
+                      <i class="fas fa-sliders"></i>
+                      <span>Output Settings</span>
+                    </button>
+                  </div>
+
+                  <div class="left-output-shortcut-bar left-branding-shortcut-bar" id="leftBrandingShortcutBar">
+                    <div class="left-output-info">
+                      <span class="left-output-label"><i class="fas fa-award" style="color: #D97706;"></i> BRANDING TAG <small id="leftBrandingScopeBadge" style="color: #059669; font-weight: 800;">(Global)</small></span>
+                      <span class="left-output-value" id="leftBrandingSummaryText">QSF | نیوز • OFFICIAL NEWS</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 5px; flex-shrink: 0;">
+                      <button type="button" class="btn-tiny-reset quick-eye-toggle-btn" id="btnQuickToggleBrandingVis" onclick="quickToggleBrandingVisibility()" title="Show / Hide Official Branding Tag">
+                        <i class="fas fa-eye" id="iconQuickBrandingVis"></i>
+                      </button>
+                      <button type="button" class="btn-output-settings-trigger" id="btnOpenBrandingSettingsLeft" onclick="openBrandingSettingsModal()" style="background: #0F172A;" title="Configure Official News Branding Tag">
+                        <i class="fas fa-pen-to-square"></i>
+                        <span>Branding</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 2. Photograph & Positioning Card -->
+                <div class="news-panel-section compact-section">
+                  <div class="news-section-title compact-title">
+                    <span><i class="fas fa-image" style="color: var(--admin-primary);"></i> Photograph &amp; Positioning</span>
+                    <button type="button" class="btn-tiny-reset" onclick="resetNewsPhotoControls()" title="Reset photo zoom/pan">
+                      <i class="fas fa-arrows-rotate"></i> Reset
+                    </button>
+                  </div>
+                  <div class="compact-photo-actions">
+                    <input type="file" id="newsPhotoLocalFileInput" accept="image/*" style="display: none;" onchange="handleNewsPhotoUpload(this)" />
+                    <button type="button" class="btn-admin btn-admin-primary" onclick="document.getElementById('newsPhotoLocalFileInput').click()">
+                      <i class="fas fa-cloud-arrow-up"></i>
+                      <span>Upload Photo</span>
+                    </button>
+                    <button type="button" class="btn-admin btn-admin-secondary" onclick="openNewsMediaPicker()">
+                      <i class="fas fa-photo-film"></i>
+                      <span>Media Library</span>
+                    </button>
+                  </div>
+                  <div class="photo-control-sliders compact-sliders">
+                    <div class="photo-slider-item">
+                      <div class="photo-slider-label">
+                        <span>Zoom</span>
+                        <span id="labelNewsPhotoZoom">100%</span>
+                      </div>
+                      <input type="range" id="sliderNewsPhotoZoom" min="50" max="250" value="100" oninput="updateNewsPhotoTransform()" />
+                    </div>
+                    <div class="photo-slider-item">
+                      <div class="photo-slider-label">
+                        <span>Darkness</span>
+                        <span id="labelNewsPhotoDarkness">40%</span>
+                      </div>
+                      <input type="range" id="sliderNewsPhotoDarkness" min="0" max="85" value="40" oninput="updateNewsPhotoTransform()" />
+                    </div>
+                    <div class="photo-slider-item">
+                      <div class="photo-slider-label">
+                        <span>Pan X</span>
+                        <span id="labelNewsPhotoPanX">0%</span>
+                      </div>
+                      <input type="range" id="sliderNewsPhotoPanX" min="-50" max="50" value="0" oninput="updateNewsPhotoTransform()" />
+                    </div>
+                    <div class="photo-slider-item">
+                      <div class="photo-slider-label">
+                        <span>Pan Y</span>
+                        <span id="labelNewsPhotoPanY">0%</span>
+                      </div>
+                      <input type="range" id="sliderNewsPhotoPanY" min="-50" max="50" value="0" oninput="updateNewsPhotoTransform()" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 3. Content & Broadcast Text Card -->
+                <div class="news-panel-section compact-section" style="flex: 1;">
+                  <div class="news-section-title compact-title">
+                    <span><i class="fas fa-pen-nib" style="color: var(--admin-primary);"></i> Content &amp; Broadcast Text</span>
+                  </div>
+
+                  <div class="compact-inputs-stack">
+                    <div class="compact-input-row-2col">
+                      <div>
+                        <label class="compact-field-label" for="newsInputTag">Category / Location Tag</label>
+                        <input type="text" id="newsInputTag" class="form-control compact-input" placeholder="e.g. بریکنگ نیوز" oninput="updateNewsGraphicPreview()" />
+                      </div>
+                      <div id="fieldSpeakerWrapper">
+                        <label class="compact-field-label" for="newsInputSpeaker">Speaker / Source Name</label>
+                        <input type="text" id="newsInputSpeaker" class="form-control compact-input" placeholder="e.g. ترجمان" oninput="updateNewsGraphicPreview()" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label class="compact-field-label" for="newsInputHeadline">Main Headline</label>
+                      <textarea id="newsInputHeadline" class="form-control compact-input" rows="2" placeholder="Enter main broadcast headline..." oninput="updateNewsGraphicPreview()" style="font-weight: 700;"></textarea>
+                    </div>
+
+                    <div class="compact-input-row-2col">
+                      <div>
+                        <label class="compact-field-label" for="newsInputSubheading">Subheading / Kicker</label>
+                        <input type="text" id="newsInputSubheading" class="form-control compact-input" placeholder="Secondary subheading..." oninput="updateNewsGraphicPreview()" />
+                      </div>
+                      <div>
+                        <label class="compact-field-label" for="newsInputFooter">Live Ticker Strap</label>
+                        <input type="text" id="newsInputFooter" class="form-control compact-input" placeholder="QESF بریکنگ نیوز ڈیسک" oninput="updateNewsGraphicPreview()" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label class="compact-field-label" for="newsInputBody">Detailed Story / Statement Box</label>
+                      <textarea id="newsInputBody" class="form-control compact-input" rows="2" placeholder="Enter report details or statement text..." oninput="updateNewsGraphicPreview()"></textarea>
+                    </div>
+
+                    <div class="compact-input-row-2col">
+                      <div>
+                        <label class="compact-field-label" for="newsInputDateline">Dateline &amp; Bureau</label>
+                        <input type="text" id="newsInputDateline" class="form-control compact-input" placeholder="20 نومبر 2026" oninput="updateNewsGraphicPreview()" />
+                      </div>
+                      <div>
+                        <label class="compact-field-label" for="newsInputWebsite">Official Website</label>
+                        <input type="text" id="newsInputWebsite" class="form-control compact-input" placeholder="www.qasreshabbir.org" oninput="updateNewsGraphicPreview()" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 4. Headline Styling & Scale Controls -->
+                <div class="compact-typography-bar">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="compact-field-label" style="margin: 0; white-space: nowrap;">Color:</span>
+                    <div class="headline-color-chips" title="Headline Color">
+                      <div class="color-chip active" id="chipColor_white" style="background: #FFFFFF;" onclick="setNewsHeadlineColor('white')" title="Pure White"></div>
+                      <div class="color-chip" id="chipColor_yellow" style="background: #FDE047;" onclick="setNewsHeadlineColor('yellow')" title="News Yellow"></div>
+                      <div class="color-chip" id="chipColor_gold" style="background: #F59E0B;" onclick="setNewsHeadlineColor('gold')" title="Golden Amber"></div>
+                      <div class="color-chip" id="chipColor_red" style="background: #EF4444;" onclick="setNewsHeadlineColor('red')" title="Emergency Red"></div>
+                      <div class="color-chip" id="chipColor_cyan" style="background: #38BDF8;" onclick="setNewsHeadlineColor('cyan')" title="Cyan Blue"></div>
+                    </div>
+                  </div>
+                  <div class="compact-size-btns" title="Headline Font Scale">
+                    <button type="button" class="btn-admin" id="btnNewsSize_sm" onclick="setNewsHeadlineSize('sm')">S</button>
+                    <button type="button" class="btn-admin" id="btnNewsSize_md" onclick="setNewsHeadlineSize('md')">M</button>
+                    <button type="button" class="btn-admin active" id="btnNewsSize_lg" onclick="setNewsHeadlineSize('lg')">L</button>
+                    <button type="button" class="btn-admin" id="btnNewsSize_xl" onclick="setNewsHeadlineSize('xl')">XL</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ===============================================================
+                   CENTER COLUMN: Live Broadcast Preview Monitor
+                   =============================================================== -->
+              <div class="broadcast-center-col news-broadcast-monitor-stage" id="liveBroadcastMonitorStage" data-orientation="landscape">
+                <!-- Control Room Monitor Top Telemetry Bar -->
+                <div class="monitor-header-bar">
+                  <div class="monitor-title-group">
+                    <div class="monitor-title-text">
+                      <span class="live-pulse-indicator"></span>
+                      <span>Live Broadcast Preview</span>
+                    </div>
+                    <span class="badge badge-danger" id="newsRatioBadge">1920 × 1080 px (16:9) • Landscape</span>
+                  </div>
+                  <div class="monitor-quick-actions">
+                    <button type="button" class="btn-output-settings-monitor" id="btnBrandingSettingsMonitor" onclick="openBrandingSettingsModal()" title="Customize Official News Branding Tag" style="color: #38BDF8;">
+                      <i class="fas fa-award"></i>
+                      <span>Branding</span>
+                    </button>
+                    <button type="button" class="btn-output-settings-monitor" id="btnElementCustomizerMonitor" onclick="openElementCustomizerModal('headlineBox')" title="Click or Customize Any Canvas Element" style="color: #A7F3D0;">
+                      <i class="fas fa-pen-ruler"></i>
+                      <span>Elements</span>
+                    </button>
+                    <button type="button" class="btn-output-settings-monitor" id="btnOutputSettingsMonitor" onclick="toggleOutputSettingsModal()" title="Open Output Dimensions & Platform Formats">
+                      <i class="fas fa-sliders"></i>
+                      <span>Output Settings</span>
+                    </button>
+                    <button type="button" class="btn-monitor-action" onclick="downloadNewsGraphic('jpeg')" title="Export as JPG">
+                      <i class="fas fa-file-image"></i>
+                      <span>JPG</span>
+                    </button>
+                    <button type="button" class="btn-monitor-action btn-monitor-primary" onclick="downloadNewsGraphic('png')" title="Export as 300 DPI High-Res PNG">
+                      <i class="fas fa-download"></i>
+                      <span>PNG</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Dynamic Aspect-Adaptive Preview Viewport (Zero Excessive Side Black Space) -->
+                <div class="news-canvas-container" id="newsCanvasContainer" data-orientation="landscape">
+                  <div class="qsf-news-canvas tpl-breaking dim-landscape color-white is-urdu" id="qesfNewsCanvas">
+                    <!-- Layer 1: Photograph Layer with Pan/Zoom and Darkness Overlay -->
+                    <div class="news-photo-layer" id="newsPhotoLayer">
+                      <img src="/media/branding/Smiling_School_Group_with_Foun_1792082807587_458986.webp" 
+                           alt="News Graphic Photo" 
+                           id="canvasNewsPhotoImg" 
+                           class="news-photo-img" 
+                           decoding="async"
+                           onerror="this.src='/media/branding/hero_bg_desktop.webp';" />
+                      <div class="news-photo-overlay" id="canvasNewsPhotoOverlay" style="opacity: 0.4;"></div>
+                    </div>
+
+                    <!-- Layer 2: Foreground Graphic Elements (Overlaid on photo) -->
+                    <div class="news-foreground" id="newsCanvasForeground">
+                      <!-- TOP BAR: Channel Bug & Breaking Indicator -->
+                      <div class="news-top-bar" id="canvasTopBar">
+                        <!-- Dedicated TV News Channel Bug (Editable Global & Per-Template Branding Tag) -->
+                        <div class="news-channel-bug bug-shape-pill bug-size-md" id="canvasNewsChannelBug" onclick="openBrandingSettingsModal()" title="Click to customize QSF Official Branding Tag" style="cursor: pointer;">
+                          <div class="news-bug-emblem" id="canvasBugEmblem">
+                            <img src="/media/branding/Qasr-e-Shabir_Foundation_Emble_1792086383401_940589.webp" 
+                                 alt="QESF" 
+                                 decoding="async"
+                                 onerror="this.src='/media/branding/logo.svg';" />
+                          </div>
+                          <div class="news-bug-text">
+                            <span class="news-bug-channel" id="canvasBugChannelTitle">QSF | نیوز</span>
+                            <span class="news-bug-badge" id="canvasBugSubTitle">OFFICIAL NEWS</span>
+                          </div>
+                        </div>
+
+                        <!-- Top Tag / Breaking Banner (Dynamic per template) -->
+                        <div id="canvasTopBannerSlot">
+                          <!-- Injected dynamically per template -->
+                        </div>
+                      </div>
+
+                      <!-- CENTER AREA (Dynamic per template) -->
+                      <div id="canvasCenterSlot" style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                        <!-- Injected dynamically -->
+                      </div>
+
+                      <!-- LOWER THIRD & HEADLINE AREA (Dynamic per template) -->
+                      <div id="canvasLowerThirdSlot">
+                        <!-- Injected dynamically -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Control Room Bottom Telemetry Strip -->
+                <div class="monitor-footer-telemetry">
+                  <span id="telemetryActiveTemplate"><i class="fas fa-satellite"></i> CH-01 • 1. Breaking News</span>
+                  <span id="telemetryActiveAspect"><i class="fas fa-lock"></i> Aspect Ratio Locked (1200×630)</span>
+                  <span id="telemetryActiveLang"><i class="fas fa-globe"></i> URDU (RTL) • 300 DPI</span>
+                </div>
+              </div>
+
+              <!-- ===============================================================
+                   RIGHT COLUMN: Broadcast Templates (20 Templates in 2-Col Grid)
+                   =============================================================== -->
+              <div class="broadcast-right-col" id="broadcastRightTemplatesCol">
+                <div class="news-templates-panel-header">
+                  <div class="templates-header-top">
+                    <h4 class="templates-panel-title">
+                      <i class="fas fa-layer-group" style="color: var(--admin-primary);"></i>
+                      <span>Broadcast Templates (20)</span>
+                    </h4>
+                  </div>
+                  <div class="active-template-pill" id="activeTemplateIndicator">
+                    Active: 1. Breaking News (بریکنگ نیوز)
+                  </div>
+                </div>
+
+                <!-- Independently Scrollable Two-Column Template Grid -->
+                <div class="news-templates-2col-grid" id="newsTemplates2ColGrid">
+                  <!-- 1. Breaking News -->
+                  <div class="news-tpl-card active" id="tplCard_breaking" onclick="selectNewsTemplate('breaking')">
+                    <div class="news-tpl-thumb" style="background: linear-gradient(135deg, #7F1D1D, #B91C1C, #1E293B);">
+                      <i class="fas fa-bolt" style="color: #FDE047;"></i>
+                      <span class="news-tpl-badge">TV Flash</span>
+                    </div>
+                    <div class="news-tpl-name">1. Breaking News</div>
+                    <div class="news-tpl-desc">بریکنگ نیوز</div>
+                  </div>
+
+                  <!-- 2. International News -->
+                  <div class="news-tpl-card" id="tplCard_international" onclick="selectNewsTemplate('international')">
+                    <div class="news-tpl-thumb" style="background: linear-gradient(135deg, #0B132B, #1C2541, #0284C7);">
+                      <i class="fas fa-globe" style="color: #38BDF8;"></i>
+                      <span class="news-tpl-badge">Global</span>
+                    </div>
+                    <div class="news-tpl-name">2. International</div>
+                    <div class="news-tpl-desc">بین الاقوامی خبریں</div>
+                  </div>
+
+                  <!-- 3. Statement / Tweet Card -->
+                  <div class="news-tpl-card" id="tplCard_statement" onclick="selectNewsTemplate('statement')">
+                    <div class="news-tpl-thumb" style="background: linear-gradient(135deg, #1A0208, #350512, #064E3B);">
+                      <i class="fas fa-comment-dots" style="color: #F59E0B;"></i>
+                      <span class="news-tpl-badge">Statement</span>
+                    </div>
+                    <div class="news-tpl-name">3. Statement</div>
+                    <div class="news-tpl-desc">اہم بیان و ٹویٹ</div>
+                  </div>
+
+                  <!-- 4. Latest News -->
+                  <div class="news-tpl-card" id="tplCard_latest" onclick="selectNewsTemplate('latest')">
+                    <div class="news-tpl-thumb" style="background: linear-gradient(135deg, #4C0519, #991B1B, #D97706);">
+                      <i class="fas fa-newspaper" style="color: #FFFFFF;"></i>
+                      <span class="news-tpl-badge">Bulletin</span>
+                    </div>
+                    <div class="news-tpl-name">4. Latest News</div>
+                    <div class="news-tpl-desc">تازہ ترین خبریں</div>
+                  </div>
+
+                  <!-- 5. Political & Discussion -->
+                  <div class="news-tpl-card" id="tplCard_political" onclick="selectNewsTemplate('political')">
+                    <div class="news-tpl-thumb" style="background: linear-gradient(135deg, #7F1D1D, #0F172A, #1E3A8A);">
+                      <i class="fas fa-phone-volume" style="color: #60A5FA;"></i>
+                      <span class="news-tpl-badge">Dialogue</span>
+                    </div>
+                    <div class="news-tpl-name">5. Political Call</div>
+                    <div class="news-tpl-desc">سیاسی و سفارتی</div>
+                  </div>
+
+                  <!-- 6. Humanitarian Relief -->
+                  <div class="news-tpl-card" id="tplCard_humanitarian" onclick="selectNewsTemplate('humanitarian')">
+                    <div class="news-tpl-thumb" style="background: linear-gradient(135deg, #7F1D1D, #991B1B, #D97706);">
+                      <i class="fas fa-hand-holding-heart" style="color: #FDE047;"></i>
+                      <span class="news-tpl-badge">Welfare</span>
+                    </div>
+                    <div class="news-tpl-name">6. Humanitarian</div>
+                    <div class="news-tpl-desc">انسانی ہمدردی</div>
+                  </div>
+
+                  <!-- 7. Leader Quote -->
+                  <div class="news-tpl-card" id="tplCard_quote" onclick="selectNewsTemplate('quote')">
+                    <div class="news-tpl-thumb" style="background: linear-gradient(135deg, #0F172A, #2E0510, #7F1D1D);">
+                      <i class="fas fa-quote-right" style="color: #FACC15;"></i>
+                      <span class="news-tpl-badge">Quote</span>
+                    </div>
+                    <div class="news-tpl-name">7. Leader Quote</div>
+                    <div class="news-tpl-desc">خصوصی بیان</div>
+                  </div>
+
+                  <!-- 8. Islamic Messages -->
+                  <div class="news-tpl-card" id="tplCard_islamic" onclick="selectNewsTemplate('islamic')">
+                    <div class="news-tpl-thumb" style="background: linear-gradient(135deg, #022C22, #064E3B, #D97706);">
+                      <i class="fas fa-mosque" style="color: #FDE047;"></i>
+                      <span class="news-tpl-badge">Islamic</span>
+                    </div>
+                    <div class="news-tpl-name">8. Islamic Quote</div>
+                    <div class="news-tpl-desc">اقوال و پیغامات</div>
+                  </div>
+
+                  <!-- 9. Photo News -->
+                  <div class="news-tpl-card" id="tplCard_photo" onclick="selectNewsTemplate('photo')">
+                    <div class="news-tpl-thumb" style="background: linear-gradient(135deg, #111827, #374151, #F59E0B);">
+                      <i class="fas fa-camera" style="color: #F59E0B;"></i>
+                      <span class="news-tpl-badge">Photo</span>
+                    </div>
+                    <div class="news-tpl-name">9. Photo News</div>
+                    <div class="news-tpl-desc">تصویری خبر</div>
+                  </div>
+
+                  <!-- 10. Special Report -->
+                  <div class="news-tpl-card" id="tplCard_special" onclick="selectNewsTemplate('special')">
+                    <div class="news-tpl-thumb" style="background: linear-gradient(135deg, #1E1B4B, #4C0519, #D97706);">
+                      <i class="fas fa-star" style="color: #F59E0B;"></i>
+                      <span class="news-tpl-badge">Special</span>
+                    </div>
+                    <div class="news-tpl-name">10. Special Report</div>
+                    <div class="news-tpl-desc">خصوصی رپورٹ</div>
+                  </div>
+
+                  <!-- 11. Emergency Red Alert -->
+                  <div class="news-tpl-card" id="tplCard_emergency" onclick="selectNewsTemplate('emergency')">
+                    <div class="news-tpl-thumb" style="background: linear-gradient(135deg, #990000, #EF4444, #7F1D1D);">
+                      <i class="fas fa-triangle-exclamation" style="color: #FDE047;"></i>
+                      <span class="news-tpl-badge">🚨 Alert</span>
+                    </div>
+                    <div class="news-tpl-name">11. Red Alert</div>
+                    <div class="news-tpl-desc">ہنگامی ریڈ الرٹ</div>
+                  </div>
+
+                  <!-- 12. Live Field Coverage -->
+                  <div class="news-tpl-card" id="tplCard_live" onclick="selectNewsTemplate('live')">
+                    <div class="news-tpl-thumb" style="background: linear-gradient(135deg, #DC2626, #991B1B, #0F172A);">
+                      <i class="fas fa-tower-broadcast" style="color: #FDE047;"></i>
+                      <span class="news-tpl-badge">🔴 Live</span>
+                    </div>
+                    <div class="news-tpl-name">12. Live Coverage</div>
+                    <div class="news-tpl-desc">براہ راست کوریج</div>
+                  </div>
+
+                  <!-- 13. Exclusive Investigation -->
+                  <div class="news-tpl-card" id="tplCard_exclusive" onclick="selectNewsTemplate('exclusive')">
+                    <div class="news-tpl-thumb" style="background: linear-gradient(135deg, #000000, #78350F, #F59E0B);">
+                      <i class="fas fa-crown" style="color: #FDE047;"></i>
+                      <span class="news-tpl-badge">⭐ Exclusive</span>
+                    </div>
+                    <div class="news-tpl-name">13. Exclusive</div>
+                    <div class="news-tpl-desc">خصوصی انکشاف</div>
+                  </div>
+
+                  <!-- 14. Official Public Notice -->
+                  <div class="news-tpl-card" id="tplCard_announcement" onclick="selectNewsTemplate('announcement')">
+                    <div class="news-tpl-thumb" style="background: linear-gradient(135deg, #0F172A, #1E3A8A, #D97706);">
+                      <i class="fas fa-scroll" style="color: #38BDF8;"></i>
+                      <span class="news-tpl-badge">Official</span>
+                    </div>
+                    <div class="news-tpl-name">14. Public Notice</div>
+                    <div class="news-tpl-desc">اہم سرکاری اعلامیہ</div>
+                  </div>
+
+                  <!-- 15. News Bulletin Desk -->
+                  <div class="news-tpl-card" id="tplCard_bulletin" onclick="selectNewsTemplate('bulletin')">
+                    <div class="news-tpl-thumb" style="background: linear-gradient(135deg, #1E293B, #0F172A, #3B82F6);">
+                      <i class="fas fa-list-check" style="color: #60A5FA;"></i>
+                      <span class="news-tpl-badge">Desk</span>
+                    </div>
+                    <div class="news-tpl-name">15. News Bulletin</div>
+                    <div class="news-tpl-desc">خبر نامہ ہیڈلائنز</div>
+                  </div>
+
+                  <!-- 16. Photo Journalism -->
+                  <div class="news-tpl-card" id="tplCard_journalism" onclick="selectNewsTemplate('journalism')">
+                    <div class="news-tpl-thumb" style="background: linear-gradient(135deg, #030712, #1F2937, #F59E0B);">
+                      <i class="fas fa-camera-retro" style="color: #FDE047;"></i>
+                      <span class="news-tpl-badge">Lens</span>
+                    </div>
+                    <div class="news-tpl-name">16. Journalism</div>
+                    <div class="news-tpl-desc">تصویری صحافت</div>
+                  </div>
+
+                  <!-- 17. Foundation Milestone -->
+                  <div class="news-tpl-card" id="tplCard_achievement" onclick="selectNewsTemplate('achievement')">
+                    <div class="news-tpl-thumb" style="background: linear-gradient(135deg, #7F1D1D, #D97706, #FDE047);">
+                      <i class="fas fa-trophy" style="color: #FDE047;"></i>
+                      <span class="news-tpl-badge">Milestone</span>
+                    </div>
+                    <div class="news-tpl-name">17. Milestone</div>
+                    <div class="news-tpl-desc">فلاحی کامیابی</div>
+                  </div>
+
+                  <!-- 18. Education & Awareness -->
+                  <div class="news-tpl-card" id="tplCard_education" onclick="selectNewsTemplate('education')">
+                    <div class="news-tpl-thumb" style="background: linear-gradient(135deg, #064E3B, #0284C7, #065F46);">
+                      <i class="fas fa-graduation-cap" style="color: #FEF08A;"></i>
+                      <span class="news-tpl-badge">Awareness</span>
+                    </div>
+                    <div class="news-tpl-name">18. Awareness</div>
+                    <div class="news-tpl-desc">تعلیمی شعور</div>
+                  </div>
+
+                  <!-- 19. News Agency Wire -->
+                  <div class="news-tpl-card" id="tplCard_presswire" onclick="selectNewsTemplate('presswire')">
+                    <div class="news-tpl-thumb" style="background: linear-gradient(135deg, #18181B, #27272A, #EF4444);">
+                      <i class="fas fa-satellite-dish" style="color: #38BDF8;"></i>
+                      <span class="news-tpl-badge">Wire</span>
+                    </div>
+                    <div class="news-tpl-name">19. Agency Wire</div>
+                    <div class="news-tpl-desc">پریس وائر ڈسپیچ</div>
+                  </div>
+
+                  <!-- 20. Video & Story Spotlight -->
+                  <div class="news-tpl-card" id="tplCard_spotlight" onclick="selectNewsTemplate('spotlight')">
+                    <div class="news-tpl-thumb" style="background: linear-gradient(135deg, #311042, #7F1D1D, #F59E0B);">
+                      <i class="fas fa-circle-play" style="color: #FDE047;"></i>
+                      <span class="news-tpl-badge">Video</span>
+                    </div>
+                    <div class="news-tpl-name">20. Spotlight</div>
+                    <div class="news-tpl-desc">ویڈیو اسپاٹ لائٹ</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===============================================================
+                 OUTPUT SETTINGS POPOVER / MODAL (Dimensions & Platform Formats)
+                 =============================================================== -->
+            <div class="output-settings-modal-backdrop hidden" id="outputSettingsModal" onclick="handleOutputModalBackdropClick(event)">
+              <div class="output-settings-popover-card" role="dialog" aria-labelledby="outputSettingsModalTitle">
+                <div class="output-modal-header">
+                  <div>
+                    <h4 id="outputSettingsModalTitle" style="margin: 0; font-size: 1rem; font-weight: 800; color: #0F172A; display: flex; align-items: center; gap: 8px;">
+                      <i class="fas fa-sliders" style="color: var(--admin-primary);"></i>
+                      <span>Output Dimensions & Platform Formats</span>
+                    </h4>
+                    <p style="margin: 2px 0 0; font-size: 0.76rem; color: #64748B;">Select a standard broadcast orientation, social media platform format, or enter custom pixel dimensions.</p>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <span class="badge badge-danger" id="outputModalDimensionReadout" style="background: #B91C1C; color: #FFFFFF; font-size: 0.76rem; padding: 5px 10px;">1920 × 1080 px • 16:9</span>
+                    <button type="button" class="btn-close-output-modal" onclick="closeOutputSettingsModal()" title="Close Output Settings">&times;</button>
+                  </div>
+                </div>
+
+                <div class="output-modal-body">
+                  <!-- 1. Core Orientation Formats -->
+                  <div class="output-modal-group">
+                    <div class="output-group-label">Standard Orientation Formats</div>
+                    <div class="aspect-ratio-group modal-ratio-grid-3">
+                      <button type="button" class="aspect-btn active" id="newsRatioBtn_landscape" onclick="setNewsRatio('landscape')">
+                        <i class="fas fa-panorama" style="color: #B91C1C;"></i>
+                        <span>Landscape Format</span>
+                        <small>1920 × 1080 px (16:9)</small>
+                      </button>
+                      <button type="button" class="aspect-btn" id="newsRatioBtn_portrait" onclick="setNewsRatio('portrait')">
+                        <i class="fas fa-mobile-screen" style="color: #0284C7;"></i>
+                        <span>Portrait Format</span>
+                        <small>1080 × 1350 px (4:5)</small>
+                      </button>
+                      <button type="button" class="aspect-btn" id="newsRatioBtn_square" onclick="setNewsRatio('square')">
+                        <i class="fas fa-square" style="color: #059669;"></i>
+                        <span>Square Format</span>
+                        <small>1080 × 1080 px (1:1)</small>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- 2. Social Media Platform Presets -->
+                  <div class="output-modal-group">
+                    <div class="output-group-label">Social Media Platform Presets</div>
+                    <div class="aspect-ratio-group modal-ratio-grid-5">
+                      <button type="button" class="aspect-btn" id="newsRatioBtn_fb_post" onclick="setNewsRatio('fb_post')">
+                        <i class="fa-brands fa-facebook" style="color: #1877F2;"></i>
+                        <span>Facebook Post</span>
+                        <small>1200 × 630 px</small>
+                      </button>
+                      <button type="button" class="aspect-btn" id="newsRatioBtn_fb_reels" onclick="setNewsRatio('fb_reels')">
+                        <i class="fa-brands fa-facebook-f" style="color: #1877F2;"></i>
+                        <span>Facebook Reels</span>
+                        <small>1080 × 1920 px</small>
+                      </button>
+                      <button type="button" class="aspect-btn" id="newsRatioBtn_ig_post" onclick="setNewsRatio('ig_post')">
+                        <i class="fa-brands fa-instagram" style="color: #E1306C;"></i>
+                        <span>Instagram Post</span>
+                        <small>1080 × 1080 px</small>
+                      </button>
+                      <button type="button" class="aspect-btn" id="newsRatioBtn_ig_portrait" onclick="setNewsRatio('ig_portrait')">
+                        <i class="fa-brands fa-instagram" style="color: #C13584;"></i>
+                        <span>Instagram 4:5</span>
+                        <small>1080 × 1350 px</small>
+                      </button>
+                      <button type="button" class="aspect-btn" id="newsRatioBtn_story" onclick="setNewsRatio('story')">
+                        <i class="fas fa-mobile-screen-button" style="color: #E1306C;"></i>
+                        <span>IG Reels / Story</span>
+                        <small>1080 × 1920 px</small>
+                      </button>
+                      <button type="button" class="aspect-btn" id="newsRatioBtn_youtube" onclick="setNewsRatio('youtube')">
+                        <i class="fa-brands fa-youtube" style="color: #EF4444;"></i>
+                        <span>YouTube Thumb</span>
+                        <small>1280 × 720 px</small>
+                      </button>
+                      <button type="button" class="aspect-btn" id="newsRatioBtn_yt_video" onclick="setNewsRatio('yt_video')">
+                        <i class="fa-brands fa-youtube" style="color: #DC2626;"></i>
+                        <span>YouTube Video</span>
+                        <small>1920 × 1080 px</small>
+                      </button>
+                      <button type="button" class="aspect-btn" id="newsRatioBtn_linkedin" onclick="setNewsRatio('linkedin')">
+                        <i class="fa-brands fa-linkedin-in" style="color: #0A66C2;"></i>
+                        <span>LinkedIn Post</span>
+                        <small>1200 × 1350 px</small>
+                      </button>
+                      <button type="button" class="aspect-btn" id="newsRatioBtn_x_post" onclick="setNewsRatio('x_post')">
+                        <i class="fa-brands fa-x-twitter" style="color: #0F172A;"></i>
+                        <span>X / Twitter Post</span>
+                        <small>1600 × 900 px</small>
+                      </button>
+                      <button type="button" class="aspect-btn" id="newsRatioBtn_wa_status" onclick="setNewsRatio('wa_status')">
+                        <i class="fa-brands fa-whatsapp" style="color: #25D366;"></i>
+                        <span>WhatsApp Status</span>
+                        <small>1080 × 1920 px</small>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- 3. Custom Width & Height Inputs -->
+                  <div class="output-modal-group" style="margin-bottom: 0;">
+                    <div class="output-group-label">Custom Output Dimensions (Pixels)</div>
+                    <div class="custom-dimensions-bar">
+                      <div class="custom-dim-field">
+                        <label for="newsCustomWidthInput">Width (px)</label>
+                        <input type="number" id="newsCustomWidthInput" class="form-control" min="320" max="3840" step="10" value="1920" oninput="applyCustomNewsDimensions(false)" />
+                      </div>
+                      <span class="custom-dim-multiply">&times;</span>
+                      <div class="custom-dim-field">
+                        <label for="newsCustomHeightInput">Height (px)</label>
+                        <input type="number" id="newsCustomHeightInput" class="form-control" min="320" max="3840" step="10" value="1080" oninput="applyCustomNewsDimensions(false)" />
+                      </div>
+                      <button type="button" class="btn-admin btn-admin-primary" id="btnApplyCustomDimensions" onclick="applyCustomNewsDimensions(true)" style="height: 36px; align-self: flex-end; padding: 0 16px; font-weight: 700;">
+                        <i class="fas fa-check"></i>
+                        <span>Apply Size</span>
+                      </button>
+                      <button type="button" class="btn-admin btn-admin-secondary" onclick="closeOutputSettingsModal()" style="height: 36px; align-self: flex-end; padding: 0 14px;">
+                        <span>Done</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===============================================================
+                 OFFICIAL BRANDING TAG CONFIGURATION MODAL (Global & Per-Template)
+                 =============================================================== -->
+            <div class="output-settings-modal-backdrop hidden" id="brandingSettingsModal" onclick="handleBrandingModalBackdropClick(event)">
+              <div class="output-settings-popover-card" role="dialog" aria-labelledby="brandingSettingsModalTitle" style="max-width: 680px;">
+                <div class="output-modal-header">
+                  <div>
+                    <h4 id="brandingSettingsModalTitle" style="margin: 0; font-size: 1rem; font-weight: 800; color: #0F172A; display: flex; align-items: center; gap: 8px;">
+                      <i class="fas fa-award" style="color: var(--admin-primary);"></i>
+                      <span>QSF Official News Branding Tag Configuration</span>
+                    </h4>
+                    <p style="margin: 2px 0 0; font-size: 0.75rem; color: #64748B;">Configure once to automatically apply across all 20 broadcast templates, or customize for the active template only.</p>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="badge badge-success" id="brandingModalScopeReadout" style="background: #065F46; color: #FFFFFF; font-size: 0.72rem; padding: 4px 9px;">Global Default</span>
+                    <button type="button" class="btn-close-output-modal" onclick="closeBrandingSettingsModal()" title="Close Branding Settings">&times;</button>
+                  </div>
+                </div>
+
+                <div class="output-modal-body">
+                  <!-- 1. Quick Branding Presets -->
+                  <div class="output-modal-group">
+                    <div class="output-group-label">Quick Branding Identity Presets</div>
+                    <div class="branding-presets-chip-grid">
+                      <button type="button" class="branding-preset-chip active" id="brandPreset_qsf_official" onclick="selectBrandingPreset('qsf_official')">
+                        <i class="fas fa-tv"></i> QSF Official News
+                      </button>
+                      <button type="button" class="branding-preset-chip" id="brandPreset_qsf_breaking" onclick="selectBrandingPreset('qsf_breaking')">
+                        <i class="fas fa-bolt"></i> QSF Breaking News
+                      </button>
+                      <button type="button" class="branding-preset-chip" id="brandPreset_qsf_foundation" onclick="selectBrandingPreset('qsf_foundation')">
+                        <i class="fas fa-hand-holding-heart"></i> Qasr-e-Shabir Foundation
+                      </button>
+                      <button type="button" class="branding-preset-chip" id="brandPreset_official_announcement" onclick="selectBrandingPreset('official_announcement')">
+                        <i class="fas fa-bullhorn"></i> Official Announcement
+                      </button>
+                      <button type="button" class="branding-preset-chip" id="brandPreset_special_report" onclick="selectBrandingPreset('special_report')">
+                        <i class="fas fa-star"></i> Special Report
+                      </button>
+                      <button type="button" class="branding-preset-chip" id="brandPreset_qesf_official" onclick="selectBrandingPreset('qesf_official')">
+                        <i class="fas fa-satellite-dish"></i> QESF Official News
+                      </button>
+                      <button type="button" class="branding-preset-chip" id="brandPreset_official_update" onclick="selectBrandingPreset('official_update')">
+                        <i class="fas fa-bell"></i> Official Update
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- 2. Custom Branding Text & Sub-Label -->
+                  <div class="output-modal-group">
+                    <div class="output-group-label">Custom Branding Text & Sub-Label</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                      <div>
+                        <label class="compact-field-label" for="brandingInputTitle">Primary Branding Text (English / اردو)</label>
+                        <input type="text" id="brandingInputTitle" class="form-control" placeholder="e.g. QSF Official News یا QSF | نیوز" oninput="previewBrandingFromModal()" />
+                      </div>
+                      <div>
+                        <label class="compact-field-label" for="brandingInputSubLabel">Secondary Badge Label (Optional)</label>
+                        <input type="text" id="brandingInputSubLabel" class="form-control" placeholder="e.g. OFFICIAL NEWS یا سرکاری نشریات" oninput="previewBrandingFromModal()" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 3. Visibility, Emblem, Position, Size & Shape -->
+                  <div class="output-modal-group">
+                    <div class="output-group-label">Visibility, Position, Font Size & Styling</div>
+                    <div class="branding-options-grid-4">
+                      <div>
+                        <label class="compact-field-label" for="brandingInputVisible">Tag Visibility</label>
+                        <select id="brandingInputVisible" class="form-control" onchange="previewBrandingFromModal()">
+                          <option value="true">Visible (Show Tag)</option>
+                          <option value="false">Hidden (Hide Tag)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="compact-field-label" for="brandingInputShowLogo">Foundation Logo</label>
+                        <select id="brandingInputShowLogo" class="form-control" onchange="previewBrandingFromModal()">
+                          <option value="true">Show Emblem Logo</option>
+                          <option value="false">Text Only (No Logo)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="compact-field-label" for="brandingInputPosition">Tag Position</label>
+                        <select id="brandingInputPosition" class="form-control" onchange="previewBrandingFromModal()">
+                          <option value="auto">Auto (RTL / LTR Standard)</option>
+                          <option value="right">Top Right</option>
+                          <option value="left">Top Left</option>
+                          <option value="center">Top Center</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="compact-field-label" for="brandingInputFontSize">Font Size</label>
+                        <select id="brandingInputFontSize" class="form-control" onchange="previewBrandingFromModal()">
+                          <option value="sm">Small (Compact)</option>
+                          <option value="md" selected>Medium (Standard)</option>
+                          <option value="lg">Large (Prominent)</option>
+                          <option value="xl">Extra Large</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                      <div>
+                        <label class="compact-field-label" for="brandingInputShape">Badge Frame Style</label>
+                        <select id="brandingInputShape" class="form-control" onchange="previewBrandingFromModal()">
+                          <option value="pill" selected>Rounded Broadcast Pill</option>
+                          <option value="box">Rectangular Broadcast Box</option>
+                          <option value="angled">Angled TV Ribbon</option>
+                          <option value="glass">Dark Frosted Glass</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="compact-field-label">Quick Color Theme</label>
+                        <div style="display: flex; gap: 6px; align-items: center; height: 36px;">
+                          <button type="button" class="branding-theme-swatch" onclick="selectBrandingColorTheme('classic')" title="Classic White & Crimson" style="background: #FFFFFF; border: 2px solid #B91C1C; color: #B91C1C;">A</button>
+                          <button type="button" class="branding-theme-swatch" onclick="selectBrandingColorTheme('crimson')" title="Broadcast Crimson Red" style="background: #B91C1C; border: 2px solid #FDE047; color: #FFFFFF;">A</button>
+                          <button type="button" class="branding-theme-swatch" onclick="selectBrandingColorTheme('navy')" title="Dark Navy & Gold" style="background: #0F172A; border: 2px solid #F59E0B; color: #FFFFFF;">A</button>
+                          <button type="button" class="branding-theme-swatch" onclick="selectBrandingColorTheme('emerald')" title="Emerald Green & Gold" style="background: #064E3B; border: 2px solid #F59E0B; color: #FDE047;">A</button>
+                          <button type="button" class="branding-theme-swatch" onclick="selectBrandingColorTheme('onyx')" title="Onyx Black & Yellow" style="background: #111827; border: 2px solid #FDE047; color: #FDE047;">A</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 4. Custom Background, Text & Border Colors -->
+                  <div class="output-modal-group">
+                    <div class="output-group-label">Custom Background & Text Colors</div>
+                    <div class="branding-options-grid-4">
+                      <div class="branding-color-picker-item">
+                        <label class="compact-field-label" for="brandingInputBgColor">Background</label>
+                        <input type="color" id="brandingInputBgColor" value="#FFFFFF" oninput="previewBrandingFromModal()" />
+                      </div>
+                      <div class="branding-color-picker-item">
+                        <label class="compact-field-label" for="brandingInputTextColor">Primary Text</label>
+                        <input type="color" id="brandingInputTextColor" value="#B91C1C" oninput="previewBrandingFromModal()" />
+                      </div>
+                      <div class="branding-color-picker-item">
+                        <label class="compact-field-label" for="brandingInputSubColor">Sub-Label Text</label>
+                        <input type="color" id="brandingInputSubColor" value="#065F46" oninput="previewBrandingFromModal()" />
+                      </div>
+                      <div class="branding-color-picker-item">
+                        <label class="compact-field-label" for="brandingInputBorderColor">Border Accent</label>
+                        <input type="color" id="brandingInputBorderColor" value="#F59E0B" oninput="previewBrandingFromModal()" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 5. Save Actions (One-Time Global Default vs Individual Template Override) -->
+                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding-top: 10px; border-top: 1px solid #E2E8F0;">
+                    <button type="button" class="btn-admin btn-admin-secondary" onclick="resetBrandingConfiguration()" style="font-size: 0.76rem; padding: 7px 12px;">
+                      <i class="fas fa-rotate-left"></i>
+                      <span>Reset Default</span>
+                    </button>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                      <button type="button" class="btn-admin btn-admin-secondary" id="btnSaveBrandingTemplate" onclick="saveBrandingConfiguration('template')" style="font-size: 0.76rem; padding: 7px 12px; border-color: #0284C7; color: #0284C7;">
+                        <i class="fas fa-thumbtack"></i>
+                        <span>Apply to This Template Only</span>
+                      </button>
+                      <button type="button" class="btn-admin btn-admin-primary" id="btnSaveBrandingGlobal" onclick="saveBrandingConfiguration('global')" style="font-size: 0.78rem; padding: 7px 16px; font-weight: 700;">
+                        <i class="fas fa-earth-americas"></i>
+                        <span>Save Global Default (All 20 Templates)</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===============================================================
+                 UNIVERSAL ELEMENT CUSTOMIZER MODAL (Global & Per-Template)
+                 Customize any grid, box, banner, label, heading, ticker or footer
+                 =============================================================== -->
+            <div class="output-settings-modal-backdrop hidden" id="elementCustomizerModal" onclick="handleElementModalBackdropClick(event)">
+              <div class="output-settings-popover-card" role="dialog" aria-labelledby="elCustModalTitle" style="max-width: 740px;">
+                <div class="output-modal-header">
+                  <div>
+                    <h4 id="elCustModalTitle" style="margin: 0; font-size: 0.98rem; font-weight: 800; color: #0F172A; display: flex; align-items: center; gap: 8px;">
+                      <i class="fas fa-pen-ruler" style="color: var(--admin-primary);"></i>
+                      <span id="elCustHeaderTitle">Customize Canvas Element</span>
+                    </h4>
+                    <p style="margin: 2px 0 0; font-size: 0.74rem; color: #64748B;">Customize typography, colors, gradients, size, spacing, borders & visibility globally across all 20 templates or for the active template only.</p>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                    <span class="badge badge-success" id="elCustScopeReadout" style="background: #065F46; color: #FFFFFF; font-size: 0.7rem; padding: 4px 8px; border-radius: 6px;">Global Default</span>
+                    <button type="button" class="btn-close-output-modal" onclick="closeElementCustomizerModal()" title="Close Element Customizer">&times;</button>
+                  </div>
+                </div>
+
+                <div class="output-modal-body" style="padding: 14px 16px;">
+                  <!-- 1. Element Selector & Text Content -->
+                  <div class="output-modal-group" style="margin-bottom: 10px;">
+                    <div style="display: grid; grid-template-columns: 1.2fr 0.8fr auto; gap: 8px; align-items: end;">
+                      <div>
+                        <label class="compact-field-label" for="elCustSelector">Target Element / Grid Block</label>
+                        <select id="elCustSelector" class="form-control compact-input" style="height: 32px; font-weight: 700;" onchange="switchElementCustomizerTarget(this.value)">
+                          <option value="topBanner">Top Category / Flash Banner</option>
+                          <option value="centerCard">Center Grid / Showcase Card</option>
+                          <option value="headlineBox" selected>Headline Container Card</option>
+                          <option value="headlineText">Main Headline Text</option>
+                          <option value="subheadingText">Subheading / Kicker Text</option>
+                          <option value="bodyText">Story Body / Bullet Copy</option>
+                          <option value="detailBox">Detail / Directive Box</option>
+                          <option value="speakerLabel">Speaker / Source Label</option>
+                          <option value="tickerStrap">Footer Ticker Bar (Outer)</option>
+                          <option value="tickerLabel">Footer Ticker Badge</option>
+                          <option value="tickerText">Footer Ticker Text</option>
+                          <option value="datelineBar">Footer Dateline Bar</option>
+                          <option value="websitePill">Official Website Badge</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="compact-field-label" for="elCustVisible">Element Visibility</label>
+                        <select id="elCustVisible" class="form-control compact-input" style="height: 32px; font-weight: 700;" onchange="previewElementCustomizerDraft()">
+                          <option value="true">Visible (Show Element)</option>
+                          <option value="false">Hidden (Hide Element)</option>
+                        </select>
+                      </div>
+                      <button type="button" class="btn-admin btn-admin-secondary" onclick="closeElementCustomizerModal(); openBrandingSettingsModal();" style="height: 32px; padding: 0 10px; font-size: 0.72rem;" title="Edit QSF Official Branding Tag">
+                        <i class="fas fa-award" style="color: #D97706;"></i> Branding Tag
+                      </button>
+                    </div>
+
+                    <div id="elCustTextGroup" style="margin-top: 8px;">
+                      <label class="compact-field-label" for="elCustText">Element Text Content (Live Sync)</label>
+                      <textarea id="elCustText" class="form-control compact-input" rows="2" style="height: auto; min-height: 44px; padding: 6px 8px !important; font-size: 0.8rem !important;" placeholder="Enter text content for this element..." oninput="previewElementCustomizerDraft(true)"></textarea>
+                    </div>
+                  </div>
+
+                  <!-- 2. Typography -->
+                  <div class="output-modal-group" style="margin-bottom: 10px; padding-top: 8px; border-top: 1px solid #F1F5F9;">
+                    <div class="output-group-label" style="margin-bottom: 6px;">Typography & Text Styling</div>
+                    <div class="branding-options-grid-4">
+                      <div>
+                        <label class="compact-field-label" for="elCustFontFamily">Font Family</label>
+                        <select id="elCustFontFamily" class="form-control compact-input" style="height: 30px;" onchange="previewElementCustomizerDraft()">
+                          <option value="auto">Auto (Template Default)</option>
+                          <option value="'Noto Nastaliq Urdu', 'Noto Naskh Arabic', Tahoma, sans-serif">Noto Nastaliq Urdu</option>
+                          <option value="'Noto Naskh Arabic', Tahoma, sans-serif">Noto Naskh Arabic</option>
+                          <option value="'Outfit', 'Inter', sans-serif">Outfit (Headlines)</option>
+                          <option value="'Inter', sans-serif">Inter (Clean Sans)</option>
+                          <option value="Georgia, 'Times New Roman', serif">Editorial Serif</option>
+                          <option value="monospace">Wire Monospace</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="compact-field-label" for="elCustFontSize">Font Size (px, blank = Auto)</label>
+                        <input type="number" id="elCustFontSize" class="form-control compact-input" style="height: 30px;" min="7" max="60" step="0.5" placeholder="Auto" oninput="previewElementCustomizerDraft()" />
+                      </div>
+                      <div>
+                        <label class="compact-field-label" for="elCustFontWeight">Font Weight</label>
+                        <select id="elCustFontWeight" class="form-control compact-input" style="height: 30px;" onchange="previewElementCustomizerDraft()">
+                          <option value="auto">Auto</option>
+                          <option value="400">Regular (400)</option>
+                          <option value="600">SemiBold (600)</option>
+                          <option value="700">Bold (700)</option>
+                          <option value="800">ExtraBold (800)</option>
+                          <option value="900">Black (900)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="compact-field-label" for="elCustTextAlign">Text Alignment</label>
+                        <select id="elCustTextAlign" class="form-control compact-input" style="height: 30px;" onchange="previewElementCustomizerDraft()">
+                          <option value="auto">Auto (RTL / LTR)</option>
+                          <option value="right">Right (RTL)</option>
+                          <option value="center">Center</option>
+                          <option value="left">Left (LTR)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="branding-options-grid-4" style="margin-top: 6px;">
+                      <div>
+                        <label class="compact-field-label" for="elCustLineHeight">Line Height</label>
+                        <select id="elCustLineHeight" class="form-control compact-input" style="height: 30px;" onchange="previewElementCustomizerDraft()">
+                          <option value="auto">Auto (Responsive)</option>
+                          <option value="1.2">Compact (1.2)</option>
+                          <option value="1.38">Standard (1.38)</option>
+                          <option value="1.6">Urdu Standard (1.6)</option>
+                          <option value="1.85">Urdu Nastaliq (1.85)</option>
+                          <option value="2.1">Relaxed (2.1)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="compact-field-label" for="elCustTextColorMode">Text Color</label>
+                        <div style="display: flex; gap: 4px; align-items: center;">
+                          <input type="color" id="elCustTextColor" value="#FFFFFF" style="width: 36px; height: 30px; border: 1px solid #CBD5E1; border-radius: 6px; padding: 1px; cursor: pointer;" oninput="document.getElementById('elCustTextColorUse').checked = true; previewElementCustomizerDraft()" />
+                          <label style="font-size: 0.68rem; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 3px; cursor: pointer;">
+                            <input type="checkbox" id="elCustTextColorUse" onchange="previewElementCustomizerDraft()" /> Custom
+                          </label>
+                        </div>
+                      </div>
+                      <div>
+                        <label class="compact-field-label" for="elCustAlignSelf">Box Positioning</label>
+                        <select id="elCustAlignSelf" class="form-control compact-input" style="height: 30px;" onchange="previewElementCustomizerDraft()">
+                          <option value="auto">Auto (Grid Stretch)</option>
+                          <option value="stretch">Full Stretch</option>
+                          <option value="flex-start">Align Start</option>
+                          <option value="center">Align Center</option>
+                          <option value="flex-end">Align End</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="compact-field-label" for="elCustWidth">Element Width</label>
+                        <select id="elCustWidth" class="form-control compact-input" style="height: 30px;" onchange="previewElementCustomizerDraft()">
+                          <option value="auto">Auto (Responsive)</option>
+                          <option value="100%">100% Full Width</option>
+                          <option value="90%">90% Width</option>
+                          <option value="80%">80% Width</option>
+                          <option value="70%">70% Width</option>
+                          <option value="fit-content">Fit Content</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 3. Box Background, Gradient, Dimensions & Borders -->
+                  <div class="output-modal-group" style="margin-bottom: 10px; padding-top: 8px; border-top: 1px solid #F1F5F9;">
+                    <div class="output-group-label" style="margin-bottom: 6px;">Background, Gradients, Spacing & Borders</div>
+                    <div class="branding-options-grid-4">
+                      <div>
+                        <label class="compact-field-label" for="elCustBgMode">Background Fill</label>
+                        <select id="elCustBgMode" class="form-control compact-input" style="height: 30px;" onchange="previewElementCustomizerDraft()">
+                          <option value="auto">Theme Default</option>
+                          <option value="solid">Solid Color</option>
+                          <option value="gradient">Linear Gradient</option>
+                          <option value="transparent">Transparent</option>
+                        </select>
+                      </div>
+                      <div class="branding-color-picker-item" style="padding: 3px 6px;">
+                        <label class="compact-field-label" for="elCustBg1">Color 1</label>
+                        <input type="color" id="elCustBg1" value="#0F172A" style="height: 22px;" oninput="if(document.getElementById('elCustBgMode').value==='auto'){document.getElementById('elCustBgMode').value='solid';} previewElementCustomizerDraft()" />
+                      </div>
+                      <div class="branding-color-picker-item" style="padding: 3px 6px;">
+                        <label class="compact-field-label" for="elCustBg2">Gradient Color 2</label>
+                        <input type="color" id="elCustBg2" value="#7F1D1D" style="height: 22px;" oninput="document.getElementById('elCustBgMode').value='gradient'; previewElementCustomizerDraft()" />
+                      </div>
+                      <div>
+                        <label class="compact-field-label" for="elCustBgAngle">Gradient Angle</label>
+                        <select id="elCustBgAngle" class="form-control compact-input" style="height: 30px;" onchange="if(document.getElementById('elCustBgMode').value==='auto'){document.getElementById('elCustBgMode').value='gradient';} previewElementCustomizerDraft()">
+                          <option value="90deg">Horizontal (90°)</option>
+                          <option value="135deg" selected>Diagonal (135°)</option>
+                          <option value="180deg">Vertical (180°)</option>
+                          <option value="45deg">Up-Right (45°)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="branding-options-grid-4" style="margin-top: 6px;">
+                      <div>
+                        <label class="compact-field-label" for="elCustMinHeight">Min Height (px)</label>
+                        <input type="number" id="elCustMinHeight" class="form-control compact-input" style="height: 30px;" min="0" max="240" placeholder="Auto" oninput="previewElementCustomizerDraft()" />
+                      </div>
+                      <div>
+                        <label class="compact-field-label" for="elCustPadding">Padding (px)</label>
+                        <input type="number" id="elCustPadding" class="form-control compact-input" style="height: 30px;" min="0" max="36" placeholder="Auto" oninput="previewElementCustomizerDraft()" />
+                      </div>
+                      <div>
+                        <label class="compact-field-label" for="elCustSpacing">Bottom Gap (px)</label>
+                        <input type="number" id="elCustSpacing" class="form-control compact-input" style="height: 30px;" min="0" max="32" placeholder="Auto" oninput="previewElementCustomizerDraft()" />
+                      </div>
+                      <div>
+                        <label class="compact-field-label" for="elCustRadius">Corner Radius (px)</label>
+                        <input type="number" id="elCustRadius" class="form-control compact-input" style="height: 30px;" min="0" max="16" placeholder="Auto" oninput="previewElementCustomizerDraft()" />
+                      </div>
+                    </div>
+
+                    <div class="branding-options-grid-4" style="margin-top: 6px;">
+                      <div>
+                        <label class="compact-field-label" for="elCustBorderWidth">Border Thickness</label>
+                        <select id="elCustBorderWidth" class="form-control compact-input" style="height: 30px;" onchange="previewElementCustomizerDraft()">
+                          <option value="auto">Theme Default</option>
+                          <option value="0px">None (0px)</option>
+                          <option value="1px">Thin (1px)</option>
+                          <option value="2px">Medium (2px)</option>
+                          <option value="3px">Strong (3px)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="compact-field-label" for="elCustBorderStyle">Border Style</label>
+                        <select id="elCustBorderStyle" class="form-control compact-input" style="height: 30px;" onchange="previewElementCustomizerDraft()">
+                          <option value="solid">Solid</option>
+                          <option value="dashed">Dashed</option>
+                          <option value="dotted">Dotted</option>
+                        </select>
+                      </div>
+                      <div class="branding-color-picker-item" style="padding: 3px 6px;">
+                        <label class="compact-field-label" for="elCustBorderColor">Border Color</label>
+                        <input type="color" id="elCustBorderColor" value="#F59E0B" style="height: 22px;" oninput="if(document.getElementById('elCustBorderWidth').value==='auto'){document.getElementById('elCustBorderWidth').value='2px';} previewElementCustomizerDraft()" />
+                      </div>
+                      <div></div>
+                    </div>
+                  </div>
+
+                  <!-- 4. Save Actions: Global Default vs Individual Template Customization -->
+                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding-top: 10px; border-top: 1px solid #E2E8F0;">
+                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                      <button type="button" class="btn-admin btn-admin-secondary" onclick="resetElementCustomizerTarget()" style="font-size: 0.74rem; padding: 6px 10px;">
+                        <i class="fas fa-rotate-left"></i> Reset Element
+                      </button>
+                      <button type="button" class="btn-admin btn-admin-danger" onclick="resetAllElementCustomizations()" style="font-size: 0.74rem; padding: 6px 10px;">
+                        <i class="fas fa-trash-can"></i> Reset All
+                      </button>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                      <button type="button" class="btn-admin btn-admin-secondary" id="btnSaveElementTemplate" onclick="saveElementCustomizerConfig('template')" style="font-size: 0.76rem; padding: 7px 12px; border-color: #0284C7; color: #0284C7;">
+                        <i class="fas fa-thumbtack"></i> Apply to This Template Only
+                      </button>
+                      <button type="button" class="btn-admin btn-admin-primary" id="btnSaveElementGlobal" onclick="saveElementCustomizerConfig('global')" style="font-size: 0.78rem; padding: 7px 14px; font-weight: 700;">
+                        <i class="fas fa-earth-americas"></i> Save Global Default (All 20)
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- =========================================================================
+               QSF SOCIAL MEDIA – PROFESSIONAL UNLIMITED MULTI-TRACK VIDEO STUDIO (V3)
+               ========================================================================= -->
+          <div class="admin-card video-studio-wrapper hidden" id="videoStudioWorkspaceCard">
+            <!-- Video Studio Top Toolbar -->
+            <div class="page-action-toolbar studio-compact-header vs-header-bar">
+              <div class="studio-header-title-area">
+                <div class="studio-second-header-title">
+                  <i class="fas fa-clapperboard" style="color: var(--admin-primary);"></i>
+                  <span>QSF Video Studio – Unlimited Multi-Track Editor</span>
+                </div>
+                <span class="badge badge-danger" style="background: #B91C1C; color: #FFFFFF; font-size: 0.67rem; padding: 3px 8px;"><i class="fas fa-layer-group"></i> Unlimited Tracks</span>
+                <span class="badge badge-info" style="font-size: 0.67rem; padding: 3px 8px;"><i class="fas fa-volume-high"></i> 15 Built-in SFX</span>
+                <span class="badge badge-secondary" id="vsActiveDimBadge" style="background: #F1F5F9; color: #0F172A; border: 1px solid #CBD5E1; font-size: 0.67rem; padding: 3px 8px; font-weight: 800;">1080×1920 • 9:16 Portrait</span>
+              </div>
+
+              <div class="studio-header-actions-area vs-header-actions">
+                <div class="vs-panel-toggle-group" title="Collapse or Expand Side Panels">
+                  <button type="button" class="btn-admin btn-admin-secondary" id="vsBtnToggleLeftPanel" onclick="window.QSFVideoStudio && window.QSFVideoStudio.toggleDesktopPanel('left')" title="Toggle Left Tools Panel" style="padding: 4px 8px; font-size: 0.72rem;"><i class="fas fa-table-columns"></i></button>
+                  <button type="button" class="btn-admin btn-admin-secondary" id="vsBtnToggleRightPanel" onclick="window.QSFVideoStudio && window.QSFVideoStudio.toggleDesktopPanel('right')" title="Toggle Right Properties Panel" style="padding: 4px 8px; font-size: 0.72rem;"><i class="fas fa-sliders"></i></button>
+                </div>
+
+                <div class="vs-quick-format-pills" title="Output Format">
+                  <button type="button" class="vs-fmt-pill active" data-vs-format="portrait_9_16" onclick="window.QSFVideoStudio && window.QSFVideoStudio.setFormat('portrait_9_16')">9:16</button>
+                  <button type="button" class="vs-fmt-pill" data-vs-format="landscape_16_9" onclick="window.QSFVideoStudio && window.QSFVideoStudio.setFormat('landscape_16_9')">16:9</button>
+                  <button type="button" class="vs-fmt-pill" data-vs-format="square_1_1" onclick="window.QSFVideoStudio && window.QSFVideoStudio.setFormat('square_1_1')">1:1</button>
+                  <button type="button" class="vs-fmt-pill" data-vs-format="ig_portrait_4_5" onclick="window.QSFVideoStudio && window.QSFVideoStudio.setFormat('ig_portrait_4_5')">4:5</button>
+                </div>
+
+                <div class="vs-history-btns">
+                  <button type="button" class="btn-admin btn-admin-secondary" id="vsBtnUndo" onclick="window.QSFVideoStudio && window.QSFVideoStudio.undo()" title="Undo (Ctrl+Z)" disabled style="padding: 5px 8px; font-size: 0.74rem;"><i class="fas fa-rotate-left"></i></button>
+                  <button type="button" class="btn-admin btn-admin-secondary" id="vsBtnRedo" onclick="window.QSFVideoStudio && window.QSFVideoStudio.redo()" title="Redo (Ctrl+Y)" disabled style="padding: 5px 8px; font-size: 0.74rem;"><i class="fas fa-rotate-right"></i></button>
+                </div>
+
+                <select id="vsZoomSelect" class="form-control compact-input" onchange="window.QSFVideoStudio && window.QSFVideoStudio.setZoom(this.value)" title="Preview Zoom">
+                  <option value="fit" selected>Zoom: Fit</option>
+                  <option value="0.5">50%</option>
+                  <option value="0.75">75%</option>
+                  <option value="1">100%</option>
+                </select>
+
+                <button type="button" class="btn-admin btn-admin-secondary" id="vsBtnOpenProjects" onclick="window.QSFVideoStudio && window.QSFVideoStudio.openProjectsModal('drafts')" style="padding: 5px 9px; font-size: 0.73rem;">
+                  <i class="fas fa-folder-open"></i> <span>Projects (<strong id="vsSavedProjectsCount">0</strong>)</span>
+                </button>
+                <button type="button" class="btn-admin btn-admin-secondary" id="vsBtnSaveDraft" onclick="window.QSFVideoStudio && window.QSFVideoStudio.saveProject(false)" style="padding: 5px 9px; font-size: 0.73rem; border-color: #0284C7; color: #0284C7;">
+                  <i class="fas fa-floppy-disk"></i> <span>Save Draft</span>
+                </button>
+                <button type="button" class="btn-admin btn-admin-secondary" id="vsBtnSaveTemplate" onclick="window.QSFVideoStudio && window.QSFVideoStudio.saveProject(true)" style="padding: 5px 9px; font-size: 0.73rem;">
+                  <i class="fas fa-bookmark"></i> <span>Template</span>
+                </button>
+                <button type="button" class="btn-admin btn-admin-primary" id="vsBtnExportVideo" onclick="window.QSFVideoStudio && window.QSFVideoStudio.openExportModal()" style="padding: 5px 12px; font-size: 0.74rem; font-weight: 700;">
+                  <i class="fas fa-download"></i> <span>Download MP4</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Mobile / Tablet Collapsible Panel Toggles -->
+            <div class="vs-mobile-drawer-bar">
+              <button type="button" class="btn-admin btn-admin-secondary active" id="vsMobToggleTools" onclick="window.QSFVideoStudio && window.QSFVideoStudio.toggleMobileDrawer('left')"><i class="fas fa-toolbox"></i> Tools &amp; Media</button>
+              <button type="button" class="btn-admin btn-admin-secondary" id="vsMobToggleProps" onclick="window.QSFVideoStudio && window.QSFVideoStudio.toggleMobileDrawer('right')"><i class="fas fa-sliders"></i> Properties &amp; Layers</button>
+            </div>
+
+            <!-- Main 3-Column Workspace (Left: Media/Tools | Center: Light Live Preview | Right: Properties & Layers) -->
+            <div class="vs-workspace-3col-grid" id="vsWorkspaceGrid">
+              <!-- LEFT PANEL: Media, Text, Audio/SFX, Effects, Transitions, Templates -->
+              <div class="vs-left-col" id="vsLeftControlsCol">
+                <div class="vs-tool-tabs vs-tool-tabs-7" role="tablist">
+                  <button type="button" class="vs-tool-tab active" data-vs-tab="media" onclick="window.QSFVideoStudio && window.QSFVideoStudio.switchLeftTab('media')" title="Media Pool, Uploads & Logos"><i class="fas fa-photo-film"></i><span>Media</span></button>
+                  <button type="button" class="vs-tool-tab" data-vs-tab="subtitles" onclick="window.QSFVideoStudio && window.QSFVideoStudio.switchLeftTab('subtitles')" title="AI Auto Subtitles (Urdu & English Speech-to-Text)"><i class="fas fa-closed-captioning"></i><span>Subs</span></button>
+                  <button type="button" class="vs-tool-tab" data-vs-tab="text" onclick="window.QSFVideoStudio && window.QSFVideoStudio.switchLeftTab('text')" title="Urdu & English Animated Text"><i class="fas fa-font"></i><span>Text</span></button>
+                  <button type="button" class="vs-tool-tab" data-vs-tab="audio" onclick="window.QSFVideoStudio && window.QSFVideoStudio.switchLeftTab('audio')" title="Audio Studio, Voice-Over & 15 Built-in Sound Effects"><i class="fas fa-music"></i><span>Audio</span></button>
+                  <button type="button" class="vs-tool-tab" data-vs-tab="effects" onclick="window.QSFVideoStudio && window.QSFVideoStudio.switchLeftTab('effects')" title="Color Filters & Visual Broadcast Effects"><i class="fas fa-wand-sparkles"></i><span>FX</span></button>
+                  <button type="button" class="vs-tool-tab" data-vs-tab="transitions" onclick="window.QSFVideoStudio && window.QSFVideoStudio.switchLeftTab('transitions')" title="Drag-and-Drop Transitions"><i class="fas fa-shuffle"></i><span>Trans</span></button>
+                  <button type="button" class="vs-tool-tab" data-vs-tab="templates" onclick="window.QSFVideoStudio && window.QSFVideoStudio.switchLeftTab('templates')" title="Templates, Branding & Background"><i class="fas fa-shapes"></i><span>Theme</span></button>
+                </div>
+
+                <div class="vs-left-panels-scroll">
+                  <!-- LEFT TAB 1: MEDIA POOL, LOGOS & MULTI-UPLOAD -->
+                  <div class="vs-tool-panel active" id="vsPanelMedia">
+                    <div class="vs-dropzone" id="vsDropZone" tabindex="0">
+                      <input type="file" id="vsVideoFileInput" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.m4v" multiple hidden />
+                      <input type="file" id="vsImageOverlayInput" accept="image/*" multiple hidden />
+                      <input type="file" id="vsAudioFileInput" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.webm" multiple hidden />
+                      <input type="file" id="vsSfxFileInput" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.webm" multiple hidden />
+                      <i class="fas fa-cloud-arrow-up vs-dropzone-icon"></i>
+                      <div class="vs-dropzone-title">Drop Videos, Images or Audio</div>
+                      <div class="vs-dropzone-sub">Drag items from Media Pool straight onto any timeline track</div>
+                      <div class="vs-dropzone-btns">
+                        <button type="button" class="btn-admin btn-admin-primary" onclick="document.getElementById('vsVideoFileInput').click()" style="padding: 4px 8px; font-size: 0.7rem;"><i class="fas fa-video"></i> + Videos</button>
+                        <button type="button" class="btn-admin btn-admin-secondary" onclick="document.getElementById('vsImageOverlayInput').click()" style="padding: 4px 8px; font-size: 0.7rem;"><i class="fas fa-image"></i> + Image</button>
+                        <button type="button" class="btn-admin btn-admin-secondary" onclick="document.getElementById('vsAudioFileInput').click()" style="padding: 4px 8px; font-size: 0.7rem;"><i class="fas fa-music"></i> + Audio</button>
+                        <button type="button" class="btn-admin btn-admin-secondary" onclick="window.QSFVideoStudio && window.QSFVideoStudio.openProjectsModal('videos')" style="padding: 4px 8px; font-size: 0.7rem;"><i class="fas fa-server"></i> Library</button>
+                      </div>
+                    </div>
+
+                    <div class="vs-upload-progress-wrap hidden" id="vsUploadProgressWrap">
+                      <div class="vs-progress-label"><span id="vsUploadStatusText">Uploading...</span><strong id="vsUploadPctText">0%</strong></div>
+                      <div class="vs-progress-track"><div class="vs-progress-fill" id="vsUploadProgressFill" style="width: 0%;"></div></div>
+                    </div>
+
+                    <div class="news-panel-section compact-section" style="margin-top: 8px;">
+                      <div class="news-section-title compact-title">
+                        <span><i class="fas fa-award"></i> Official QSF Branding</span>
+                        <button type="button" class="btn-tiny-reset" onclick="window.QSFVideoStudio && window.QSFVideoStudio.ensureOfficialLogoClip()"><i class="fas fa-plus"></i> Add Logo</button>
+                      </div>
+                      <div style="display: flex; align-items: center; gap: 8px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 6px; padding: 6px 8px;">
+                        <img id="vsOfficialLogoThumb" src="/media/branding/Qasr-e-Shabir_Foundation_Emble_1792086383401_940589.webp" onerror="this.onerror=null;this.src='/media/branding/logo.svg';" alt="Official QSF Logo" style="width: 34px; height: 34px; object-fit: contain; border-radius: 4px; background: #F8FAFC; padding: 2px;" />
+                        <div style="flex: 1; min-width: 0;">
+                          <div style="font-size: 0.72rem; font-weight: 800; color: #0F172A;">Qasr-e-Shabir Official Emblem</div>
+                          <div style="font-size: 0.63rem; color: #64748B;">Watermark &amp; Brand Overlay</div>
+                        </div>
+                        <button type="button" class="vs-chip-btn" onclick="window.QSFVideoStudio && window.QSFVideoStudio.pickImageOverlayFromLibrary()">Photos</button>
+                      </div>
+                    </div>
+
+                    <div class="news-panel-section compact-section" style="margin-top: 8px;">
+                      <div class="news-section-title compact-title">
+                        <span><i class="fas fa-photo-film"></i> Project Media Pool (<strong id="vsMediaPoolCount">0</strong>)</span>
+                        <button type="button" class="btn-tiny-reset" onclick="window.QSFVideoStudio && window.QSFVideoStudio.openProjectsModal('videos')"><i class="fas fa-folder-open"></i> Reuse</button>
+                      </div>
+                      <div id="vsMediaPoolList" class="vs-media-pool-list">
+                        <div class="vs-empty-inspector">Upload videos, photographs, or music tracks above. Drag onto any track or click <strong>+ Main</strong> / <strong>+ Overlay</strong>.</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- LEFT TAB 1B: AI AUTO SUBTITLES (URDU & ENGLISH SPEECH-TO-TEXT) -->
+                  <div class="vs-tool-panel" id="vsPanelSubtitles">
+                    <div class="news-panel-section compact-section">
+                      <div class="news-section-title compact-title">
+                        <span><i class="fas fa-closed-captioning" style="color:#B91C1C;"></i> AI Auto Subtitles</span>
+                        <span id="vsSttEngineBadge" style="font-size: 0.6rem; color: #059669; font-weight: 800;">AI Ready</span>
+                      </div>
+                      <p style="margin: 0 0 7px; font-size: 0.67rem; color: #64748B;">Automatically transcribes spoken Urdu or English into timestamped subtitles on a dedicated Subtitle Track (no auto-translation).</p>
+
+                      <div class="compact-input-row-2col" style="margin-bottom: 6px;">
+                        <div>
+                          <label class="compact-field-label" for="vsAutoSubLang">Spoken Language</label>
+                          <select id="vsAutoSubLang" class="form-control compact-input">
+                            <option value="auto" selected>Auto Detect (Ur / En)</option>
+                            <option value="ur">Urdu (اردو)</option>
+                            <option value="en">English</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label class="compact-field-label" for="vsAutoSubSource">Audio Source</label>
+                          <select id="vsAutoSubSource" class="form-control compact-input">
+                            <option value="timeline">Timeline Audio Mix</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div style="display: flex; gap: 5px;">
+                        <button type="button" class="btn-admin btn-admin-primary" id="vsBtnGenerateAutoSubs" style="flex: 1; padding: 6px 8px; font-size: 0.72rem; font-weight: 800;" onclick="window.QSFVideoStudio && window.QSFVideoStudio.generateAutoSubtitles()">
+                          <i class="fas fa-wand-magic-sparkles"></i> Auto Subtitles
+                        </button>
+                        <button type="button" class="btn-admin btn-admin-secondary" style="padding: 6px 8px; font-size: 0.7rem;" onclick="window.QSFVideoStudio && window.QSFVideoStudio.addManualSubtitle()" title="Add Manual Subtitle at Playhead">
+                          <i class="fas fa-plus"></i> Manual
+                        </button>
+                      </div>
+
+                      <div class="vs-upload-progress-wrap hidden" id="vsAutoSubProgressWrap">
+                        <div class="vs-progress-label"><span id="vsAutoSubStatusText">Analyzing audio...</span><strong id="vsAutoSubPctText">0%</strong></div>
+                        <div class="vs-progress-track"><div class="vs-progress-fill" id="vsAutoSubProgressFill" style="width: 0%;"></div></div>
+                      </div>
+
+                      <div id="vsAutoSubErrorBox" class="hidden" style="margin-top: 6px; background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; border-radius: 5px; padding: 6px 8px; font-size: 0.68rem;"></div>
+
+                      <div style="margin-top: 8px; padding-top: 7px; border-top: 1px solid #E2E8F0;">
+                        <div style="font-size: 0.64rem; font-weight: 800; color: #475569; margin-bottom: 4px;"><i class="fas fa-language"></i> Optional Subtitle Translation (Separate Step)</div>
+                        <div style="display: flex; gap: 5px;">
+                          <button type="button" class="vs-chip-btn" id="vsBtnTranslateToEn" style="flex: 1; padding: 4px 6px;" onclick="window.QSFVideoStudio && window.QSFVideoStudio.translateAllSubtitles('en')">Translate → English</button>
+                          <button type="button" class="vs-chip-btn" id="vsBtnTranslateToUr" style="flex: 1; padding: 4px 6px;" onclick="window.QSFVideoStudio && window.QSFVideoStudio.translateAllSubtitles('ur')">Translate → اردو</button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="news-panel-section compact-section" style="margin-top: 8px;">
+                      <div class="news-section-title compact-title">
+                        <span><i class="fas fa-list-ul"></i> Subtitle Segments (<strong id="vsSubtitleCount">0</strong>)</span>
+                        <button type="button" class="btn-tiny-reset" onclick="window.QSFVideoStudio && window.QSFVideoStudio.applyStyleToAllSubtitles()" title="Apply selected subtitle styling to all subtitles">Sync Style</button>
+                      </div>
+                      <div id="vsSubtitlesEditorList" class="vs-subtitles-list">
+                        <div class="vs-empty-inspector">Click <strong>Auto Subtitles</strong> above to transcribe speech from your video, or click <strong>+ Manual</strong> to add a subtitle segment.</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- LEFT TAB 2: ANIMATED URDU & ENGLISH TEXT PRESETS -->
+                  <div class="vs-tool-panel" id="vsPanelText">
+                    <div class="news-panel-section compact-section">
+                      <div class="news-section-title compact-title"><span><i class="fas fa-plus-circle"></i> Animated Urdu &amp; English Text</span></div>
+                      <p style="margin: 0 0 6px; font-size: 0.69rem; color: #64748B;">Adds timed text clip at playhead with Urdu Nastaliq RTL or English LTR support. Customize animations &amp; typography in the right panel.</p>
+                      <div class="vs-quick-text-chips">
+                        <button type="button" onclick="window.QSFVideoStudio && window.QSFVideoStudio.addTextPreset('headline')">+ Animated Headline (اردو)</button>
+                        <button type="button" onclick="window.QSFVideoStudio && window.QSFVideoStudio.addTextPreset('breaking')">+ Breaking Banner</button>
+                        <button type="button" onclick="window.QSFVideoStudio && window.QSFVideoStudio.addTextPreset('lower_third')">+ Lower Third Bar</button>
+                        <button type="button" onclick="window.QSFVideoStudio && window.QSFVideoStudio.addTextPreset('ticker')">+ Scrolling News Ticker</button>
+                        <button type="button" onclick="window.QSFVideoStudio && window.QSFVideoStudio.addTextPreset('caption')">+ Caption / Subtitle</button>
+                        <button type="button" onclick="window.QSFVideoStudio && window.QSFVideoStudio.addTextPreset('subheading')">+ Subheading</button>
+                        <button type="button" onclick="window.QSFVideoStudio && window.QSFVideoStudio.addTextPreset('dateline')">+ Date &amp; Location</button>
+                        <button type="button" onclick="window.QSFVideoStudio && window.QSFVideoStudio.addTextPreset('source')">+ Source / Attr.</button>
+                        <button type="button" onclick="window.QSFVideoStudio && window.QSFVideoStudio.addTextPreset('announcement')">+ Announcement</button>
+                        <button type="button" onclick="window.QSFVideoStudio && window.QSFVideoStudio.addTextPreset('custom')">+ English / Custom</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- LEFT TAB 3: AUDIO STUDIO & 15 BUILT-IN SOUND EFFECTS LIBRARY -->
+                  <div class="vs-tool-panel" id="vsPanelAudio">
+                    <div class="news-panel-section compact-section">
+                      <div class="news-section-title compact-title"><span><i class="fas fa-music"></i> Audio Uploads &amp; Music</span></div>
+                      <div class="compact-photo-actions">
+                        <button type="button" class="btn-admin btn-admin-primary" onclick="document.getElementById('vsAudioFileInput').click()"><i class="fas fa-upload"></i> Music / Voice</button>
+                        <button type="button" class="btn-admin btn-admin-secondary" onclick="document.getElementById('vsSfxFileInput').click()"><i class="fas fa-bolt"></i> Upload SFX</button>
+                      </div>
+                      <div style="display: flex; gap: 5px; margin-top: 5px;">
+                        <button type="button" class="btn-admin btn-admin-secondary" id="vsBtnVoiceOverRecord" style="flex: 1; font-size: 0.7rem; padding: 5px 8px; border-color: #DC2626; color: #B91C1C;" onclick="window.QSFVideoStudio && window.QSFVideoStudio.toggleVoiceOverRecording()">
+                          <i class="fas fa-microphone"></i> <span id="vsVoiceOverBtnLabel">Record Voice-Over</span> <strong id="vsVoiceOverTimer" class="hidden" style="margin-left: 4px;">00:00</strong>
+                        </button>
+                      </div>
+                      <button type="button" class="btn-admin btn-admin-secondary" style="width: 100%; margin-top: 5px; font-size: 0.7rem; padding: 5px 8px;" onclick="window.QSFVideoStudio && window.QSFVideoStudio.openProjectsModal('audio')">
+                        <i class="fas fa-server"></i> Open Server Audio Library
+                      </button>
+                    </div>
+
+                    <div class="news-panel-section compact-section" style="margin-top: 8px;">
+                      <div class="news-section-title compact-title">
+                        <span><i class="fas fa-wave-square"></i> Sound Effects Library</span>
+                        <span style="font-size: 0.62rem; color: #059669; font-weight: 700;">Royalty-Free</span>
+                      </div>
+                      <div class="vs-sfx-cat-pills" id="vsSfxCatPills">
+                        <button type="button" class="active" onclick="window.QSFVideoStudio && window.QSFVideoStudio.filterSfxCategory('All')">All</button>
+                        <button type="button" onclick="window.QSFVideoStudio && window.QSFVideoStudio.filterSfxCategory('News')">News</button>
+                        <button type="button" onclick="window.QSFVideoStudio && window.QSFVideoStudio.filterSfxCategory('Transition')">Transition</button>
+                        <button type="button" onclick="window.QSFVideoStudio && window.QSFVideoStudio.filterSfxCategory('Cinematic')">Cinematic</button>
+                        <button type="button" onclick="window.QSFVideoStudio && window.QSFVideoStudio.filterSfxCategory('UI / Alert')">Alert</button>
+                        <button type="button" onclick="window.QSFVideoStudio && window.QSFVideoStudio.filterSfxCategory('Custom')">Custom</button>
+                      </div>
+                      <div id="vsSfxLibraryList" class="vs-sfx-list">
+                        <div class="vs-empty-inspector">Loading built-in sound effects...</div>
+                      </div>
+                    </div>
+
+                    <div class="news-panel-section compact-section" style="margin-top: 8px;">
+                      <div class="news-section-title compact-title"><span><i class="fas fa-sliders"></i> Track Audio Mixer</span></div>
+                      <div id="vsAudioMixerSummary" class="vs-mixer-summary"></div>
+                    </div>
+                  </div>
+
+                  <!-- LEFT TAB 4: COLOR FILTERS & VISUAL BROADCAST EFFECTS -->
+                  <div class="vs-tool-panel" id="vsPanelEffects">
+                    <div class="news-panel-section compact-section">
+                      <div class="news-section-title compact-title"><span><i class="fas fa-palette"></i> One-Click Color Filter Presets</span></div>
+                      <p style="margin: 0 0 6px; font-size: 0.68rem; color: #64748B;">Applies to selected video/image clip (exported permanently into MP4).</p>
+                      <div class="vs-effects-grid" id="vsColorPresetsGrid">
+                        <button type="button" class="vs-trans-card" onclick="window.QSFVideoStudio && window.QSFVideoStudio.applyColorPreset('original')"><i class="fas fa-ban"></i><span>Original</span></button>
+                        <button type="button" class="vs-trans-card" onclick="window.QSFVideoStudio && window.QSFVideoStudio.applyColorPreset('vivid')"><i class="fas fa-sun"></i><span>Broadcast Vivid</span></button>
+                        <button type="button" class="vs-trans-card" onclick="window.QSFVideoStudio && window.QSFVideoStudio.applyColorPreset('warm_cinema')"><i class="fas fa-film"></i><span>Warm Cinema</span></button>
+                        <button type="button" class="vs-trans-card" onclick="window.QSFVideoStudio && window.QSFVideoStudio.applyColorPreset('cool_news')"><i class="fas fa-snowflake"></i><span>Cool News</span></button>
+                        <button type="button" class="vs-trans-card" onclick="window.QSFVideoStudio && window.QSFVideoStudio.applyColorPreset('bw_news')"><i class="fas fa-circle-half-stroke"></i><span>High B&amp;W</span></button>
+                        <button type="button" class="vs-trans-card" onclick="window.QSFVideoStudio && window.QSFVideoStudio.applyColorPreset('sepia_archive')"><i class="fas fa-clock-rotate-left"></i><span>Sepia Archive</span></button>
+                      </div>
+                    </div>
+
+                    <div class="news-panel-section compact-section" style="margin-top: 8px;">
+                      <div class="news-section-title compact-title"><span><i class="fas fa-wand-sparkles"></i> Adjustment &amp; Broadcast Effects</span></div>
+                      <p style="margin: 0 0 6px; font-size: 0.68rem; color: #64748B;">Click or drag onto an Effects Track on the timeline.</p>
+                      <div class="vs-effects-grid" id="vsBroadcastEffectsGrid">
+                        <button type="button" class="vs-trans-card" draggable="true" data-drag-effect="breaking_pulse" onclick="window.QSFVideoStudio && window.QSFVideoStudio.addEffectClip('breaking_pulse')"><i class="fas fa-bolt" style="color:#DC2626;"></i><span>Breaking Pulse</span></button>
+                        <button type="button" class="vs-trans-card" draggable="true" data-drag-effect="news_scanlines" onclick="window.QSFVideoStudio && window.QSFVideoStudio.addEffectClip('news_scanlines')"><i class="fas fa-tv"></i><span>TV Scanlines</span></button>
+                        <button type="button" class="vs-trans-card" draggable="true" data-drag-effect="cinema_letterbox" onclick="window.QSFVideoStudio && window.QSFVideoStudio.addEffectClip('cinema_letterbox')"><i class="fas fa-clapperboard"></i><span>Cinema Bars</span></button>
+                        <button type="button" class="vs-trans-card" draggable="true" data-drag-effect="warm_glow" onclick="window.QSFVideoStudio && window.QSFVideoStudio.addEffectClip('warm_glow')"><i class="fas fa-sun" style="color:#D97706;"></i><span>Light Glow</span></button>
+                        <button type="button" class="vs-trans-card" draggable="true" data-drag-effect="vignette_dark" onclick="window.QSFVideoStudio && window.QSFVideoStudio.addEffectClip('vignette_dark')"><i class="fas fa-circle-dot"></i><span>Studio Vignette</span></button>
+                        <button type="button" class="vs-trans-card" draggable="true" data-drag-effect="flash_strobe" onclick="window.QSFVideoStudio && window.QSFVideoStudio.addEffectClip('flash_strobe')"><i class="fas fa-bolt-lightning" style="color:#F59E0B;"></i><span>News Flash</span></button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- LEFT TAB 5: EXPANDED DRAG-AND-DROP TRANSITIONS LIBRARY -->
+                  <div class="vs-tool-panel" id="vsPanelTransitions">
+                    <div class="news-panel-section compact-section">
+                      <div class="news-section-title compact-title"><span><i class="fas fa-wand-magic-sparkles"></i> Professional Transitions Library</span></div>
+                      <p style="margin: 0 0 6px; font-size: 0.68rem; color: #64748B;">Drag any transition directly onto a Video clip on the timeline, or click to apply to the selected clip.</p>
+                      <div class="compact-input-row-2col" style="margin-bottom: 8px;">
+                        <div>
+                          <label class="compact-field-label" for="vsTransDurationSelect">Duration</label>
+                          <select id="vsTransDurationSelect" class="form-control compact-input" onchange="window.QSFVideoStudio && window.QSFVideoStudio.applyTransitionDuration(Number(this.value))">
+                            <option value="0.5">0.5s (Fast)</option>
+                            <option value="1" selected>1.0s (Standard)</option>
+                            <option value="1.5">1.5s (Medium)</option>
+                            <option value="2">2.0s (Smooth)</option>
+                            <option value="3">3.0s (Cinematic)</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label class="compact-field-label" for="vsTransIntensitySlider">Intensity</label>
+                          <input type="range" id="vsTransIntensitySlider" min="20" max="100" value="100" oninput="window.QSFVideoStudio && window.QSFVideoStudio.applyTransitionIntensity(Number(this.value))" />
+                        </div>
+                      </div>
+                      <div class="vs-transitions-grid" id="vsTransitionsGrid">
+                        <button type="button" class="vs-trans-card" draggable="true" data-drag-trans="none" onclick="window.QSFVideoStudio && window.QSFVideoStudio.applyTransitionToSelected('none')"><i class="fas fa-scissors"></i><span>Cut / None</span></button>
+                        <button type="button" class="vs-trans-card" draggable="true" data-drag-trans="cross_dissolve" onclick="window.QSFVideoStudio && window.QSFVideoStudio.applyTransitionToSelected('cross_dissolve')"><i class="fas fa-shuffle"></i><span>Cross Dissolve</span></button>
+                        <button type="button" class="vs-trans-card" draggable="true" data-drag-trans="fade_in" onclick="window.QSFVideoStudio && window.QSFVideoStudio.applyTransitionToSelected('fade_in')"><i class="fas fa-circle-half-stroke"></i><span>Fade In</span></button>
+                        <button type="button" class="vs-trans-card" draggable="true" data-drag-trans="fade_out" onclick="window.QSFVideoStudio && window.QSFVideoStudio.applyTransitionToSelected('fade_out')"><i class="fas fa-moon"></i><span>Fade Out</span></button>
+                        <button type="button" class="vs-trans-card" draggable="true" data-drag-trans="slide_left" onclick="window.QSFVideoStudio && window.QSFVideoStudio.applyTransitionToSelected('slide_left')"><i class="fas fa-arrow-left"></i><span>Slide Left</span></button>
+                        <button type="button" class="vs-trans-card" draggable="true" data-drag-trans="slide_right" onclick="window.QSFVideoStudio && window.QSFVideoStudio.applyTransitionToSelected('slide_right')"><i class="fas fa-arrow-right"></i><span>Slide Right</span></button>
+                        <button type="button" class="vs-trans-card" draggable="true" data-drag-trans="push_left" onclick="window.QSFVideoStudio && window.QSFVideoStudio.applyTransitionToSelected('push_left')"><i class="fas fa-angles-left"></i><span>Push Left</span></button>
+                        <button type="button" class="vs-trans-card" draggable="true" data-drag-trans="push_right" onclick="window.QSFVideoStudio && window.QSFVideoStudio.applyTransitionToSelected('push_right')"><i class="fas fa-angles-right"></i><span>Push Right</span></button>
+                        <button type="button" class="vs-trans-card" draggable="true" data-drag-trans="wipe" onclick="window.QSFVideoStudio && window.QSFVideoStudio.applyTransitionToSelected('wipe')"><i class="fas fa-bars-staggered"></i><span>Wipe Left</span></button>
+                        <button type="button" class="vs-trans-card" draggable="true" data-drag-trans="wipe_right" onclick="window.QSFVideoStudio && window.QSFVideoStudio.applyTransitionToSelected('wipe_right')"><i class="fas fa-align-right"></i><span>Wipe Right</span></button>
+                        <button type="button" class="vs-trans-card" draggable="true" data-drag-trans="zoom_in" onclick="window.QSFVideoStudio && window.QSFVideoStudio.applyTransitionToSelected('zoom_in')"><i class="fas fa-magnifying-glass-plus"></i><span>Zoom In</span></button>
+                        <button type="button" class="vs-trans-card" draggable="true" data-drag-trans="zoom_out" onclick="window.QSFVideoStudio && window.QSFVideoStudio.applyTransitionToSelected('zoom_out')"><i class="fas fa-magnifying-glass-minus"></i><span>Zoom Out</span></button>
+                        <button type="button" class="vs-trans-card" draggable="true" data-drag-trans="blur_transition" onclick="window.QSFVideoStudio && window.QSFVideoStudio.applyTransitionToSelected('blur_transition')"><i class="fas fa-droplet"></i><span>Blur Morph</span></button>
+                        <button type="button" class="vs-trans-card" draggable="true" data-drag-trans="film_flash" onclick="window.QSFVideoStudio && window.QSFVideoStudio.applyTransitionToSelected('film_flash')"><i class="fas fa-film"></i><span>Film Flash</span></button>
+                        <button type="button" class="vs-trans-card" draggable="true" data-drag-trans="news_whip" onclick="window.QSFVideoStudio && window.QSFVideoStudio.applyTransitionToSelected('news_whip')"><i class="fas fa-satellite-dish"></i><span>News Whip</span></button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- LEFT TAB 6: VIDEO TEMPLATES & INTELLIGENT BACKGROUND -->
+                  <div class="vs-tool-panel" id="vsPanelTemplates">
+                    <div class="news-panel-section compact-section">
+                      <div class="news-section-title compact-title"><span><i class="fas fa-fill-drip"></i> Canvas Background &amp; Chrome</span></div>
+                      <label class="compact-field-label" for="vsBgModeSelect">Upper/Lower Background Fill</label>
+                      <select id="vsBgModeSelect" class="form-control compact-input" onchange="window.QSFVideoStudio && window.QSFVideoStudio.setBgConfig('mode', this.value)">
+                        <option value="blur">Blurred Video Background (Auto Fill)</option>
+                        <option value="gradient">Gradient Background</option>
+                        <option value="solid">Solid Color Background</option>
+                        <option value="image">Custom Background Image</option>
+                      </select>
+
+                      <div id="vsBgOptBlur" class="vs-bg-opt-group" style="margin-top: 6px;">
+                        <div class="photo-control-sliders compact-sliders">
+                          <div class="photo-slider-item">
+                            <span class="photo-slider-label"><span>Blur</span><span id="vsBgBlurVal">28px</span></span>
+                            <input type="range" id="vsBgBlurSlider" min="4" max="60" value="28" oninput="window.QSFVideoStudio && window.QSFVideoStudio.setBgConfig('blurAmount', this.value)" />
+                          </div>
+                          <div class="photo-slider-item">
+                            <span class="photo-slider-label"><span>Dimming</span><span id="vsBgDimVal">45%</span></span>
+                            <input type="range" id="vsBgDimSlider" min="0" max="85" value="45" oninput="window.QSFVideoStudio && window.QSFVideoStudio.setBgConfig('dimOpacity', this.value)" />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div id="vsBgOptSolid" class="vs-bg-opt-group hidden" style="margin-top: 6px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <input type="color" id="vsBgSolidColor" value="#0F172A" style="width: 38px; height: 28px; border: 1px solid #CBD5E1; border-radius: 6px;" oninput="window.QSFVideoStudio && window.QSFVideoStudio.setBgConfig('solidColor', this.value)" />
+                          <div class="vs-color-swatches">
+                            <button type="button" style="background:#0F172A" onclick="window.QSFVideoStudio && window.QSFVideoStudio.setBgConfig('solidColor', '#0F172A')"></button>
+                            <button type="button" style="background:#7F1D1D" onclick="window.QSFVideoStudio && window.QSFVideoStudio.setBgConfig('solidColor', '#7F1D1D')"></button>
+                            <button type="button" style="background:#B91C1C" onclick="window.QSFVideoStudio && window.QSFVideoStudio.setBgConfig('solidColor', '#B91C1C')"></button>
+                            <button type="button" style="background:#064E3B" onclick="window.QSFVideoStudio && window.QSFVideoStudio.setBgConfig('solidColor', '#064E3B')"></button>
+                            <button type="button" style="background:#000000" onclick="window.QSFVideoStudio && window.QSFVideoStudio.setBgConfig('solidColor', '#000000')"></button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div id="vsBgOptGradient" class="vs-bg-opt-group hidden" style="margin-top: 6px;">
+                        <div class="compact-input-row-2col">
+                          <div><label class="compact-field-label">Color 1</label><input type="color" id="vsBgGrad1" value="#450A0A" style="width:100%;height:26px;" oninput="window.QSFVideoStudio && window.QSFVideoStudio.setBgConfig('gradColor1', this.value)" /></div>
+                          <div><label class="compact-field-label">Color 2</label><input type="color" id="vsBgGrad2" value="#0F172A" style="width:100%;height:26px;" oninput="window.QSFVideoStudio && window.QSFVideoStudio.setBgConfig('gradColor2', this.value)" /></div>
+                        </div>
+                      </div>
+
+                      <div id="vsBgOptImage" class="vs-bg-opt-group hidden" style="margin-top: 6px;">
+                        <input type="file" id="vsBgImageFileInput" accept="image/*" hidden />
+                        <div class="compact-photo-actions">
+                          <button type="button" class="btn-admin btn-admin-primary" onclick="document.getElementById('vsBgImageFileInput').click()"><i class="fas fa-upload"></i> Upload</button>
+                          <button type="button" class="btn-admin btn-admin-secondary" onclick="window.QSFVideoStudio && window.QSFVideoStudio.pickBgImageFromLibrary()"><i class="fas fa-images"></i> Library</button>
+                        </div>
+                      </div>
+
+                      <div class="compact-input-row-2col" style="margin-top: 6px;">
+                        <div>
+                          <label class="compact-field-label" for="vsTplAccentColor">Theme Accent</label>
+                          <input type="color" id="vsTplAccentColor" value="#B91C1C" style="width: 100%; height: 26px;" oninput="window.QSFVideoStudio && window.QSFVideoStudio.setTemplateProp('accentColor', this.value)" />
+                        </div>
+                        <div>
+                          <label class="compact-field-label" for="vsTplChromeStyle">Frame Bars</label>
+                          <select id="vsTplChromeStyle" class="form-control compact-input" onchange="window.QSFVideoStudio && window.QSFVideoStudio.setTemplateProp('showChrome', this.value === 'on')">
+                            <option value="on" selected>Show Accent Frame</option>
+                            <option value="off">Clean Overlays Only</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="news-panel-section compact-section" style="margin-top: 8px;">
+                      <div class="news-section-title compact-title"><span><i class="fas fa-shapes"></i> Broadcast Video Templates (12)</span></div>
+                      <div class="vs-templates-grid" id="vsTemplatesGrid"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CENTER PANEL: Clean Light-Theme Live Multi-Track Preview -->
+              <div class="vs-center-col" id="vsCenterStage">
+                <div class="vs-light-monitor-bar">
+                  <div class="monitor-title-group">
+                    <span class="vs-light-monitor-title"><span class="live-pulse-indicator"></span> Live Multi-Track Preview</span>
+                    <span class="vs-dim-chip" id="vsPreviewOverlayTag">1080 × 1920</span>
+                    <span class="vs-dim-chip" id="vsFrameReadout" title="Current Frame & Timestamp">F0 • 00:00.00</span>
+                  </div>
+                  <div class="monitor-quick-actions">
+                    <button type="button" class="vs-light-action-btn" id="vsBtnQuickAutoSubs" onclick="window.QSFVideoStudio && window.QSFVideoStudio.switchLeftTab('subtitles')" title="AI Auto Subtitles (Urdu & English)"><i class="fas fa-closed-captioning"></i> Auto Subs</button>
+                    <button type="button" class="vs-light-action-btn" id="vsBtnQuickDirector" onclick="window.QSFVideoStudio && window.QSFVideoStudio.switchRightTab('director')" title="Multi-Overlay Freeze-Frame & Sequential Director"><i class="fas fa-clapperboard"></i> Director</button>
+                    <button type="button" class="vs-light-action-btn" id="vsBtnSafeZone" onclick="window.QSFVideoStudio && window.QSFVideoStudio.toggleSafeZone()" title="Toggle Safe Zones"><i class="fas fa-border-all"></i> Safe Zone</button>
+                    <button type="button" class="vs-light-action-btn" onclick="window.QSFVideoStudio && window.QSFVideoStudio.captureFreezeFrame()" title="Capture Current Video Frame as Freeze Frame Clip"><i class="fas fa-snowflake"></i> Freeze</button>
+                    <button type="button" class="vs-light-action-btn primary" onclick="window.QSFVideoStudio && window.QSFVideoStudio.openExportModal()" title="Render & Download MP4 with Audio"><i class="fas fa-download"></i> Export MP4</button>
+                  </div>
+                </div>
+
+                <div class="vs-stage-viewport" id="vsStageViewport">
+                  <div class="vs-stage-frame-wrap" id="vsStageFrameWrap">
+                    <canvas id="vsPreviewCanvas" width="1080" height="1920"></canvas>
+                    <div class="vs-safe-zone-guides hidden" id="vsSafeZoneGuides"></div>
+                    <div class="vs-interactive-overlay" id="vsInteractiveOverlay"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- RIGHT PANEL: Selected Clip Properties, Filters, Keyframes & Layers -->
+              <div class="vs-right-col" id="vsRightLibraryCol">
+                <div class="vs-right-tabs vs-right-tabs-3">
+                  <button type="button" class="vs-right-tab active" data-vs-rtab="props" onclick="window.QSFVideoStudio && window.QSFVideoStudio.switchRightTab('props')"><i class="fas fa-sliders"></i> Props</button>
+                  <button type="button" class="vs-right-tab" data-vs-rtab="director" onclick="window.QSFVideoStudio && window.QSFVideoStudio.switchRightTab('director')"><i class="fas fa-film"></i> Director</button>
+                  <button type="button" class="vs-right-tab" data-vs-rtab="layers" onclick="window.QSFVideoStudio && window.QSFVideoStudio.switchRightTab('layers')"><i class="fas fa-layer-group"></i> Layers</button>
+                </div>
+
+                <div class="vs-right-panel active" id="vsRightPanelProps">
+                  <div id="vsDynamicPropertiesBody">
+                    <div class="vs-empty-inspector">Select any video, overlay, image, logo, subtitle, text, effect, or audio clip on the canvas or timeline to customize it.</div>
+                  </div>
+                </div>
+
+                <div class="vs-right-panel" id="vsRightPanelDirector">
+                  <div id="vsOverlayDirectorBody">
+                    <div class="vs-empty-inspector">Add 2+ Video Overlays (+ Overlay) to configure freeze frames, independent playback/resume positions, and sequential playback scheduling.</div>
+                  </div>
+                </div>
+
+                <div class="vs-right-panel" id="vsRightPanelLayers">
+                  <div class="vs-layers-list" id="vsLayersStack"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Resizable Timeline Drag Handle -->
+            <div class="vs-timeline-resize-handle" id="vsTimelineResizeHandle" title="Drag up or down to resize timeline height"><span></span></div>
+
+            <!-- BOTTOM PANEL: CLEAN LIGHT-THEME UNLIMITED MULTI-TRACK TIMELINE -->
+            <div class="vs-bottom-timeline-bar" id="vsBottomTimelineBar">
+              <div class="vs-playback-controls-row">
+                <div class="vs-transport-group">
+                  <button type="button" class="vs-play-btn" id="vsBtnPlayPause" onclick="window.QSFVideoStudio && window.QSFVideoStudio.togglePlay()" title="Play / Pause (Space)"><i class="fas fa-play"></i></button>
+                  <button type="button" class="vs-ctrl-btn" onclick="window.QSFVideoStudio && window.QSFVideoStudio.seekRelative(-99999)" title="Jump to Start"><i class="fas fa-backward-step"></i></button>
+                  <button type="button" class="vs-ctrl-btn" onclick="window.QSFVideoStudio && window.QSFVideoStudio.stepFrames(-1)" title="Previous Frame (-1f)">-1f</button>
+                  <button type="button" class="vs-ctrl-btn" onclick="window.QSFVideoStudio && window.QSFVideoStudio.stepFrames(1)" title="Next Frame (+1f)">+1f</button>
+                  <button type="button" class="vs-ctrl-btn" onclick="window.QSFVideoStudio && window.QSFVideoStudio.seekRelative(-1)" title="Back 1s">-1s</button>
+                  <button type="button" class="vs-ctrl-btn" onclick="window.QSFVideoStudio && window.QSFVideoStudio.seekRelative(1)" title="Forward 1s">+1s</button>
+                  <span class="vs-time-readout" id="vsTimeReadout">00:00.0 / 00:10.0</span>
+                </div>
+
+                <div class="vs-timeline-edit-tools">
+                  <div class="vs-add-track-wrap">
+                    <select id="vsAddTrackSelect" class="vs-add-track-select" onchange="if(this.value){window.QSFVideoStudio && window.QSFVideoStudio.addTrack(this.value); this.value='';}" title="Add Unlimited New Tracks">
+                      <option value="">+ Add Track...</option>
+                      <option value="video">+ Main Video Track</option>
+                      <option value="video_overlay">+ Video Overlay (PiP) Track</option>
+                      <option value="subtitle">+ Subtitle / Caption Track</option>
+                      <option value="image">+ Image / Logo Track</option>
+                      <option value="text">+ Text Overlay Track</option>
+                      <option value="audio">+ Audio / Music / SFX Track</option>
+                      <option value="effect">+ Effects / Adjustment Track</option>
+                    </select>
+                  </div>
+                  <button type="button" class="vs-ctrl-btn vs-tool-accent" id="vsBtnSplitClip" onclick="window.QSFVideoStudio && window.QSFVideoStudio.splitSelectedAtPlayhead()" title="Split Selected Clip at Playhead"><i class="fas fa-scissors"></i> Split</button>
+                  <button type="button" class="vs-ctrl-btn" id="vsBtnFreezeTl" onclick="window.QSFVideoStudio && window.QSFVideoStudio.captureFreezeFrame()" title="Insert Freeze Frame"><i class="fas fa-snowflake"></i></button>
+                  <button type="button" class="vs-ctrl-btn" id="vsBtnDupClip" onclick="window.QSFVideoStudio && window.QSFVideoStudio.duplicateSelected()" title="Duplicate Clip"><i class="fas fa-copy"></i></button>
+                  <button type="button" class="vs-ctrl-btn vs-tool-danger" id="vsBtnDelClip" onclick="window.QSFVideoStudio && window.QSFVideoStudio.deleteSelected()" title="Delete Clip"><i class="fas fa-trash"></i></button>
+                  <button type="button" class="vs-ctrl-btn active" id="vsBtnSnapToggle" onclick="window.QSFVideoStudio && window.QSFVideoStudio.toggleSnap()" title="Snap Clips to Edges & Playhead"><i class="fas fa-magnet"></i> Snap</button>
+                </div>
+
+                <div class="vs-project-title-inline">
+                  <i class="fas fa-pen" style="color:#64748B; font-size:0.7rem;"></i>
+                  <input type="text" id="vsProjectTitleInput" class="vs-light-title-input" placeholder="Project Title..." value="QSF News Video Broadcast" oninput="window.QSFVideoStudio && window.QSFVideoStudio.setProjectTitle(this.value)" />
+                </div>
+
+                <div class="vs-timeline-zoom-group">
+                  <button type="button" class="vs-ctrl-btn" onclick="window.QSFVideoStudio && window.QSFVideoStudio.adjustTimelineZoom(-6)" title="Zoom Out Timeline">-</button>
+                  <input type="range" id="vsTimelineZoomSlider" min="2" max="120" value="20" style="width: 72px; accent-color: #B91C1C;" oninput="window.QSFVideoStudio && window.QSFVideoStudio.setTimelineZoom(Number(this.value))" title="Timeline Scale (2–120 px/sec)" />
+                  <button type="button" class="vs-ctrl-btn" onclick="window.QSFVideoStudio && window.QSFVideoStudio.adjustTimelineZoom(6)" title="Zoom In Timeline">+</button>
+                  <button type="button" class="vs-ctrl-btn" onclick="window.QSFVideoStudio && window.QSFVideoStudio.fitTimelineZoom()" title="Fit Entire Sequence">Fit</button>
+                  <label style="display: flex; align-items: center; gap: 4px; font-size: 0.7rem; font-weight: 700; color: #334155; cursor: pointer; margin-left: 4px;">
+                    <input type="checkbox" id="vsLoopCheck" checked onchange="window.QSFVideoStudio && window.QSFVideoStudio.setLoop(this.checked)" />
+                    <span>Loop</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Light-Theme Unlimited Multi-Track Timeline Shell -->
+              <div class="vs-nle-timeline-shell" id="vsNleTimelineShell">
+                <div class="vs-nle-track-headers" id="vsTrackHeadersCol">
+                  <div class="vs-nle-ruler-corner">TRACKS</div>
+                </div>
+                <div class="vs-nle-scroll-area" id="vsTimelineScrollArea">
+                  <div class="vs-nle-canvas-inner" id="vsTimelineInner">
+                    <div class="vs-nle-ruler" id="vsTimelineRuler"></div>
+                    <div class="vs-nle-playhead" id="vsTimelinePlayhead" style="left: 0px;"></div>
+                    <div class="vs-nle-snap-guide hidden" id="vsTimelineSnapGuide"></div>
+                    <div class="vs-nle-lanes-stack" id="vsTimelineLanes"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Export Progress Modal -->
+            <div class="output-settings-modal-backdrop hidden" id="vsExportModal">
+              <div class="output-settings-popover-card" style="max-width: 520px;">
+                <div class="output-modal-header">
+                  <div>
+                    <h4 style="margin: 0; font-size: 0.98rem; font-weight: 800; color: #0F172A;"><i class="fas fa-film" style="color: var(--admin-primary);"></i> Export Synchronized Multi-Track MP4</h4>
+                    <p style="margin: 2px 0 0; font-size: 0.74rem; color: #64748B;">Permanently renders all video tracks, filters, keyframes, speed/reverse, effects, transitions, Urdu/English text &amp; mixed stereo audio.</p>
+                  </div>
+                  <button type="button" class="btn-close-output-modal" onclick="window.QSFVideoStudio && window.QSFVideoStudio.closeExportModal()">&times;</button>
+                </div>
+                <div class="output-modal-body">
+                  <div class="compact-input-row-2col">
+                    <div>
+                      <label class="compact-field-label" for="vsExportQuality">Resolution &amp; Quality</label>
+                      <select id="vsExportQuality" class="form-control compact-input">
+                        <option value="high">High (Full 1080p • 30fps • H.264 + AAC)</option>
+                        <option value="medium" selected>Balanced (Max 720p • 30fps • Fast MP4)</option>
+                        <option value="fast">Lightweight Social (Max 540p • 24fps)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="compact-field-label" for="vsExportIncludeAudio">Audio Mix Stream</label>
+                      <select id="vsExportIncludeAudio" class="form-control compact-input">
+                        <option value="auto" selected>Mix All Enabled Tracks (Voice + Music + SFX)</option>
+                        <option value="mute">Silent Video Only (No Audio)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div id="vsExportAudioStatusNote" style="margin-top: 8px; font-size: 0.71rem; color: #065F46; background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 6px; padding: 6px 9px;">
+                    <i class="fas fa-volume-high"></i> Multi-track 48kHz Stereo AAC mixer active (supports speed, reverse, fade-in/out &amp; SFX layering).
+                  </div>
+                  <div id="vsExportProgressArea" class="hidden" style="margin-top: 12px;">
+                    <div class="vs-progress-label"><span id="vsExportStageText">Preparing multi-track pipeline...</span><strong id="vsExportPctText">0%</strong></div>
+                    <div class="vs-progress-track" style="height: 10px;"><div class="vs-progress-fill" id="vsExportProgressFill" style="width: 0%;"></div></div>
+                  </div>
+                  <div id="vsExportErrorBox" class="hidden" style="margin-top: 10px; background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; border-radius: 6px; padding: 8px 10px; font-size: 0.76rem;"></div>
+                  <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; padding-top: 10px; border-top: 1px solid #E2E8F0;">
+                    <button type="button" class="btn-admin btn-admin-secondary" id="vsBtnCancelExport" onclick="window.QSFVideoStudio && window.QSFVideoStudio.cancelOrCloseExport()">Close</button>
+                    <button type="button" class="btn-admin btn-admin-primary" id="vsBtnStartExport" onclick="window.QSFVideoStudio && window.QSFVideoStudio.startExport()"><i class="fas fa-clapperboard"></i> Render &amp; Download MP4</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Saved Projects / Drafts / Custom Templates / Unified Server Media Library Modal -->
+            <div class="output-settings-modal-backdrop hidden" id="vsProjectsModal">
+              <div class="output-settings-popover-card" style="max-width: 780px;">
+                <div class="output-modal-header">
+                  <div>
+                    <h4 style="margin: 0; font-size: 0.98rem; font-weight: 800; color: #0F172A;"><i class="fas fa-folder-open" style="color: var(--admin-primary);"></i> QSF Projects, Templates &amp; Media Library</h4>
+                    <p style="margin: 2px 0 0; font-size: 0.74rem; color: #64748B;">Reopen drafts, duplicate projects, load custom templates, or reuse uploaded videos, images, logos, audio, and sound effects.</p>
+                  </div>
+                  <button type="button" class="btn-close-output-modal" onclick="window.QSFVideoStudio && window.QSFVideoStudio.closeProjectsModal()">&times;</button>
+                </div>
+                <div class="output-modal-body">
+                  <div class="vs-projects-tabs">
+                    <button type="button" class="vs-proj-tab active" data-vs-ptab="drafts" onclick="window.QSFVideoStudio && window.QSFVideoStudio.loadProjectsList('drafts')">Saved Drafts</button>
+                    <button type="button" class="vs-proj-tab" data-vs-ptab="templates" onclick="window.QSFVideoStudio && window.QSFVideoStudio.loadProjectsList('templates')">Custom Templates</button>
+                    <button type="button" class="vs-proj-tab" data-vs-ptab="videos" onclick="window.QSFVideoStudio && window.QSFVideoStudio.loadProjectsList('videos')">Videos</button>
+                    <button type="button" class="vs-proj-tab" data-vs-ptab="images" onclick="window.QSFVideoStudio && window.QSFVideoStudio.loadProjectsList('images')">Images &amp; Logos</button>
+                    <button type="button" class="vs-proj-tab" data-vs-ptab="audio" onclick="window.QSFVideoStudio && window.QSFVideoStudio.loadProjectsList('audio')">Audio &amp; SFX</button>
+                  </div>
+                  <div id="vsProjectsListGrid" class="vs-projects-grid">
+                    <div style="padding: 20px; text-align: center; color: #64748B;">Loading...</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Secondary Compact Footer Strip: Connected Channels & Metrics -->
+          <div class="admin-card" id="socialChannelsFooterCard" style="margin-top: 16px; padding: 12px 16px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+              <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                <span style="font-weight: 700; color: #1E293B; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                  <i class="fas fa-network-wired" style="color: var(--admin-primary);"></i>
+                  <span>Official Broadcast Channels (<strong id="metricConnectedChannels">6</strong> Connected)</span>
+                </span>
+                <span style="font-size: 0.78rem; color: #64748B;">• Drafts: <strong id="metricSocialDrafts">0</strong></span>
+                <span style="font-size: 0.78rem; color: #64748B;">• Status: <strong id="metricActiveCampaigns">Ready</strong> (<span id="metricBrandStatus">Verified</span>)</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 0.78rem; color: #475569;">
+                <span><i class="fab fa-facebook" style="color: #1877F2;"></i> Facebook</span>
+                <span><i class="fab fa-instagram" style="color: #E1306C;"></i> Instagram</span>
+                <span><i class="fab fa-youtube" style="color: #FF0000;"></i> YouTube</span>
+                <span><i class="fab fa-x-twitter" style="color: #000000;"></i> X</span>
+                <span><i class="fab fa-whatsapp" style="color: #25D366;"></i> WhatsApp</span>
+                <span><i class="fab fa-linkedin" style="color: #0A66C2;"></i> LinkedIn</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- SUBMENU 1: OFFICIAL ISLAMIC BANK ACCOUNT DETAILS & MOBILE WALLETS -->
         <div class="tab-pane" id="tab-settings-bank">
           <p class="tab-description-subtitle" style="font-size: 0.85rem; color: #64748B; margin-bottom: 18px;">Official Meezan Islamic Bank Account Details and Mobile Wallets (EasyPaisa & JazzCash) displayed to donors worldwide.</p>
@@ -1935,6 +3762,21 @@
           </div>
         </div>
 
+        <!-- ==================== TAB: MARTYRS – WARS ARCHIVE & DETAIL ==================== -->
+        <div class="tab-pane" id="tab-martyrs-wars">
+          <div id="martyrsWarsRoot" class="martyrs-module-root"></div>
+        </div>
+
+        <!-- ==================== TAB: MARTYRS – ALL MARTYRS DIRECTORY & PROFILE ==================== -->
+        <div class="tab-pane" id="tab-martyrs-all">
+          <div id="martyrsAllRoot" class="martyrs-module-root"></div>
+        </div>
+
+        <!-- ==================== TAB: MARTYRS – ADD / EDIT MARTYR PROFILE ==================== -->
+        <div class="tab-pane" id="tab-martyrs-add">
+          <div id="martyrsFormRoot" class="martyrs-module-root"></div>
+        </div>
+
       </main>
     </div>
   </div>
@@ -2619,6 +4461,14 @@
               <label class="perm-item">
                 <input type="checkbox" name="permissions" value="settings" class="perm-checkbox" checked />
                 <span><i class="fas fa-gear"></i> Site, Bank & Branding</span>
+              </label>
+              <label class="perm-item">
+                <input type="checkbox" name="permissions" value="martyrs" class="perm-checkbox" />
+                <span><i class="fas fa-monument"></i> Martyrs Archive (شہداء)</span>
+              </label>
+              <label class="perm-item">
+                <input type="checkbox" name="permissions" value="martyrs_family" class="perm-checkbox" />
+                <span><i class="fas fa-address-book"></i> Martyrs Family Contacts</span>
               </label>
               <label class="perm-item" style="grid-column: 1 / -1;">
                 <input type="checkbox" name="permissions" value="users" class="perm-checkbox" />
@@ -4118,8 +5968,85 @@
     </div>
   </div>
 
+  <!-- Martyrs Module Modals (Filters Popup, Add Location, Add/Edit War, Duplicate Inspector, Photo Lightbox) -->
+  <div class="martyr-modal-backdrop hidden" id="modalMartyrFilters" role="dialog" aria-modal="true" onclick="if(event.target===this && window.QSFMartyrs) window.QSFMartyrs.closeFiltersModal()">
+    <div class="martyr-modal-dialog" style="max-width: 780px;">
+      <div class="martyr-modal-header">
+        <div>
+          <h3><i class="fas fa-sliders"></i> Filter Martyrs Directory</h3>
+          <p>Combine war, geographical location (residential or martyrdom), dates, and search criteria.</p>
+        </div>
+        <button type="button" class="martyr-modal-close" onclick="window.QSFMartyrs && window.QSFMartyrs.closeFiltersModal()" aria-label="Close">&times;</button>
+      </div>
+      <div class="martyr-modal-body" id="martyrFiltersModalBody"></div>
+    </div>
+  </div>
+
+  <div class="martyr-modal-backdrop hidden" id="modalMartyrLocation" role="dialog" aria-modal="true" onclick="if(event.target===this && window.QSFMartyrs) window.QSFMartyrs.closeLocationModal()">
+    <div class="martyr-modal-dialog" style="max-width: 660px;">
+      <div class="martyr-modal-header">
+        <div>
+          <h3 id="martyrLocationModalTitle"><i class="fas fa-map-location-dot"></i> Add New Location</h3>
+          <p>Add a village, town, area, or locality under its District and Tehsil for immediate use across Wars and Martyrs.</p>
+        </div>
+        <button type="button" class="martyr-modal-close" onclick="window.QSFMartyrs && window.QSFMartyrs.closeLocationModal()" aria-label="Close">&times;</button>
+      </div>
+      <div class="martyr-modal-body" id="martyrLocationModalBody"></div>
+    </div>
+  </div>
+
+  <div class="martyr-modal-backdrop hidden" id="modalMartyrWar" role="dialog" aria-modal="true">
+    <div class="martyr-modal-dialog" style="max-width: 880px;">
+      <div class="martyr-modal-header">
+        <div>
+          <h3 id="martyrWarModalTitle"><i class="fas fa-landmark"></i> Add New War / Historical Incident</h3>
+          <p>Record historical metadata, affected locations, documented cause, dates, and detailed background. Total martyrs are calculated automatically.</p>
+        </div>
+        <button type="button" class="martyr-modal-close" onclick="window.QSFMartyrs && window.QSFMartyrs.closeWarModal()" aria-label="Close">&times;</button>
+      </div>
+      <div class="martyr-modal-body" id="martyrWarModalBody"></div>
+    </div>
+  </div>
+
+  <div class="martyr-modal-backdrop hidden" id="modalMartyrDuplicates" role="dialog" aria-modal="true">
+    <div class="martyr-modal-dialog" style="max-width: 760px;">
+      <div class="martyr-modal-header">
+        <div>
+          <h3><i class="fas fa-clone"></i> Duplicate Profile Inspector</h3>
+          <p>Review potential duplicate martyr records sharing the same name and father's name.</p>
+        </div>
+        <button type="button" class="martyr-modal-close" onclick="window.QSFMartyrs && window.QSFMartyrs.closeDuplicatesModal()" aria-label="Close">&times;</button>
+      </div>
+      <div class="martyr-modal-body" id="martyrDuplicatesBody"></div>
+    </div>
+  </div>
+
+  <div class="martyr-modal-backdrop hidden" id="modalMartyrImportAudit" role="dialog" aria-modal="true" onclick="if(event.target===this && window.QSFMartyrs) window.QSFMartyrs.closeImportAuditModal()">
+    <div class="martyr-modal-dialog" style="max-width: 760px;">
+      <div class="martyr-modal-header">
+        <div>
+          <h3><i class="fas fa-database"></i> Historical Archive Import &amp; Demo Data Manager</h3>
+          <p>Inspect verified Kurram historical data (2007–2026), audit import batches, or manage separated demo records.</p>
+        </div>
+        <button type="button" class="martyr-modal-close" onclick="window.QSFMartyrs && window.QSFMartyrs.closeImportAuditModal()" aria-label="Close">&times;</button>
+      </div>
+      <div class="martyr-modal-body" id="martyrImportAuditBody"></div>
+    </div>
+  </div>
+
+  <div class="martyr-lightbox-backdrop hidden" id="martyrLightboxModal" role="dialog" aria-modal="true" onclick="if(event.target===this && window.QSFMartyrs) window.QSFMartyrs.closeLightbox()">
+    <button type="button" class="martyr-lb-close" onclick="window.QSFMartyrs && window.QSFMartyrs.closeLightbox()" aria-label="Close">&times;</button>
+    <button type="button" class="martyr-lb-nav prev" onclick="window.QSFMartyrs && window.QSFMartyrs.stepLightbox(-1)" aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
+    <div class="martyr-lb-stage">
+      <img id="martyrLightboxImg" src="" alt="Memorial Photograph" />
+      <div class="martyr-lb-caption" id="martyrLightboxCaption"></div>
+    </div>
+    <button type="button" class="martyr-lb-nav next" onclick="window.QSFMartyrs && window.QSFMartyrs.stepLightbox(1)" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
+  </div>
+
   <script src="/js/html2canvas.min.js"></script>
   <script src="/js/auto-translate.js?v=20261018_v1"></script>
-  <script src="/js/admin.js?v=2.6.2" defer></script>
+  <script src="/js/admin.js?v=4.2.0" defer></script>
+  <script src="/js/martyrs.js?v=3.0.0" defer></script>
 </body>
 </html>

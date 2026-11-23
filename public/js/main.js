@@ -86,101 +86,98 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // B. Render Featured Projects (In-place update avoids CLS and guarantees clickability)
+    // B. Render Featured Projects (Full live hydration + exact slug & Urdu/English sync)
     const projectsContainer = document.getElementById('featuredProjectsGrid');
     if (projectsContainer && data.projects && data.projects.length > 0) {
-      const cards = projectsContainer.querySelectorAll('.project-card');
-      if (cards.length === data.projects.length) {
-        data.projects.forEach((p, idx) => {
-          const card = cards[idx];
-          const title = isUrdu ? p.title_ur : p.title_en;
-          const desc = isUrdu ? p.short_desc_ur : p.short_desc_en;
-          const catName = isUrdu ? p.category_name_ur : p.category_name_en;
-          const tag = card.querySelector('.project-category-tag');
-          const titleEl = card.querySelector('.project-title');
-          const descEl = card.querySelector('.project-desc');
-          const btn = card.querySelector('.btn-card-donate span');
-          if (tag) tag.textContent = catName;
-          if (titleEl) titleEl.textContent = title;
-          if (descEl) descEl.textContent = desc;
-          if (btn) btn.textContent = isUrdu ? 'تفصیل و عطیہ' : 'Learn & Support';
-          card.onclick = () => window.location.href = `/project/${p.slug}`;
-        });
-      } else {
-        projectsContainer.innerHTML = data.projects.map(p => {
-          const title = isUrdu ? p.title_ur : p.title_en;
-          const desc = isUrdu ? p.short_desc_ur : p.short_desc_en;
-          const catName = isUrdu ? p.category_name_ur : p.category_name_en;
-          const goal = parseFloat(p.goal_amount) || 0;
-          const raised = parseFloat(p.raised_amount) || 0;
-          const pct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 75;
-          const benCount = p.beneficiaries_count || 126;
-          const benLabel = isUrdu ? (p.beneficiaries_label_ur || 'طلباء') : (p.beneficiaries_label_en || 'Students');
-
-          return `
-            <div class="project-card" onclick="window.location.href='/project/${p.slug}'" style="cursor: pointer;">
-              <div class="project-image-wrapper">
-                <img src="${p.image_url || '/media/projects/orphan_education.webp'}" alt="${title}" class="project-image" loading="lazy" decoding="async" width="400" height="250" />
-              </div>
-              <div class="project-content">
-                <span class="project-category-tag">${catName || (isUrdu ? 'تعلیمی کفالت' : 'Education')}</span>
-                <h3 class="project-title">${title}</h3>
-                <p class="project-desc">${desc}</p>
-                
-                <div class="project-progress-wrapper">
-                  <div class="project-progress-bar">
-                    <div class="project-progress-fill" style="width: ${pct}%"></div>
-                  </div>
-                  <div class="project-meta-stats">
-                    <span>${pct}% ${isUrdu ? 'مکمل' : 'Funded'}</span>
-                    <span>PKR ${raised.toLocaleString()}</span>
-                  </div>
-                </div>
-
-                <div class="project-card-actions">
-                  <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-dark);">
-                    <i class="fas fa-users" style="color: var(--primary); margin-inline-end: 4px;"></i>
-                    ${benCount} ${benLabel}
-                  </span>
-                  <a href="/project/${p.slug}" class="btn-card-donate" onclick="event.stopPropagation()" aria-label="Learn & Support ${title}">
-                    <span>${isUrdu ? 'تفصیل و عطیہ' : 'Learn & Support'}</span>
-                  </a>
-                </div>
-              </div>
-            </div>
-          `;
-        }).join('');
-      }
-    }
-
-    // C. Render Latest News (Only if container empty or Urdu language selected)
-    const newsContainer = document.getElementById('latestNewsGrid');
-    if (newsContainer && data.news && data.news.length > 0 && (isUrdu || newsContainer.children.length === 0)) {
-      newsContainer.innerHTML = data.news.map(article => {
-        const title = isUrdu ? article.title_ur : article.title_en;
-        const desc = isUrdu ? article.short_desc_ur : article.short_desc_en;
-        const catName = isUrdu ? article.category_name_ur : article.category_name_en;
-        const pubDate = article.published_at ? new Date(article.published_at).toLocaleDateString(isUrdu ? 'ur-PK' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+      projectsContainer.innerHTML = data.projects.map(p => {
+        const title = isUrdu ? (p.title_ur || p.title_en) : p.title_en;
+        const desc = isUrdu ? (p.short_desc_ur || p.short_desc_en) : p.short_desc_en;
+        const catName = isUrdu ? (p.category_name_ur || p.category_name_en || 'فلاحی منصوبہ') : (p.category_name_en || 'Education');
+        const goal = parseFloat(p.goal_amount) || 0;
+        const raised = parseFloat(p.raised_amount) || 0;
+        const pct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 75;
+        const benCount = p.beneficiaries_count || 0;
+        const benLabel = isUrdu ? (p.beneficiaries_label_ur || 'مستفیدین') : (p.beneficiaries_label_en || 'Beneficiaries');
+        const safeSlug = encodeURIComponent(p.slug || String(p.id));
+        const projectUrl = `/project/${safeSlug}`;
+        const raisedFormatted = isUrdu
+          ? `<span dir="ltr" style="display:inline-block;">${raised.toLocaleString()}</span> روپے`
+          : `PKR ${raised.toLocaleString()}`;
+        const btnText = isUrdu ? 'تفصیل و عطیہ' : 'Learn & Support';
 
         return `
-          <div class="news-card">
-            <div class="news-thumb-wrapper">
-              <img src="${article.image_url || '/media/news/news_1.webp'}" alt="${title}" class="news-thumb" loading="lazy" decoding="async" width="400" height="220" />
+          <div class="project-card" onclick="window.location.href='${projectUrl}'" style="cursor: pointer;" data-project-id="${p.id}" data-project-slug="${escapeHtml(p.slug)}">
+            <div class="project-image-wrapper">
+              <img src="${p.image_url || '/media/projects/orphan_education.webp'}" alt="${escapeHtml(title)}" class="project-image" loading="lazy" decoding="async" width="400" height="250" onerror="this.onerror=null; this.src='/media/projects/orphan_education.webp';" />
             </div>
-            <div class="news-content">
-              <div class="news-meta">
-                <span class="news-category-badge">${catName || (isUrdu ? 'تازہ ترین' : 'Update')}</span>
-                <span class="news-date">${pubDate}</span>
+            <div class="project-content">
+              <span class="project-category-tag">${escapeHtml(catName)}</span>
+              <h3 class="project-title">${escapeHtml(title)}</h3>
+              <p class="project-desc">${escapeHtml(desc)}</p>
+              
+              <div class="project-progress-wrapper">
+                <div class="project-progress-bar">
+                  <div class="project-progress-fill" style="width: ${pct}%"></div>
+                </div>
+                <div class="project-meta-stats">
+                  <span><span dir="ltr" style="display:inline-block;">${pct}%</span> ${isUrdu ? 'مکمل' : 'Funded'}</span>
+                  <span>${raisedFormatted}</span>
+                </div>
               </div>
-              <h3 class="news-title">${title}</h3>
-              <p class="news-desc">${desc}</p>
-              <a href="/news/${article.slug}" class="news-read-more">
-                ${isUrdu ? 'مزید پڑھیں ←' : 'Read More →'}
-              </a>
+
+              <div class="project-card-actions">
+                <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-dark);">
+                  <i class="fas fa-users" style="color: var(--primary); margin-inline-end: 4px;"></i>
+                  <span dir="ltr" style="display:inline-block;">${Number(benCount).toLocaleString()}</span> ${escapeHtml(benLabel)}
+                </span>
+                <a href="${projectUrl}" class="btn-card-donate" onclick="event.stopPropagation()" aria-label="${escapeHtml(btnText)} - ${escapeHtml(title)}">
+                  <span>${btnText}</span>
+                </a>
+              </div>
             </div>
           </div>
         `;
       }).join('');
+    }
+
+    // C. Render Latest News (Always syncs with current language EN <-> UR)
+    const newsContainer = document.getElementById('latestNewsGrid');
+    if (newsContainer) {
+      if (data.news && data.news.length > 0) {
+        newsContainer.innerHTML = data.news.map(article => {
+          const title = isUrdu ? (article.title_ur || article.title_en) : article.title_en;
+          const desc = isUrdu ? (article.short_desc_ur || article.short_desc_en) : article.short_desc_en;
+          const catName = isUrdu ? (article.category_name_ur || article.category_name_en) : article.category_name_en;
+          const pubDate = article.published_at ? new Date(article.published_at).toLocaleDateString(isUrdu ? 'ur-PK' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+
+          return `
+            <div class="news-card">
+              <div class="news-thumb-wrapper">
+                <img src="${article.image_url || '/media/news/news_1.webp'}" alt="${escapeHtml(title)}" class="news-thumb" loading="lazy" decoding="async" width="400" height="220" />
+              </div>
+              <div class="news-content">
+                <div class="news-meta">
+                  <span class="news-category-badge">${escapeHtml(catName || (isUrdu ? 'تازہ ترین' : 'Update'))}</span>
+                  <span class="news-date">${escapeHtml(pubDate)}</span>
+                </div>
+                <h3 class="news-title">${escapeHtml(title)}</h3>
+                <p class="news-desc">${escapeHtml(desc)}</p>
+                <a href="/news/${encodeURIComponent(article.slug)}" class="news-read-more">
+                  ${isUrdu ? 'مزید پڑھیں ←' : 'Read More →'}
+                </a>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        const emptyMsg = window.FoundationI18n ? window.FoundationI18n.t('noNewsYet') : (isUrdu ? 'فاؤنڈیشن کی تازہ ترین خبریں اور فیلڈ رپورٹس جلد یہاں شائع کی جائیں گی۔' : 'Latest foundation updates and field reports will appear here soon.');
+        newsContainer.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 32px 20px; background: #FFFFFF; border: 1px dashed var(--border-light); border-radius: var(--radius-md); color: var(--text-muted); font-size: 0.95rem;">
+            <i class="fas fa-newspaper" style="font-size: 1.5rem; color: var(--primary); margin-bottom: 10px; display: block; opacity: 0.7;"></i>
+            ${escapeHtml(emptyMsg)}
+          </div>
+        `;
+      }
     }
 
     // D. Render Impact Stats
@@ -389,11 +386,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const trackEl = document.getElementById('announcementTrack');
     if (!marqueeEl) return;
 
-    if (!announcements || announcements.length === 0) {
-      marqueeEl.innerHTML = '<span class="announcement-item-link">Welcome to Qasr-e-Shabbir Foundation</span>';
-      return;
-    }
-
     // Direction: LTR for English, RTL for Urdu
     if (isUrdu) {
       marqueeEl.className = 'announcement-marquee-content marquee-rtl';
@@ -403,11 +395,18 @@ document.addEventListener('DOMContentLoaded', () => {
       if (trackEl) trackEl.setAttribute('dir', 'ltr');
     }
 
+    if (!announcements || announcements.length === 0) {
+      const fallbackText = isUrdu ? 'قصرِ شبیر فاؤنڈیشن میں خوش آمدید' : 'Welcome to Qasr-e-Shabbir Foundation';
+      marqueeEl.innerHTML = `<span class="announcement-item-link">${fallbackText}</span>`;
+      return;
+    }
+
     // Build items with separator
+    const arrowIcon = isUrdu ? 'fa-arrow-left' : 'fa-arrow-right';
     const itemsHtml = announcements.map(a => {
       const text = isUrdu ? (a.content_ur || a.content_en) : a.content_en;
       if (a.link_url) {
-        return `<a href="${a.link_url}" class="announcement-item-link">${escapeHtml(text)} <i class="fas fa-arrow-right" style="font-size:0.75rem;"></i></a>`;
+        return `<a href="${a.link_url}" class="announcement-item-link">${escapeHtml(text)} <i class="fas ${arrowIcon}" style="font-size:0.75rem;"></i></a>`;
       }
       return `<span class="announcement-item-link">${escapeHtml(text)}</span>`;
     }).join('<span style="opacity: 0.5; margin: 0 16px;">✦</span>');
@@ -458,12 +457,14 @@ document.addEventListener('DOMContentLoaded', () => {
             </li>
           `;
         } else {
-          const linkUrl = m.link_url || (m.menu_key === 'home' || (m.title_en && m.title_en.toLowerCase() === 'home') ? '/' : '#');
-          const isCurrent = window.location.pathname === linkUrl;
+          const isMartyrsMenu = m.menu_key === 'martyrs' || (m.title_en && ['martyrs', 'martyers'].includes(m.title_en.toLowerCase()));
+          const linkUrl = isMartyrsMenu ? '/martyrs' : (m.link_url || (m.menu_key === 'home' || (m.title_en && m.title_en.toLowerCase() === 'home') ? '/' : '#'));
+          const displayTitle = isMartyrsMenu ? (isUrdu ? (m.title_ur && m.title_ur !== 'شہداء' ? m.title_ur : 'شہداءِ ملت') : 'Martyrs') : title;
+          const isCurrent = window.location.pathname === linkUrl || (linkUrl === '/martyrs' && window.location.pathname.startsWith('/martyrs'));
           return `
             <li class="nav-item-dropdown">
               <a href="${linkUrl}" class="nav-menu-btn ${isCurrent ? 'active' : ''}">
-                <span>${escapeHtml(title)}</span>
+                <span>${escapeHtml(displayTitle)}</span>
               </a>
             </li>
           `;
@@ -506,13 +507,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const isFirst = idx === 0;
 
         if (items.length === 0) {
-          const directUrl = m.link_url || (m.menu_key === 'home' || (m.title_en && m.title_en.toLowerCase() === 'home') ? '/' : '#');
-          const isCurrent = window.location.pathname === directUrl;
+          const isMartyrsMenu = m.menu_key === 'martyrs' || (m.title_en && ['martyrs', 'martyers'].includes(m.title_en.toLowerCase()));
+          const directUrl = isMartyrsMenu ? '/martyrs' : (m.link_url || (m.menu_key === 'home' || (m.title_en && m.title_en.toLowerCase() === 'home') ? '/' : '#'));
+          const displayTitle = isMartyrsMenu ? (isUrdu ? (m.title_ur && m.title_ur !== 'شہداء' ? m.title_ur : 'شہداءِ ملت') : 'Martyrs') : title;
+          const isCurrent = window.location.pathname === directUrl || (directUrl === '/martyrs' && window.location.pathname.startsWith('/martyrs'));
           return `
             <div class="mobile-accordion-item">
               <a href="${directUrl}" class="mobile-accordion-btn direct-link ${isCurrent ? 'active' : ''}" style="text-decoration: none;">
-                <span>${escapeHtml(title)}</span>
-                <i class="fas fa-arrow-right" style="font-size: 0.75rem; opacity: 0.6;"></i>
+                <span>${escapeHtml(displayTitle)}</span>
+                <i class="fas ${isUrdu ? 'fa-arrow-left' : 'fa-arrow-right'}" style="font-size: 0.75rem; opacity: 0.6;"></i>
               </a>
             </div>
           `;
@@ -686,6 +689,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function startHeroSliderAuto() {
     pauseHeroSliderAuto();
+    if (window.innerWidth <= 767) return; // Completely disabled on mobile devices
     if (activeHeroSlides && activeHeroSlides.length > 1) {
       heroAutoTimer = setInterval(nextHeroSlide, 5000);
     }
@@ -745,16 +749,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 7. Quick Donate Modal Trigger
-  const donateTriggers = document.querySelectorAll('.trigger-donate-modal');
+  // 7. Quick Donate Modal Trigger (Delegated so dynamically rendered hero slide buttons work too)
   const donateModal = document.getElementById('donateModal');
   const donateModalClose = document.getElementById('donateModalClose');
 
-  donateTriggers.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      if (donateModal) donateModal.classList.add('active');
-    });
+  document.addEventListener('click', (e) => {
+    const trigger = e.target.closest('.trigger-donate-modal');
+    if (trigger && donateModal) {
+      const href = trigger.getAttribute('href') || '';
+      // Only intercept general donate links; let specific project/apply links navigate normally
+      if (!href || href === '/donate' || href === '#donate') {
+        e.preventDefault();
+        donateModal.classList.add('active');
+      }
+    }
   });
 
   if (donateModalClose && donateModal) {
@@ -823,6 +831,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const nextSlideBtn = document.getElementById('heroSliderNext');
   if (prevSlideBtn) prevSlideBtn.addEventListener('click', prevHeroSlide);
   if (nextSlideBtn) nextSlideBtn.addEventListener('click', nextHeroSlide);
+
+  // Responsive Slider Auto-Play Handler (disabled on mobile <= 767px, enabled on desktop & tablet)
+  window.addEventListener('resize', () => {
+    if (window.innerWidth <= 767) {
+      pauseHeroSliderAuto();
+    } else if (!heroAutoTimer && activeHeroSlides && activeHeroSlides.length > 1) {
+      startHeroSliderAuto();
+    }
+  });
 
   // 10. Scroll-To-Top (Topup) Button behavior - Guaranteed reliable detection
   const scrollTopBtn = document.getElementById('scrollTopBtn');

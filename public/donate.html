@@ -319,6 +319,15 @@
               </div>
             </div>
 
+            <div id="selectedProjectBanner" style="display: none; background: #FFF1F2; border: 1px solid #FECDD3; border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 16px; font-size: 0.88rem; color: #991B1B; font-weight: 600;"></div>
+
+            <div class="form-group">
+              <label class="form-label" data-i18n="formSelectProject">Designate Donation to Project (Optional)</label>
+              <select name="project_id" id="donateProjectSelect" class="form-control">
+                <option value="" data-i18n="generalWelfareFund">General Welfare Fund (Where Most Needed)</option>
+              </select>
+            </div>
+
             <div class="form-group">
               <label class="form-label" data-i18n="formNotes">Notes or Prayers</label>
               <textarea name="notes" class="form-control" style="min-height: 70px;" placeholder="Optional message or dedication"></textarea>
@@ -381,7 +390,7 @@
           </div>
           <div style="margin-top: 24px;">
             <a href="/admin" style="font-size: 0.78rem; color: #64748B; display: inline-flex; align-items: center; gap: 5px;">
-              <i class="fas fa-lock"></i> Staff Admin Portal
+              <i class="fas fa-lock"></i> <span data-i18n="staffAdminPortal">Staff Admin Portal</span>
             </a>
           </div>
         </div>
@@ -389,7 +398,7 @@
         <!-- Newsletter Subscription -->
         <div>
           <h4 class="footer-col-title" data-i18n="newsletterTitle">Subscribe to Our Newsletter</h4>
-          <p style="font-size: 0.82rem; color: #94A3B8; margin-bottom: 8px;">
+          <p style="font-size: 0.82rem; color: #94A3B8; margin-bottom: 8px;" data-i18n="newsletterDesc">
             Receive verified updates regarding our educational and welfare milestones.
           </p>
           <form class="newsletter-form" onsubmit="event.preventDefault(); alert(window.FoundationI18n ? window.FoundationI18n.t('msgSuccess') : 'Subscribed successfully!'); this.reset();">
@@ -423,18 +432,85 @@
        class="btn-whatsapp-float" id="whatsappFloatBtn" target="_blank" rel="noopener noreferrer" 
        aria-label="Chat with Qasr-e-Shabbir Foundation on WhatsApp" title="WhatsApp Chat & Support">
       <i class="fab fa-whatsapp"></i>
-      <span class="whatsapp-tooltip">Chat with Us</span>
+      <span class="whatsapp-tooltip" data-i18n="whatsappTooltip">Chat with Us</span>
     </a>
   </div>
 
-  <script src="/js/translations.js?v=20261018_v3" defer></script>
-  <script src="/js/main.js?v=20261018_v3" defer></script>
+  <script src="/js/translations.js?v=20261120_v1" defer></script>
+  <script src="/js/main.js?v=20261120_v1" defer></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       if (window.FoundationI18n) window.FoundationI18n.init();
 
       const form = document.getElementById('donationProofForm');
       const statusDiv = document.getElementById('donationFormStatus');
+      const projectSelect = document.getElementById('donateProjectSelect');
+      const projectBanner = document.getElementById('selectedProjectBanner');
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const requestedProject = urlParams.get('project') || '';
+      const requestedSlug = urlParams.get('slug') || '';
+      let availableProjects = [];
+      let selectedProjectId = '';
+
+      function updateProjectBanner() {
+        if (!projectBanner || !projectSelect) return;
+        const isUrdu = window.FoundationI18n && window.FoundationI18n.currentLang === 'ur';
+        const match = availableProjects.find(p => String(p.id) === String(projectSelect.value));
+        if (match) {
+          const title = isUrdu ? (match.title_ur || match.title_en) : match.title_en;
+          projectBanner.style.display = 'block';
+          projectBanner.innerHTML = `<i class="fas fa-hand-holding-heart" style="margin-inline-end: 6px;"></i>${isUrdu ? 'منتخب منصوبہ: ' : 'Selected Project: '}<span>${title}</span>`;
+        } else {
+          projectBanner.style.display = 'none';
+        }
+      }
+
+      function renderProjectDropdown() {
+        if (!projectSelect) return;
+        const isUrdu = window.FoundationI18n && window.FoundationI18n.currentLang === 'ur';
+        const prevVal = projectSelect.value || selectedProjectId;
+        const defaultOpt = isUrdu ? 'عمومی فلاحی فنڈ (جہاں سب سے زیادہ ضرورت ہو)' : 'General Welfare Fund (Where Most Needed)';
+
+        projectSelect.innerHTML = `<option value="">${defaultOpt}</option>` + availableProjects.map(p => {
+          const title = isUrdu ? (p.title_ur || p.title_en) : p.title_en;
+          return `<option value="${p.id}">${title}</option>`;
+        }).join('');
+
+        if (prevVal) {
+          projectSelect.value = String(prevVal);
+        }
+        updateProjectBanner();
+      }
+
+      try {
+        const pRes = await fetch('/api/public/projects');
+        const pJson = await pRes.json();
+        if (pJson.success && Array.isArray(pJson.projects)) {
+          availableProjects = pJson.projects;
+          if (requestedProject || requestedSlug) {
+            const matched = availableProjects.find(p =>
+              (requestedProject && (String(p.id) === String(requestedProject) || p.slug === requestedProject)) ||
+              (requestedSlug && p.slug === requestedSlug)
+            );
+            if (matched) selectedProjectId = String(matched.id);
+          }
+          renderProjectDropdown();
+        }
+      } catch (err) {
+        console.warn('[Donate] Could not preload projects:', err);
+      }
+
+      if (projectSelect) {
+        projectSelect.addEventListener('change', () => {
+          selectedProjectId = projectSelect.value;
+          updateProjectBanner();
+        });
+      }
+
+      window.addEventListener('foundation:languageChanged', () => {
+        renderProjectDropdown();
+      });
 
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -458,6 +534,10 @@
             statusDiv.style.border = '1px solid #FECDD3';
             statusDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${result.message}`;
             form.reset();
+            if (selectedProjectId && projectSelect) {
+              projectSelect.value = selectedProjectId;
+              updateProjectBanner();
+            }
           } else {
             statusDiv.style.background = '#FEF2F2';
             statusDiv.style.color = '#991B1B';

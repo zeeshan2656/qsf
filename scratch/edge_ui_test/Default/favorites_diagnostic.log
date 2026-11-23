@@ -1,0 +1,10 @@
+2026-11-20 01:10:42.336: [INFO] CurrentProfilePath: C:\Users\Basharat\Desktop\qasreshabbir\qsf\scratch\edge_ui_test\Default
+2026-11-20 01:10:42.336: [INFO] Profiles total count: 1
+2026-11-20 01:10:42.336: [INFO] Profile: name=Profile 1 path=C:\Users\Basharat\Desktop\qasreshabbir\qsf\scratch\edge_ui_test\Default lastActive=null
+2026-11-20 01:10:42.336: [INFO] LastUsedProfileDir: C:\Users\Basharat\Desktop\qasreshabbir\qsf\scratch\edge_ui_test\Default
+2026-11-20 01:10:42.336: [INFO] VisibilityChanged: 0
+2026-11-20 01:10:42.364: [INFO] OnDoneLoading sync enabled: 0
+2026-11-20 01:10:42.364: [INFO] BookmarkModelLoaded, ids_reassigned: 0
+2026-11-20 01:10:42.364: [INFO] BookmarksLoadDropped droppedNodes=0
+2026-11-20 01:10:42.364: [INFO] BookmarksSnapshot Startup total=0 bar=0 other=0 mobile=0 showBar=0 showBarNTP=1
+2026-11-20 01:10:42.455: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 0

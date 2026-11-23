@@ -13,6 +13,10 @@ const cache = require('../config/cache');
 router.use(requireAuth);
 
 const { translateText } = require('../services/translator');
+const videoStudioRoutes = require('./videoStudio');
+router.use('/video-studio', videoStudioRoutes);
+const martyrsRoutes = require('./martyrs');
+router.use('/martyrs', martyrsRoutes);
 
 // Automatically invalidate public cache on any mutating admin action (POST/PUT/DELETE/PATCH), excluding translation
 router.use((req, res, next) => {

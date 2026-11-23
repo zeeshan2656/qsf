@@ -3,27 +3,49 @@ const translations = {
     // Navigation
     foundationName: "QASR-E-SHABBIR FOUNDATION",
     tagline: "Together for a Brighter Tomorrow",
+    navigationMenu: "Navigation",
     navHome: "Home",
     navAbout: "About Us",
     navProjects: "Projects",
+    navWelfarePrograms: "Welfare Programs",
+    navWelfareProjects: "Welfare Projects",
+    navGetInvolved: "Get Involved",
+    navSupportDonate: "Support & Donate",
     navOrphanEducation: "Orphan Education",
     navFinancialAssistance: "Financial Assistance",
     navRationDistribution: "Ration Distribution",
     navNews: "News & Updates",
     navApply: "Apply for Assistance",
     navVolunteer: "Become a Volunteer",
-    navContact: "Contact",
+    navContact: "Contact Us",
+    navMartyrs: "Martyrs",
     btnDonateNow: "Donate Now",
     searchPlaceholder: "Search projects, news...",
 
+    // Public Martyrs Archive
+    martyrsTitle: "Martyrs (شہداءِ ملت) — Historical Memorial Archive",
+    martyrsSubtitle: "Preserving the verified biographies, photographs, and historical conflict records of the martyrs.",
+    allMartyrs: "All Martyrs",
+    warsAndConflicts: "Wars & Conflicts",
+    searchMartyrs: "Search Martyrs",
+    dateOfBirth: "Date of Birth",
+    dateOfMartyrdom: "Date of Martyrdom",
+    placeOfMartyrdom: "Place of Martyrdom",
+    biography: "Biography",
+    homeVillage: "Home Village",
+    associatedConflict: "Associated Conflict",
+    photoGallery: "Photo Gallery",
+    viewProfile: "View Profile",
+    historicalArchive: "Historical Archive",
+
     // Hero Section
-    heroEyebrow: "WELCOME TO",
+    heroEyebrow: "WELCOME TO OFFICIAL",
     heroHeading: "Qasr-e-Shabbir Foundation",
-    heroSubtitle: "Together for a Brighter Tomorrow",
-    heroText: "We work for a better, healthier and educated community by providing support, care and hope to those in need.",
+    heroSubtitle: "Empowering Communities, Transforming Lives",
+    heroText: "Providing quality education to orphan children, urgent medical treatment, clean drinking water, and monthly ration packs to deserving families.",
     btnSupportCause: "Support Our Cause",
     btnLearnMore: "Learn About Us",
-    btnExploreProjects: "Explore Our Projects",
+    btnExploreProjects: "Explore Welfare Projects",
 
     // Welfare Categories
     catEducationTitle: "Education",
@@ -36,17 +58,29 @@ const translations = {
     catWaterSub: "For Better Tomorrow",
     catCommunityTitle: "Community Care",
     catCommunitySub: "For Stronger Society",
+    catFloodTitle: "Flood Relief",
+    catFloodSub: "Emergency Assistance",
 
-    // Featured Projects
+    // Featured Projects & Projects Page
     sectionProjectsTitle: "Our Featured Projects",
+    projectsSubtitle: "Dedicated initiatives supporting orphan children's schooling, food ration sustainability, and community welfare.",
+    allProjects: "All Projects",
     viewAllProjects: "View All Projects",
     funded: "Funded",
     students: "Students",
     families: "Families",
     patients: "Patients",
     villages: "Villages",
+    individuals: "Individuals",
+    btnLearnSupport: "Learn & Support",
     btnDonate: "Donate Now",
     btnReadMore: "Read More",
+    backToAllProjects: "Back to All Projects",
+    donateToThisProject: "Donate to this Project",
+    projectNotFound: "Project not found",
+    backToProjects: "Back to Projects",
+    supportedLabel: "Supported",
+    generalWelfareFund: "General Welfare Fund (Where Most Needed)",
 
     // Difference & Statistics Banner
     diffBadge: "MAKE A DIFFERENCE",
@@ -60,18 +94,25 @@ const translations = {
     // Latest News
     sectionNewsTitle: "Latest News & Updates",
     viewAllNews: "View All News",
+    noNewsYet: "Latest foundation updates and field reports will appear here soon.",
 
     // Footer
     quickLinks: "Quick Links",
     ourWork: "Our Work",
     followUs: "Follow Us",
+    staffAdminPortal: "Staff Admin Portal",
     newsletterTitle: "Subscribe to Our Newsletter",
+    newsletterDesc: "Receive verified updates regarding our educational and welfare milestones.",
     newsletterPlaceholder: "Your email address",
     btnSubscribe: "Subscribe",
     copyright: "© 2026 Qasr-e-Shabbir Foundation. All rights reserved.",
     privacyPolicy: "Privacy Policy",
     termsConditions: "Terms & Conditions",
     footerMission: "Dedicated to the educational sponsorship of orphaned children and providing monthly food and financial welfare to vulnerable families in Pakistan.",
+    whatsappTooltip: "Chat with Us",
+    announcementFallback: "Welcome to Qasr-e-Shabbir Foundation",
+    easyPaisaLabel: "EasyPaisa",
+    jazzCashLabel: "JazzCash",
 
     // About Us Page
     aboutTitle: "About Qasr-e-Shabbir Foundation",
@@ -168,24 +209,46 @@ const translations = {
     // Navigation
     foundationName: "قصرِ شبیر فاؤنڈیشن",
     tagline: "ایک بہتر کل کے لیے ساتھ",
+    navigationMenu: "نیویگیشن مینو",
     navHome: "ہوم",
     navAbout: "ہمارے بارے میں",
-    navProjects: "پروجیکٹس",
+    navProjects: "منصوبے",
+    navWelfarePrograms: "فلاحی منصوبے",
+    navWelfareProjects: "فلاحی منصوبے",
+    navGetInvolved: "شامل ہوں",
+    navSupportDonate: "تعاون و عطیات",
     navOrphanEducation: "یتیم بچوں کی تعلیم",
     navFinancialAssistance: "مالی معاونت",
     navRationDistribution: "راشن کی تقسیم",
     navNews: "خبریں اور اپ ڈیٹس",
     navApply: "امدادی درخواست",
     navVolunteer: "رضاکار بنیں",
-    navContact: "رابطہ",
+    navContact: "رابطہ کریں",
+    navMartyrs: "شہداءِ ملت",
     btnDonateNow: "عطیہ کریں",
     searchPlaceholder: "منصوبے یا خبریں تلاش کریں...",
+
+    // Public Martyrs Archive (Urdu)
+    martyrsTitle: "شہداءِ ملت — تاریخی و یادگاری ریکارڈ",
+    martyrsSubtitle: "شہداء کی سوانحِ حیات، تصاویر اور تاریخی معرکوں کا مستند اور باوقار ریکارڈ۔",
+    allMartyrs: "تمام شہداء",
+    warsAndConflicts: "جنگیں اور معرکے",
+    searchMartyrs: "شہداء تلاش کریں",
+    dateOfBirth: "تاریخِ پیدائش",
+    dateOfMartyrdom: "تاریخِ شہادت",
+    placeOfMartyrdom: "مقامِ شہادت",
+    biography: "سوانحِ حیات",
+    homeVillage: "آبائی گاؤں",
+    associatedConflict: "متعلقہ معرکہ",
+    photoGallery: "تصاویر",
+    viewProfile: "پروفائل دیکھیں",
+    historicalArchive: "تاریخی ریکارڈ",
 
     // Hero Section
     heroEyebrow: "خوش آمدید",
     heroHeading: "قصرِ شبیر فاؤنڈیشن",
-    heroSubtitle: "ایک روشن کل کے لیے ساتھ",
-    heroText: "ہم ایک بہتر، صحت مند اور تعلیم یافتہ معاشرے کے لیے کام کرتے ہیں۔ اور ضرورت مند لوگوں کو مدد، دیکھ بھال اور امید فراہم کرتے ہیں۔",
+    heroSubtitle: "روشن مستقبل اور خود مختار معاشرے کی تعمیر",
+    heroText: "یتیم بچوں کی معیاری تعلیم، مفت علاج، صاف پانی اور مستحق خاندانوں کو ماہانہ راشن پیکجز کی باوقار فراہمی۔",
     btnSupportCause: "ہمارے مشن کی حمایت کریں",
     btnLearnMore: "مزید جانیں",
     btnExploreProjects: "ہمارے منصوبے دیکھیں",
@@ -201,17 +264,29 @@ const translations = {
     catWaterSub: "بہتر مستقبل کے لیے",
     catCommunityTitle: "سماجی خدمت",
     catCommunitySub: "مضبوط معاشرے کے لیے",
+    catFloodTitle: "سیلاب متاثرین کی امداد",
+    catFloodSub: "ہنگامی امدادی کارروائیاں",
 
-    // Featured Projects
+    // Featured Projects & Projects Page
     sectionProjectsTitle: "ہمارے نمایاں منصوبے",
+    projectsSubtitle: "یتیم بچوں کی تعلیم، ماہانہ راشن، صاف پانی اور سماجی فلاح و بہبود کے لیے وقف باوقار منصوبے۔",
+    allProjects: "تمام منصوبے",
     viewAllProjects: "تمام منصوبے دیکھیں",
     funded: "مکمل",
     students: "طلباء",
     families: "خاندان",
     patients: "مریض",
     villages: "دیہی علاقے",
+    individuals: "افراد",
+    btnLearnSupport: "تفصیل و عطیہ",
     btnDonate: "ابھی عطیہ کریں",
     btnReadMore: "مزید پڑھیں",
+    backToAllProjects: "تمام منصوبوں پر واپس جائیں",
+    donateToThisProject: "اس منصوبے کے لیے عطیہ دیں",
+    projectNotFound: "منصوبہ نہیں ملا",
+    backToProjects: "تمام منصوبے دیکھیں",
+    supportedLabel: "مستفید",
+    generalWelfareFund: "عمومی فلاحی فنڈ (جہاں سب سے زیادہ ضرورت ہو)",
 
     // Difference & Statistics Banner
     diffBadge: "آپ کی سخاوت",
@@ -225,18 +300,25 @@ const translations = {
     // Latest News
     sectionNewsTitle: "تازہ ترین خبریں اور اپ ڈیٹس",
     viewAllNews: "تمام خبریں دیکھیں",
+    noNewsYet: "فاؤنڈیشن کی تازہ ترین خبریں اور فیلڈ رپورٹس جلد یہاں شائع کی جائیں گی۔",
 
     // Footer
     quickLinks: "فوری روابط",
     ourWork: "ہمارے شعبہ جات",
     followUs: "ہمیں فالو کریں",
+    staffAdminPortal: "اسٹاف ایڈمن پورٹل",
     newsletterTitle: "ہمارا نیوز لیٹر حاصل کریں",
+    newsletterDesc: "ہماری تعلیمی اور فلاحی سرگرمیوں کی مصدقہ خبریں حاصل کریں۔",
     newsletterPlaceholder: "اپنا ای میل درج کریں",
     btnSubscribe: "سبسکرائب کریں",
     copyright: "© 2026 قصرِ شبیر فاؤنڈیشن۔ تمام حقوق محفوظ ہیں۔",
     privacyPolicy: "پرائیویسی پالیسی",
     termsConditions: "شرائط و ضوابط",
     footerMission: "یتیم بچوں کی مکمل تعلیمی کفالت، اسکول فیس کی ادائیگی اور مستحق خاندانوں کو ماہانہ راشن و مالی امداد کی باعزت فراہمی کے لیے وقف فاؤنڈیشن۔",
+    whatsappTooltip: "واٹس ایپ پر رابطہ کریں",
+    announcementFallback: "قصرِ شبیر فاؤنڈیشن میں خوش آمدید",
+    easyPaisaLabel: "ایزی پیسہ",
+    jazzCashLabel: "جاز کیش",
 
     // About Us Page
     aboutTitle: "قصرِ شبیر فاؤنڈیشن کے بارے میں",
@@ -355,6 +437,9 @@ window.FoundationI18n = {
     const html = document.documentElement;
     html.setAttribute('lang', lang);
     html.setAttribute('dir', lang === 'ur' ? 'rtl' : 'ltr');
+    if (document.body) {
+      document.body.classList.toggle('urdu', lang === 'ur');
+    }
 
     // Update active button indicator
     document.querySelectorAll('.lang-btn').forEach(btn => {

@@ -228,6 +228,30 @@ async function initDB() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
+    // 12. Social Media Video Studio Projects & Custom Templates
+    await dbConn.query(`
+      CREATE TABLE IF NOT EXISTS social_video_projects (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        template_id VARCHAR(64) NOT NULL DEFAULT 'breaking_news',
+        output_format VARCHAR(32) NOT NULL DEFAULT 'portrait_9_16',
+        output_width INT NOT NULL DEFAULT 1080,
+        output_height INT NOT NULL DEFAULT 1920,
+        video_url VARCHAR(512) NULL,
+        video_meta_json LONGTEXT NULL,
+        thumbnail_data_url MEDIUMTEXT NULL,
+        project_state_json LONGTEXT NOT NULL,
+        is_custom_template TINYINT(1) NOT NULL DEFAULT 0,
+        status ENUM('draft', 'exported', 'template') NOT NULL DEFAULT 'draft',
+        created_by INT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_vs_status (status),
+        INDEX idx_vs_custom_tpl (is_custom_template),
+        INDEX idx_vs_updated (updated_at)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
     console.log('[Init DB] All tables created successfully.');
     await dbConn.end();
   } catch (err) {

@@ -258,7 +258,7 @@
           </div>
           <div style="margin-top: 24px;">
             <a href="/admin" style="font-size: 0.78rem; color: #64748B; display: inline-flex; align-items: center; gap: 5px;">
-              <i class="fas fa-lock"></i> Staff Admin Portal
+              <i class="fas fa-lock"></i> <span data-i18n="staffAdminPortal">Staff Admin Portal</span>
             </a>
           </div>
         </div>
@@ -266,7 +266,7 @@
         <!-- Newsletter Subscription -->
         <div>
           <h4 class="footer-col-title" data-i18n="newsletterTitle">Subscribe to Our Newsletter</h4>
-          <p style="font-size: 0.82rem; color: #94A3B8; margin-bottom: 8px;">
+          <p style="font-size: 0.82rem; color: #94A3B8; margin-bottom: 8px;" data-i18n="newsletterDesc">
             Receive verified updates regarding our educational and welfare milestones.
           </p>
           <form class="newsletter-form" onsubmit="event.preventDefault(); alert(window.FoundationI18n ? window.FoundationI18n.t('msgSuccess') : 'Subscribed successfully!'); this.reset();">
@@ -300,94 +300,130 @@
        class="btn-whatsapp-float" id="whatsappFloatBtn" target="_blank" rel="noopener noreferrer" 
        aria-label="Chat with Qasr-e-Shabbir Foundation on WhatsApp" title="WhatsApp Chat & Support">
       <i class="fab fa-whatsapp"></i>
-      <span class="whatsapp-tooltip">Chat with Us</span>
+      <span class="whatsapp-tooltip" data-i18n="whatsappTooltip">Chat with Us</span>
     </a>
   </div>
 
-  <script src="/js/translations.js?v=20261018_v3" defer></script>
-  <script src="/js/main.js?v=20261018_v3" defer></script>
+  <script src="/js/translations.js?v=20261120_v1" defer></script>
+  <script src="/js/main.js?v=20261120_v1" defer></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       if (window.FoundationI18n) window.FoundationI18n.init();
 
-      // Get slug from pathname: /project/orphan-education-support
-      const parts = window.location.pathname.split('/');
-      const slug = parts[parts.length - 1] || 'orphan-education-support';
+      // Robust slug extraction supporting /project/<slug>, trailing slash, or ?slug= / ?project=
+      const pathParts = window.location.pathname.split('/').filter(Boolean);
+      const urlParams = new URLSearchParams(window.location.search);
+      const rawSlug = (pathParts[0] === 'project' && pathParts[1])
+        ? pathParts[1]
+        : (urlParams.get('slug') || urlParams.get('project') || 'orphan-academic-sponsorship');
+      const slug = decodeURIComponent(rawSlug).trim();
 
       let projectData = null;
+      let loadFailed = false;
+
+      function escapeText(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function renderNotFound() {
+        const isUrdu = window.FoundationI18n && window.FoundationI18n.currentLang === 'ur';
+        document.getElementById('projectDetailContainer').innerHTML = `
+          <div style="text-align: center; padding: 60px 20px;">
+            <h3 style="margin-bottom: 14px;">${isUrdu ? 'منصوبہ نہیں ملا' : 'Project not found'}</h3>
+            <a href="/projects" class="btn-primary" style="margin-top: 10px;">
+              ${isUrdu ? 'تمام منصوبے دیکھیں' : 'Back to Projects'}
+            </a>
+          </div>
+        `;
+      }
 
       try {
-        const res = await fetch(`/api/public/projects/${slug}`);
+        const res = await fetch(`/api/public/projects/${encodeURIComponent(slug)}`);
         const data = await res.json();
         if (data.success && data.project) {
           projectData = data.project;
           renderDetail(projectData);
         } else {
-          document.getElementById('projectDetailContainer').innerHTML = `
-            <div style="text-align: center; padding: 60px 0;">
-              <h3>Project not found</h3>
-              <a href="/projects" class="btn-primary" style="margin-top: 15px;">Back to Projects</a>
-            </div>
-          `;
+          loadFailed = true;
+          renderNotFound();
         }
       } catch (err) {
-        console.error(err);
+        console.error('[Project Detail Load Error]', err);
+        loadFailed = true;
+        renderNotFound();
       }
 
       function renderDetail(p) {
         const isUrdu = window.FoundationI18n && window.FoundationI18n.currentLang === 'ur';
-        const title = isUrdu ? p.title_ur : p.title_en;
-        const fullDesc = isUrdu ? (p.full_desc_ur || p.short_desc_ur) : (p.full_desc_en || p.short_desc_en);
-        const catName = isUrdu ? p.category_name_ur : p.category_name_en;
+        const title = isUrdu ? (p.title_ur || p.title_en) : p.title_en;
+        const fullDesc = isUrdu
+          ? (p.full_desc_ur || p.short_desc_ur || p.full_desc_en || p.short_desc_en || '')
+          : (p.full_desc_en || p.short_desc_en || '');
+        const catName = isUrdu
+          ? (p.category_name_ur || p.category_name_en || 'فلاحی منصوبہ')
+          : (p.category_name_en || 'Education');
         const goal = parseFloat(p.goal_amount) || 0;
         const raised = parseFloat(p.raised_amount) || 0;
         const pct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 75;
-        const benCount = p.beneficiaries_count || 126;
-        const benLabel = isUrdu ? (p.beneficiaries_label_ur || 'طلباء') : (p.beneficiaries_label_en || 'Students');
+        const benCount = p.beneficiaries_count || 0;
+        const benLabel = isUrdu ? (p.beneficiaries_label_ur || 'مستفیدین') : (p.beneficiaries_label_en || 'Beneficiaries');
+        const backArrow = isUrdu ? 'fa-arrow-right' : 'fa-arrow-left';
+        const amountDisplay = isUrdu
+          ? `<span dir="ltr" style="display:inline-block;">${raised.toLocaleString()}</span> / <span dir="ltr" style="display:inline-block;">${goal.toLocaleString()}</span> روپے`
+          : `PKR ${raised.toLocaleString()} / PKR ${goal.toLocaleString()}`;
+        const benDisplay = isUrdu
+          ? `<span dir="ltr" style="display:inline-block;">${Number(benCount).toLocaleString()}</span> ${escapeText(benLabel)}`
+          : `${Number(benCount).toLocaleString()} ${escapeText(benLabel)} Supported`;
 
-        document.title = `${title} | Qasr-e-Shabbir Foundation`;
+        document.title = `${title} | ${isUrdu ? 'قصرِ شبیر فاؤنڈیشن' : 'Qasr-e-Shabbir Foundation'}`;
 
         document.getElementById('projectDetailContainer').innerHTML = `
           <div>
             <a href="/projects" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: var(--primary); margin-bottom: 20px;">
-              <i class="fas fa-arrow-left"></i> ${isUrdu ? 'تمام منصوبے' : 'Back to All Projects'}
+              <i class="fas ${backArrow}"></i> ${isUrdu ? 'تمام منصوبوں پر واپس جائیں' : 'Back to All Projects'}
             </a>
 
             <div style="border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 28px; box-shadow: var(--shadow-md);">
-              <img src="${p.image_url || '/media/projects/orphan_education.jpg'}" alt="${title}" style="width: 100%; max-height: 440px; object-fit: cover;" />
+              <img src="${p.image_url || '/media/projects/orphan_education.webp'}" alt="${escapeText(title)}" style="width: 100%; max-height: 440px; object-fit: cover;" onerror="this.onerror=null; this.src='/media/projects/orphan_education.webp';" />
             </div>
 
             <div style="margin-bottom: 12px;">
-              <span class="news-category-badge">${catName || 'Education'}</span>
+              <span class="news-category-badge">${escapeText(catName)}</span>
             </div>
 
-            <h1 style="font-family: var(--font-en-title); font-size: 2.3rem; color: var(--primary-deep); margin-bottom: 16px;">
-              ${title}
+            <h1 style="font-family: ${isUrdu ? 'var(--font-ur)' : 'var(--font-en-title)'}; font-size: clamp(1.65rem, 3.2vw, 2.3rem); color: var(--primary-deep); margin-bottom: 16px;">
+              ${escapeText(title)}
             </h1>
 
             <!-- Funding & Beneficiary Metric Card -->
             <div style="background: var(--bg-mint); border: 1px solid var(--border-mint); border-radius: var(--radius-md); padding: 24px; margin-bottom: 30px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-weight: 700; color: var(--primary-deep);">
-                <span>${pct}% ${isUrdu ? 'مکمل' : 'Funded'}</span>
-                <span>PKR ${raised.toLocaleString()} / PKR ${goal.toLocaleString()}</span>
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; font-weight: 700; color: var(--primary-deep);">
+                <span><span dir="ltr" style="display:inline-block;">${pct}%</span> ${isUrdu ? 'مکمل' : 'Funded'}</span>
+                <span>${amountDisplay}</span>
               </div>
               <div class="project-progress-bar" style="height: 10px; margin-bottom: 16px;">
                 <div class="project-progress-fill" style="width: ${pct}%;"></div>
               </div>
 
-              <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
                 <div style="font-size: 0.95rem; color: var(--text-dark); font-weight: 600;">
                   <i class="fas fa-user-check" style="color: var(--primary); margin-inline-end: 6px;"></i>
-                  ${benCount} ${benLabel} Supported
+                  ${benDisplay}
                 </div>
-                <a href="/donate?project=${p.id}" class="btn-primary">
+                <a href="/donate?project=${encodeURIComponent(p.id)}&slug=${encodeURIComponent(p.slug)}" class="btn-primary">
                   <i class="fas fa-heart"></i> ${isUrdu ? 'اس منصوبے کے لیے عطیہ دیں' : 'Donate to this Project'}
                 </a>
               </div>
             </div>
 
-            <div style="font-size: 1.05rem; line-height: 1.9; color: var(--text-body); white-space: pre-line;">
-              ${fullDesc}
+            <div style="font-size: 1.05rem; line-height: 1.95; color: var(--text-body); white-space: pre-line;">
+              ${escapeText(fullDesc)}
             </div>
           </div>
         `;
@@ -395,6 +431,7 @@
 
       window.addEventListener('foundation:languageChanged', () => {
         if (projectData) renderDetail(projectData);
+        else if (loadFailed) renderNotFound();
       });
     });
   </script>

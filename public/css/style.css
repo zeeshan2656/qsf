@@ -1871,7 +1871,7 @@ textarea.form-control {
     font-size: 0.98rem;
   }
   .categories-section {
-    margin-top: -24px;
+    margin-top: 16px !important;
   }
   .categories-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -2558,6 +2558,36 @@ body.urdu .mobile-panel-link {
   }
   .mobile-site-header {
     display: flex !important;
+  }
+}
+
+/* ==========================================================================
+   MOBILE HERO SLIDER: COMPLETELY DISABLED ON MOBILE (<= 767px)
+   Tablets (>= 768px) and Desktop retain full slider functionality
+   ========================================================================== */
+@media (max-width: 767px) {
+  #heroSection,
+  .hero-section,
+  .hero-slider-wrap,
+  .hero-slider-track,
+  .hero-slide,
+  .hero-slider-arrow,
+  .hero-slider-dots {
+    display: none !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .categories-section {
+    margin-top: 16px !important;
+    margin-bottom: 30px !important;
+    min-height: auto !important;
   }
 }
 

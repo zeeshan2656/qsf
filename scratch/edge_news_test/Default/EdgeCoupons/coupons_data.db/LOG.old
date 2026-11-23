@@ -1,0 +1,6 @@
+2026/11/20-05:20:08.825 9fe0 Reusing MANIFEST C:\Users\Basharat\Desktop\qasreshabbir\qsf\scratch\edge_news_test\Default\EdgeCoupons/coupons_data.db/MANIFEST-000001
+2026/11/20-05:20:08.826 9fe0 Recovering log #3
+2026/11/20-05:20:08.826 9fe0 Reusing old log C:\Users\Basharat\Desktop\qasreshabbir\qsf\scratch\edge_news_test\Default\EdgeCoupons/coupons_data.db/000003.log 
+2026/11/20-05:20:09.457 98c0 Level-0 table #5: started
+2026/11/20-05:20:09.467 98c0 Level-0 table #5: 683273 bytes OK
+2026/11/20-05:20:09.473 98c0 Delete type=0 #3

@@ -259,7 +259,7 @@
       <h1 style="font-family: var(--font-en-title); font-size: 2.4rem; margin-bottom: 10px;" data-i18n="sectionProjectsTitle">
         Our Welfare Projects
       </h1>
-      <p style="color: #FECDD3; font-size: 1rem; max-width: 600px; margin: 0 auto;">
+      <p style="color: #FECDD3; font-size: 1rem; max-width: 600px; margin: 0 auto;" data-i18n="projectsSubtitle">
         Dedicated initiatives supporting orphan children's schooling, food ration sustainability, and community welfare.
       </p>
     </div>
@@ -275,13 +275,9 @@
         <input type="text" id="projectSearchInput" class="form-control" placeholder="Search projects..." data-i18n="searchPlaceholder" />
       </div>
 
-      <!-- Category Filter Tabs -->
+      <!-- Category Filter Tabs (Dynamically populated from DB categories) -->
       <div class="filter-bar" id="categoryFilterBar">
-        <button type="button" class="filter-btn active" data-cat="all">All Projects</button>
-        <button type="button" class="filter-btn" data-cat="orphan-education">Orphan Education</button>
-        <button type="button" class="filter-btn" data-cat="school-fees-healthcare">Healthcare & School Fees</button>
-        <button type="button" class="filter-btn" data-cat="food-ration-support">Food & Ration</button>
-        <button type="button" class="filter-btn" data-cat="financial-assistance">Clean Water & Relief</button>
+        <button type="button" class="filter-btn active" data-cat="all" data-i18n="allProjects">All Projects</button>
       </div>
 
       <!-- Projects Grid -->
@@ -339,7 +335,7 @@
           </div>
           <div style="margin-top: 24px;">
             <a href="/admin" style="font-size: 0.78rem; color: #64748B; display: inline-flex; align-items: center; gap: 5px;">
-              <i class="fas fa-lock"></i> Staff Admin Portal
+              <i class="fas fa-lock"></i> <span data-i18n="staffAdminPortal">Staff Admin Portal</span>
             </a>
           </div>
         </div>
@@ -347,7 +343,7 @@
         <!-- Newsletter Subscription -->
         <div>
           <h4 class="footer-col-title" data-i18n="newsletterTitle">Subscribe to Our Newsletter</h4>
-          <p style="font-size: 0.82rem; color: #94A3B8; margin-bottom: 8px;">
+          <p style="font-size: 0.82rem; color: #94A3B8; margin-bottom: 8px;" data-i18n="newsletterDesc">
             Receive verified updates regarding our educational and welfare milestones.
           </p>
           <form class="newsletter-form" onsubmit="event.preventDefault(); alert(window.FoundationI18n ? window.FoundationI18n.t('msgSuccess') : 'Subscribed successfully!'); this.reset();">
@@ -381,12 +377,12 @@
        class="btn-whatsapp-float" id="whatsappFloatBtn" target="_blank" rel="noopener noreferrer" 
        aria-label="Chat with Qasr-e-Shabbir Foundation on WhatsApp" title="WhatsApp Chat & Support">
       <i class="fab fa-whatsapp"></i>
-      <span class="whatsapp-tooltip">Chat with Us</span>
+      <span class="whatsapp-tooltip" data-i18n="whatsappTooltip">Chat with Us</span>
     </a>
   </div>
 
-  <script src="/js/translations.js?v=20261018_v3" defer></script>
-  <script src="/js/main.js?v=20261018_v3" defer></script>
+  <script src="/js/translations.js?v=20261120_v1" defer></script>
+  <script src="/js/main.js?v=20261120_v1" defer></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       if (window.FoundationI18n) window.FoundationI18n.init();
@@ -394,6 +390,7 @@
       let activeCategory = 'all';
       let searchQuery = '';
       let cachedProjects = [];
+      let cachedCategories = [];
 
       // Check URL query param for category e.g. /projects?category=orphan-education
       const urlParams = new URLSearchParams(window.location.search);
@@ -401,11 +398,48 @@
         activeCategory = urlParams.get('category');
       }
 
+      loadCategories();
       loadProjects();
+
+      async function loadCategories() {
+        try {
+          const res = await fetch('/api/public/bootstrap');
+          const json = await res.json();
+          if (json.success && json.data && Array.isArray(json.data.categories)) {
+            cachedCategories = json.data.categories;
+            renderCategoryFilterBar();
+          }
+        } catch (err) {
+          console.warn('Could not load categories:', err);
+        }
+      }
+
+      function renderCategoryFilterBar() {
+        const bar = document.getElementById('categoryFilterBar');
+        if (!bar) return;
+        const isUrdu = window.FoundationI18n && window.FoundationI18n.currentLang === 'ur';
+        const allLabel = isUrdu ? 'تمام منصوبے' : 'All Projects';
+
+        let html = `<button type="button" class="filter-btn ${activeCategory === 'all' ? 'active' : ''}" data-cat="all">${allLabel}</button>`;
+        cachedCategories.forEach(cat => {
+          const label = isUrdu ? (cat.name_ur || cat.name_en) : cat.name_en;
+          html += `<button type="button" class="filter-btn ${activeCategory === cat.slug ? 'active' : ''}" data-cat="${cat.slug}">${label}</button>`;
+        });
+        bar.innerHTML = html;
+
+        bar.querySelectorAll('.filter-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            bar.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeCategory = btn.dataset.cat;
+            loadProjects();
+          });
+        });
+      }
 
       async function loadProjects() {
         try {
-          const res = await fetch(`/api/public/projects?category=${activeCategory}&search=${encodeURIComponent(searchQuery)}`);
+          const res = await fetch(`/api/public/projects?category=${encodeURIComponent(activeCategory)}&search=${encodeURIComponent(searchQuery)}`);
           const data = await res.json();
           if (data.success) {
             cachedProjects = data.projects;
@@ -423,28 +457,33 @@
 
         if (projects.length === 0) {
           grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted);">
-            ${isUrdu ? 'کوئی پروجیکٹ نہیں ملا۔' : 'No projects found matching the criteria.'}
+            ${isUrdu ? 'کوئی منصوبہ نہیں ملا۔' : 'No projects found matching the criteria.'}
           </div>`;
           return;
         }
 
         grid.innerHTML = projects.map(p => {
-          const title = isUrdu ? p.title_ur : p.title_en;
-          const desc = isUrdu ? p.short_desc_ur : p.short_desc_en;
-          const catName = isUrdu ? p.category_name_ur : p.category_name_en;
+          const title = isUrdu ? (p.title_ur || p.title_en) : p.title_en;
+          const desc = isUrdu ? (p.short_desc_ur || p.short_desc_en) : p.short_desc_en;
+          const catName = isUrdu ? (p.category_name_ur || p.category_name_en || 'فلاحی منصوبہ') : (p.category_name_en || 'Education');
           const goal = parseFloat(p.goal_amount) || 0;
           const raised = parseFloat(p.raised_amount) || 0;
           const pct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 75;
-          const benCount = p.beneficiaries_count || 126;
-          const benLabel = isUrdu ? (p.beneficiaries_label_ur || 'طلباء') : (p.beneficiaries_label_en || 'Students');
+          const benCount = p.beneficiaries_count || 0;
+          const benLabel = isUrdu ? (p.beneficiaries_label_ur || 'مستفیدین') : (p.beneficiaries_label_en || 'Beneficiaries');
+          const projectUrl = `/project/${encodeURIComponent(p.slug || String(p.id))}`;
+          const raisedFormatted = isUrdu
+            ? `<span dir="ltr" style="display:inline-block;">${raised.toLocaleString()}</span> روپے`
+            : `PKR ${raised.toLocaleString()}`;
+          const btnText = isUrdu ? 'تفصیل و عطیہ' : 'Learn & Support';
 
           return `
-            <div class="project-card" onclick="window.location.href='/project/${p.slug}'" style="cursor: pointer;">
+            <div class="project-card" onclick="window.location.href='${projectUrl}'" style="cursor: pointer;" data-project-id="${p.id}">
               <div class="project-image-wrapper">
-                <img src="${p.image_url || '/media/projects/orphan_education.jpg'}" alt="${title}" class="project-image" loading="lazy" />
+                <img src="${p.image_url || '/media/projects/orphan_education.webp'}" alt="${title}" class="project-image" loading="lazy" onerror="this.onerror=null; this.src='/media/projects/orphan_education.webp';" />
               </div>
               <div class="project-content">
-                <span class="project-category-tag">${catName || 'Education'}</span>
+                <span class="project-category-tag">${catName}</span>
                 <h3 class="project-title">${title}</h3>
                 <p class="project-desc">${desc}</p>
                 
@@ -453,18 +492,18 @@
                     <div class="project-progress-fill" style="width: ${pct}%"></div>
                   </div>
                   <div class="project-meta-stats">
-                    <span>${pct}% ${isUrdu ? 'مکمل' : 'Funded'}</span>
-                    <span>PKR ${raised.toLocaleString()}</span>
+                    <span><span dir="ltr" style="display:inline-block;">${pct}%</span> ${isUrdu ? 'مکمل' : 'Funded'}</span>
+                    <span>${raisedFormatted}</span>
                   </div>
                 </div>
 
                 <div class="project-card-actions">
                   <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-dark);">
                     <i class="fas fa-users" style="color: var(--primary); margin-inline-end: 4px;"></i>
-                    ${benCount} ${benLabel}
+                    <span dir="ltr" style="display:inline-block;">${Number(benCount).toLocaleString()}</span> ${benLabel}
                   </span>
-                  <a href="/project/${p.slug}" class="btn-card-donate">
-                    ${isUrdu ? 'تفصیل و عطیہ' : 'Learn & Support'}
+                  <a href="${projectUrl}" class="btn-card-donate" onclick="event.stopPropagation()" aria-label="${btnText} - ${title}">
+                    <span>${btnText}</span>
                   </a>
                 </div>
               </div>
@@ -472,18 +511,6 @@
           `;
         }).join('');
       }
-
-      // Filter click
-      const filterBtns = document.querySelectorAll('.filter-btn');
-      filterBtns.forEach(btn => {
-        if (btn.dataset.cat === activeCategory) btn.classList.add('active');
-        btn.addEventListener('click', () => {
-          filterBtns.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          activeCategory = btn.dataset.cat;
-          loadProjects();
-        });
-      });
 
       // Search input debounced
       const searchInput = document.getElementById('projectSearchInput');
@@ -499,6 +526,7 @@
       }
 
       window.addEventListener('foundation:languageChanged', () => {
+        renderCategoryFilterBar();
         renderProjectsList(cachedProjects);
       });
     });

@@ -39,6 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.sidebar-menu > .sidebar-item').forEach(item => {
       item.style.display = '';
     });
+    const martyrsItem = document.getElementById('sidebarMartyrsItem');
+    if (martyrsItem) martyrsItem.style.display = '';
     const orgItem = document.getElementById('sidebarOrgItem');
     if (orgItem) orgItem.style.display = '';
     const settingsItem = document.getElementById('sidebarSettingsItem');
@@ -56,6 +58,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (!Array.isArray(perms)) perms = [];
 
+    // Martyrs Archive subtabs
+    if (tabId.startsWith('martyrs-') || tabId === 'martyrs') {
+      return perms.includes('martyrs');
+    }
+
     // Normalize organization setup subtabs
     if (tabId.startsWith('org-') || tabId === 'org') {
       return isSuper || perms.includes('users') || perms.includes('settings');
@@ -66,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return perms.includes('settings');
     }
 
-    if (tabId === 'announcements' || tabId === 'menus' || tabId === 'hero-slides' || tabId === 'pages') {
+    if (tabId === 'announcements' || tabId === 'menus' || tabId === 'hero-slides' || tabId === 'pages' || tabId === 'social-media') {
       return isSuper || perms.includes(tabId) || perms.includes('settings');
     }
 
@@ -74,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function getFirstPermittedTab() {
-    const tabsInOrder = ['overview', 'users', 'accounts', 'projects', 'volunteers', 'articles', 'applications', 'donations', 'submissions', 'pages', 'org-departments', 'settings-bank'];
+    const tabsInOrder = ['overview', 'users', 'accounts', 'projects', 'volunteers', 'articles', 'applications', 'donations', 'submissions', 'pages', 'social-media', 'martyrs-wars', 'martyrs-all', 'martyrs-add', 'org-departments', 'settings-bank'];
     for (const t of tabsInOrder) {
       if (isTabPermitted(t)) return t;
     }
@@ -100,6 +107,13 @@ document.addEventListener('DOMContentLoaded', () => {
         item.style.display = allowed ? '' : 'none';
       }
     });
+
+    // Martyrs Archive menu item
+    const martyrsItem = document.getElementById('sidebarMartyrsItem');
+    if (martyrsItem) {
+      const allowed = isSuper || perms.includes('martyrs');
+      martyrsItem.style.display = allowed ? '' : 'none';
+    }
 
     // Organization Setup menu item
     const orgItem = document.getElementById('sidebarOrgItem');
@@ -157,6 +171,113 @@ document.addEventListener('DOMContentLoaded', () => {
     switchTab(startTab);
   }
 
+  // Login Password Visibility Toggle
+  const btnToggleLoginPassword = document.getElementById('btnToggleLoginPassword');
+  const loginPasswordInput = document.getElementById('loginPassword');
+  if (btnToggleLoginPassword && loginPasswordInput) {
+    btnToggleLoginPassword.addEventListener('click', () => {
+      const isHidden = loginPasswordInput.type === 'password';
+      loginPasswordInput.type = isHidden ? 'text' : 'password';
+      const icon = btnToggleLoginPassword.querySelector('i');
+      if (icon) icon.className = isHidden ? 'fas fa-eye-slash' : 'fas fa-eye';
+    });
+  }
+
+  function showLoginAlert(message, isSuccess = false) {
+    if (!loginAlert) return;
+    loginAlert.style.display = 'block';
+    loginAlert.style.background = isSuccess ? '#DCFCE7' : '#FEE2E2';
+    loginAlert.style.color = isSuccess ? '#166534' : '#991B1B';
+    loginAlert.textContent = message;
+  }
+
+  // Secure Two-Step Password Recovery Flow
+  const recoveryPanel = document.getElementById('passwordRecoveryPanel');
+  const btnShowForgot = document.getElementById('btnShowForgotPassword');
+  const btnBackToLogin = document.getElementById('btnBackToLogin');
+  const requestResetForm = document.getElementById('requestResetForm');
+  const confirmResetForm = document.getElementById('confirmResetForm');
+
+  if (btnShowForgot && recoveryPanel && loginForm) {
+    btnShowForgot.addEventListener('click', () => {
+      loginAlert.style.display = 'none';
+      loginForm.style.display = 'none';
+      recoveryPanel.style.display = 'block';
+      const existingUserVal = document.getElementById('loginUsername')?.value?.trim();
+      const resetIdInput = document.getElementById('resetIdentifier');
+      if (existingUserVal && resetIdInput && !resetIdInput.value) {
+        resetIdInput.value = existingUserVal;
+      }
+    });
+  }
+
+  if (btnBackToLogin && recoveryPanel && loginForm) {
+    btnBackToLogin.addEventListener('click', () => {
+      loginAlert.style.display = 'none';
+      recoveryPanel.style.display = 'none';
+      loginForm.style.display = 'block';
+    });
+  }
+
+  if (requestResetForm) {
+    requestResetForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      loginAlert.style.display = 'none';
+      const btn = requestResetForm.querySelector('button[type="submit"]');
+      const identifier = document.getElementById('resetIdentifier').value.trim();
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/auth/request-reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifier })
+        });
+        const result = await res.json();
+        showLoginAlert(result.message || 'Recovery request processed.', !!result.success);
+        if (result.success && confirmResetForm) {
+          confirmResetForm.style.display = 'block';
+        }
+      } catch (err) {
+        showLoginAlert('Connection error. Please ensure the server is running.');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  }
+
+  if (confirmResetForm) {
+    confirmResetForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      loginAlert.style.display = 'none';
+      const btn = confirmResetForm.querySelector('button[type="submit"]');
+      const identifier = document.getElementById('resetIdentifier').value.trim();
+      const recoveryCode = document.getElementById('resetCodeInput').value.trim();
+      const newPassword = document.getElementById('resetNewPassword').value;
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/auth/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifier, recoveryCode, newPassword })
+        });
+        const result = await res.json();
+        showLoginAlert(result.message || 'Password reset status updated.', !!result.success);
+        if (result.success) {
+          confirmResetForm.reset();
+          confirmResetForm.style.display = 'none';
+          if (recoveryPanel) recoveryPanel.style.display = 'none';
+          if (loginForm) loginForm.style.display = 'block';
+          const loginUserInput = document.getElementById('loginUsername');
+          if (loginUserInput && identifier) loginUserInput.value = identifier;
+        }
+      } catch (err) {
+        showLoginAlert('Connection error. Please try again.');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  }
+
   // Login Form Submit
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
@@ -182,12 +303,10 @@ document.addEventListener('DOMContentLoaded', () => {
           currentUser = result.user;
           showDashboard();
         } else {
-          loginAlert.style.display = 'block';
-          loginAlert.textContent = result.message || 'Invalid username or password.';
+          showLoginAlert(result.message || 'Invalid username or password.', false);
         }
       } catch (err) {
-        loginAlert.style.display = 'block';
-        loginAlert.textContent = 'Connection error. Please try again.';
+        showLoginAlert('Connection error. Please try again.', false);
       } finally {
         submitBtn.disabled = false;
       }
@@ -203,6 +322,16 @@ document.addEventListener('DOMContentLoaded', () => {
         currentUser = null;
         showLogin();
       }
+    });
+  }
+
+  // Collapsible Martyrs Archive Accordion Toggle
+  const btnToggleMartyrs = document.getElementById('btnToggleMartyrs');
+  const sidebarMartyrsItem = document.getElementById('sidebarMartyrsItem');
+  if (btnToggleMartyrs && sidebarMartyrsItem) {
+    btnToggleMartyrs.addEventListener('click', (e) => {
+      e.preventDefault();
+      sidebarMartyrsItem.classList.toggle('open');
     });
   }
 
@@ -237,6 +366,68 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   const PAGE_CONFIG = {
+    'martyrs-wars': {
+      titleEn: 'Wars & Historical Conflicts',
+      titleUr: 'جنگیں اور تاریخی واقعات',
+      icon: 'fas fa-landmark',
+      actions: [
+        {
+          textEn: 'Add New War',
+          textUr: 'نئی جنگ شامل کریں',
+          icon: 'fas fa-plus',
+          type: 'primary',
+          permission: 'martyrs',
+          onClick: 'window.QSFMartyrs && window.QSFMartyrs.openWarModal()'
+        }
+      ]
+    },
+    'martyrs-all': {
+      titleEn: 'All Martyrs (شہداء)',
+      titleUr: 'تمام شہداء',
+      icon: 'fas fa-monument',
+      actions: [
+        {
+          id: 'btnHeaderMartyrsFilter',
+          textEn: 'Filters',
+          textUr: 'فلٹرز',
+          icon: 'fas fa-sliders',
+          type: 'secondary',
+          permission: 'martyrs',
+          onClick: 'window.QSFMartyrs && window.QSFMartyrs.openFiltersModal()'
+        },
+        {
+          textEn: 'Check Duplicates',
+          textUr: 'ڈپلیکیٹ چیک',
+          icon: 'fas fa-clone',
+          type: 'secondary',
+          permission: 'martyrs',
+          onClick: 'window.QSFMartyrs && window.QSFMartyrs.openDuplicatesModal()'
+        },
+        {
+          textEn: 'Add New Martyr',
+          textUr: 'نیا شہید شامل کریں',
+          icon: 'fas fa-user-plus',
+          type: 'primary',
+          permission: 'martyrs',
+          onClick: 'window.QSFMartyrs && window.QSFMartyrs.openAddMartyrForm()'
+        }
+      ]
+    },
+    'martyrs-add': {
+      titleEn: 'Add / Edit Martyr Profile',
+      titleUr: 'شہید کا پروفائل شامل / ترمیم کریں',
+      icon: 'fas fa-user-plus',
+      actions: [
+        {
+          textEn: 'All Martyrs',
+          textUr: 'تمام شہداء',
+          icon: 'fas fa-users',
+          type: 'secondary',
+          permission: 'martyrs',
+          onClick: "window.switchAdminTab && window.switchAdminTab('martyrs-all')"
+        }
+      ]
+    },
     'overview': {
       titleEn: 'Executive Overview',
       titleUr: 'انتظامی جائزہ',
@@ -612,6 +803,34 @@ document.addEventListener('DOMContentLoaded', () => {
           onClick: 'openPageModal()'
         }
       ]
+    },
+    'social-media': {
+      titleEn: 'News & Social Media Broadcast Studio',
+      titleUr: 'نیوز و سوشل میڈیا اسٹوڈیو',
+      icon: 'fas fa-satellite-dish',
+      actions: [
+        {
+          textEn: 'Reset Studio',
+          textUr: 'اسٹوڈیو ری سیٹ',
+          icon: 'fas fa-rotate-left',
+          type: 'secondary',
+          onClick: 'resetNewsStudio()'
+        },
+        {
+          textEn: 'Download JPG',
+          textUr: 'ڈاؤنلوڈ جے پی جی',
+          icon: 'fas fa-file-image',
+          type: 'secondary',
+          onClick: "downloadNewsGraphic('jpeg')"
+        },
+        {
+          textEn: 'Download PNG (300 DPI)',
+          textUr: 'ڈاؤنلوڈ پی این جی',
+          icon: 'fas fa-download',
+          type: 'primary',
+          onClick: "downloadNewsGraphic('png')"
+        }
+      ]
     }
   };
 
@@ -690,6 +909,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (canExecute) {
             const btn = document.createElement('button');
             btn.type = 'button';
+            if (act.id) btn.id = act.id;
             btn.className = act.type === 'primary' 
               ? 'btn-admin btn-admin-primary topbar-action-btn' 
               : 'topbar-action-btn-secondary';
@@ -737,6 +957,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const parentSub = l.closest('.submenu-item');
         if (parentSub) {
           parentSub.classList.add('active');
+          const martyrsParent = l.closest('#sidebarMartyrsItem');
+          if (martyrsParent) {
+            martyrsParent.classList.add('open', 'active-parent');
+          }
           const orgParent = l.closest('#sidebarOrgItem');
           if (orgParent) {
             orgParent.classList.add('open', 'active-parent');
@@ -762,6 +986,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Close mobile sidebar drawer if open
     closeMobileSidebar();
 
+    // If navigating away from Social Media while inside full-screen studio, exit cleanly and restore sidebar
+    if (tabId !== 'social-media' && inStudioFullscreen) {
+      exitSocialStudio(false);
+    }
+
     // Load data for specific tab
     if (tabId === 'overview') loadOverview();
     if (tabId === 'users') loadUsers();
@@ -775,6 +1004,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tabId === 'donations') loadDonations();
     if (tabId === 'submissions') loadSubmissions();
     if (tabId === 'pages') loadPages();
+    if (tabId === 'social-media') loadSocialMediaOverview();
+    if (tabId === 'martyrs-wars' || tabId === 'martyrs-all' || tabId === 'martyrs-add') {
+      if (window.QSFMartyrs && typeof window.QSFMartyrs.onTabActivated === 'function') {
+        window.QSFMartyrs.onTabActivated(tabId);
+      }
+    }
     if (tabId === 'org-departments') loadDepartments();
     if (tabId === 'org-roles') loadRoles();
     if (tabId === 'org-designations') loadDesignations();
@@ -790,10 +1025,98 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Mobile sidebar drawer & backdrop controls
+  // Expose clean global hooks for modular sub-apps (Martyrs Archive, Studios)
+  window.switchAdminTab = switchTab;
+  window.getAdminCurrentUser = () => currentUser;
+
+  // Global Collapsible Sidebar + Mobile Slide-in Drawer + Hover Tooltips
+  const SIDEBAR_STORAGE_KEY = 'qsf_admin_sidebar_collapsed';
   const adminSidebar = document.getElementById('adminSidebar');
   const sidebarBackdrop = document.getElementById('sidebarBackdrop');
   const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+  const sidebarCollapseBtn = document.getElementById('btnSidebarCollapseToggle');
+  const sidebarTooltipEl = document.getElementById('qsfSidebarTooltip');
+
+  let userSidebarCollapsed = false;
+  try {
+    userSidebarCollapsed = localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true';
+  } catch (_) {}
+
+  function isSidebarCollapsed() {
+    return !!(adminSidebar && adminSidebar.classList.contains('collapsed'));
+  }
+
+  function applySidebarCollapsed(collapsed, persist = true) {
+    if (!adminSidebar) return;
+    if (window.innerWidth <= 900) {
+      adminSidebar.classList.remove('collapsed');
+      return;
+    }
+    adminSidebar.classList.toggle('collapsed', Boolean(collapsed));
+    if (sidebarCollapseBtn) {
+      sidebarCollapseBtn.setAttribute('aria-expanded', String(!collapsed));
+      sidebarCollapseBtn.title = collapsed ? 'Expand Sidebar' : 'Collapse Sidebar';
+    }
+    if (persist) {
+      userSidebarCollapsed = Boolean(collapsed);
+      try { localStorage.setItem(SIDEBAR_STORAGE_KEY, String(userSidebarCollapsed)); } catch (_) {}
+    }
+    if (sidebarTooltipEl) sidebarTooltipEl.classList.remove('visible');
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 260);
+  }
+
+  // Restore saved sidebar preference immediately on load
+  applySidebarCollapsed(userSidebarCollapsed, false);
+
+  if (sidebarCollapseBtn) {
+    sidebarCollapseBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      applySidebarCollapsed(!isSidebarCollapsed(), true);
+    });
+  }
+
+  // Expand collapsed sidebar if user clicks a submenu parent so sub-items are accessible
+  [btnToggleMartyrs, btnToggleOrg, btnToggleSettings].forEach(btn => {
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      if (isSidebarCollapsed()) {
+        applySidebarCollapsed(false, false);
+      }
+    });
+  });
+
+  // Floating tooltip for collapsed sidebar icon hover
+  if (adminSidebar && sidebarTooltipEl) {
+    const bindTooltipTarget = (el) => {
+      const label = el.getAttribute('data-tooltip') || el.getAttribute('title') || (el.textContent || '').trim();
+      if (!label) return;
+      el.addEventListener('mouseenter', () => {
+        if (!isSidebarCollapsed() || window.innerWidth <= 900) return;
+        const r = el.getBoundingClientRect();
+        sidebarTooltipEl.textContent = label;
+        sidebarTooltipEl.style.left = (r.right + 10) + 'px';
+        sidebarTooltipEl.style.top = Math.round(r.top + r.height / 2 - 14) + 'px';
+        sidebarTooltipEl.classList.add('visible');
+      });
+      el.addEventListener('mouseleave', () => {
+        sidebarTooltipEl.classList.remove('visible');
+      });
+    };
+    adminSidebar.querySelectorAll('.sidebar-menu a[data-tooltip], .btn-sidebar-logout').forEach(bindTooltipTarget);
+    adminSidebar.addEventListener('scroll', () => sidebarTooltipEl.classList.remove('visible'), true);
+  }
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth <= 900) {
+      adminSidebar && adminSidebar.classList.remove('collapsed');
+      sidebarTooltipEl && sidebarTooltipEl.classList.remove('visible');
+    } else if (!inStudioFullscreen) {
+      adminSidebar && adminSidebar.classList.toggle('collapsed', userSidebarCollapsed);
+    } else {
+      adminSidebar && adminSidebar.classList.add('collapsed');
+    }
+  });
 
   function openMobileSidebar() {
     if (adminSidebar) adminSidebar.classList.add('mobile-open');
@@ -809,7 +1132,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (menuToggle) {
     menuToggle.addEventListener('click', (e) => {
       e.stopPropagation();
-      openMobileSidebar();
+      if (window.innerWidth <= 900) openMobileSidebar();
+      else applySidebarCollapsed(!isSidebarCollapsed(), true);
     });
   }
 
@@ -9135,10 +9459,2846 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  // =========================================================================
+  // QSF SOCIAL MEDIA POST DESIGNER (BRANDED STUDIO) - CLIENT-SIDE ONLY
+  // =========================================================================
+  let currentSocialLang = 'en';
+  let currentSocialTheme = 'crimson';
+  let currentSocialRatio = 'square';
+  let currentSocialFontSize = 'md';
+  let currentSocialPreset = 'orphan';
+
+  const SOCIAL_PRESETS = {
+    orphan: {
+      en: {
+        category: 'ORPHAN SPONSORSHIP',
+        heading: 'Sponsor an Orphan Child Today',
+        subheading: 'Quality Education, Nutrition & Dignity',
+        body: 'Join Qasr-e-Shabbir Foundation in providing quality school education, books, uniforms, and nutrition to deserving orphaned children across Pakistan. Your regular support transforms a child\'s future.',
+        highlight: 'Monthly Sponsorship: Rs. 5,000 / $25',
+        footer: 'Helpline: +92 300 0817702 • www.qasreshabbir.org'
+      },
+      ur: {
+        category: 'یتیم کفالت منصوبہ',
+        heading: 'ایک یتیم بچے کی کفالت کا بیڑا اٹھائیں',
+        subheading: 'معیاری تعلیم، خوراک اور باوقار مستقبل',
+        body: 'قصرِ شبیر فاؤنڈیشن کے ساتھ مل کر یتیم و بے سہارا بچوں کو اسکول فیس، یونیفارم، کتب اور صحت مند خوراک فراہم کریں۔ آپ کا ماہانہ تعاون ایک معصوم کا روشن مستقبل بنا سکتا ہے۔',
+        highlight: 'ماہانہ کفالت: 5,000 روپے',
+        footer: 'ہیلپ لائن: 0817702-0300 • www.qasreshabbir.org'
+      }
+    },
+    ration: {
+      en: {
+        category: 'FOOD RATION SUPPORT',
+        heading: 'Monthly Ration for Deserving Families',
+        subheading: 'Fight Hunger • Restore Dignity',
+        body: 'Deliver essential food supplies (flour, rice, cooking oil, pulses, and sugar) to widows, daily wagers, and impoverished families. No deserving family should sleep hungry in our communities.',
+        highlight: 'One Family Food Pack: Rs. 9,500',
+        footer: 'Helpline: +92 300 0817702 • www.qasreshabbir.org'
+      },
+      ur: {
+        category: 'راشن سپورٹ پروگرام',
+        heading: 'مستحق خاندانوں کے لیے ماہانہ راشن پیکج',
+        subheading: 'بھوک کا خاتمہ • باوقار امداد',
+        body: 'بیواؤں، بیروزگاروں اور نادار گھرانوں تک آٹا، چاول، گھی، دالیں اور چینی پر مشتمل مکمل ماہانہ راشن پیکج کی فراہمی۔ آئیں مل کر کسی غریب گھرانے کا چولہا بجھنے نہ دیں۔',
+        highlight: 'ایک گھرانہ راشن پیکج: 9,500 روپے',
+        footer: 'ہیلپ لائن: 0817702-0300 • www.qasreshabbir.org'
+      }
+    },
+    water: {
+      en: {
+        category: 'CLEAN DRINKING WATER',
+        heading: 'Install a Clean Drinking Water Plant',
+        subheading: 'Safe Water For Drought-Stricken Areas',
+        body: 'Thousands of rural families suffer from fatal waterborne diseases due to contaminated water. Help QSF install modern solar water filtration plants and deep wells in needy villages.',
+        highlight: 'Solar Water Plant Sadaqah: Rs. 45,000',
+        footer: 'Helpline: +92 300 0817702 • www.qasreshabbir.org'
+      },
+      ur: {
+        category: 'صاف پانی منصوبہ',
+        heading: 'پینے کے صاف پانی کی فراہمی',
+        subheading: 'صدقہ جاریہ • بیماریوں سے نجات',
+        body: 'پسماندہ علاقوں میں صاف پینے کے پانی کی شدید قلت ہے۔ قصرِ شبیر فاؤنڈیشن کے ذریعے سولر واٹر فلٹریشن پلانٹس اور ہینڈ پمپس لگوا کر پیاسی بستیوں کے لیے آسانیاں پیدا کریں۔',
+        highlight: 'مکمل واٹر پروجیکٹ: 45,000 روپے',
+        footer: 'ہیلپ لائن: 0817702-0300 • www.qasreshabbir.org'
+      }
+    },
+    medical: {
+      en: {
+        category: 'EMERGENCY MEDICAL RELIEF',
+        heading: 'Life-Saving Surgery & Free Medicines',
+        subheading: 'Urgent Healthcare for Poor Patients',
+        body: 'Helpless patients with chronic diseases cannot afford urgent surgery, dialysis, or costly medicines. Your Zakat and humanitarian contributions give them a second chance at life.',
+        highlight: 'Emergency Patient Care Fund',
+        footer: 'Helpline: +92 300 0817702 • www.qasreshabbir.org'
+      },
+      ur: {
+        category: 'طبی امداد فنڈ',
+        heading: 'مریضوں کا مفت علاج اور ادویات',
+        subheading: 'زندگی بچائیں • شفا کا ذریعہ بنیں',
+        body: 'ناگہانی امراض، مہنگے آپریشنز اور ادویات کے بھاری اخراجات سے لاچار سفید پوش مریضوں کا مکمل علاج۔ آپ کا صدقہ و زکوٰۃ کسی کی قیمتی جان بچانے کا سبب بن سکتا ہے۔',
+        highlight: 'ہنگامی طبی فنڈ میں تعاون کریں',
+        footer: 'ہیلپ لائن: 0817702-0300 • www.qasreshabbir.org'
+      }
+    }
+  };
+
+  /* =========================================================================
+     GLOBAL TOAST NOTIFICATION HELPER
+     ========================================================================= */
+  function showToast(msg, type = 'success') {
+    let container = document.getElementById('adminToastContainer');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'adminToastContainer';
+      container.style.cssText = 'position: fixed; bottom: 24px; right: 24px; z-index: 99999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;';
+      document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    const borderCol = type === 'error' ? '#EF4444' : type === 'warning' ? '#F59E0B' : '#B91C1C';
+    const iconClass = type === 'error' ? 'fa-triangle-exclamation' : type === 'warning' ? 'fa-bell' : 'fa-circle-check';
+    const iconColor = type === 'error' ? '#EF4444' : type === 'warning' ? '#F59E0B' : '#22C55E';
+    toast.style.cssText = `background: #0F172A; color: #FFFFFF; padding: 12px 20px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.35); border-left: 4px solid ${borderCol}; display: flex; align-items: center; gap: 10px; pointer-events: auto; transition: all 0.25s ease;`;
+    toast.innerHTML = `<i class="fas ${iconClass}" style="color: ${iconColor};"></i><span>${msg}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(10px)';
+      setTimeout(() => toast.remove(), 300);
+    }, 3500);
+  }
+
+  /* =========================================================================
+     QESF NEWS GRAPHICS & BROADCAST TEMPLATE STUDIO ENGINE (20 TEMPLATES)
+     20 Genuinely Distinct Broadcast Templates, 6 Social Media Formats, 300 DPI Export
+     Client-side in-memory studio (Zero database storage)
+     ========================================================================= */
+  let currentNewsTemplate = 'breaking';
+  let currentNewsRatio = 'landscape';
+  let currentNewsLang = 'ur';
+  let currentNewsColor = 'white';
+  let currentNewsSize = 'lg';
+
+  const NEWS_TEMPLATES = {
+    breaking: {
+      nameEn: '1. Breaking News',
+      nameUr: '1. بریکنگ نیوز',
+      ur: {
+        tag: 'ہنگامی خبر',
+        headline: 'یمن پر فضائی حملوں میں 76 افراد شہید اور متعدد زخمی',
+        subheading: 'وزارت صحت کا ہنگامی ریڈ الرٹ، ہسپتالوں میں ایمرجنسی نافذ',
+        speaker: 'ترجمان وزارت صحت',
+        body: 'وزارت صحت کے مطابق گزشتہ چوبیس گھنٹوں کے دوران حملوں میں 17 افراد شہید اور 59 زخمی ہوئے ہیں اور امدادی کارروائیاں جاری ہیں۔',
+        footer: 'QESF بریکنگ نیوز ڈیسک • 24 گھنٹے لائیو نشریات',
+        dateline: '20 نومبر 2026 • اسلام آباد بیورو',
+        website: 'www.qasreshabbir.org'
+      },
+      en: {
+        tag: 'URGENT DISPATCH',
+        headline: 'Emergency Aid Operations Launched Across High-Risk Distressed Zones',
+        subheading: 'Disaster Relief Mission | Rapid Response Units Deployed Immediately',
+        speaker: 'QESF Operations Room',
+        body: 'Emergency humanitarian convoys have mobilized with ration packs, clean drinking water, and trauma kits for affected families.',
+        footer: 'QESF 24/7 Global Newsroom • Live Broadcast Wire',
+        dateline: '20 Nov 2026 • Islamabad Bureau',
+        website: 'www.qasreshabbir.org'
+      }
+    },
+    international: {
+      nameEn: '2. International Desk',
+      nameUr: '2. بین الاقوامی خبریں',
+      ur: {
+        tag: 'بین الاقوامی ڈیسک',
+        headline: 'اقوام متحدہ کی سلامتی کونسل کا مشرق وسطیٰ پر ہنگامی اجلاس',
+        subheading: 'فوری جنگ بندی اور انسانی امدادی راہداریوں کی بحالی کا متفقہ مطالبہ',
+        speaker: 'نیویارک بیورو',
+        body: 'عالمی مندوبین نے انسانی بنیادوں پر فوری سیز فائر اور ریلیف قافلوں کی بلا تعطل ترسیل یقینی بنانے پر زور دیا۔',
+        footer: 'QESF انٹرنیشنل بیورو • نیویارک و جنیوا',
+        dateline: '20 نومبر 2026 • اقوام متحدہ ہیڈ کوارٹر',
+        website: 'www.qasreshabbir.org'
+      },
+      en: {
+        tag: 'UNITED NATIONS',
+        headline: 'UN Security Council Convenes Emergency Session on Global Aid Corridors',
+        subheading: 'Immediate Humanitarian Ceasefire Demanded by International Envoys',
+        speaker: 'New York Bureau',
+        body: 'Delegates emphasize unhindered passage for humanitarian convoys to prevent catastrophic famine and displacement.',
+        footer: 'QESF International Desk • Global News Network',
+        dateline: '20 Nov 2026 • UN Headquarters',
+        website: 'www.qasreshabbir.org'
+      }
+    },
+    statement: {
+      nameEn: '3. Official Statement',
+      nameUr: '3. اہم بیان و ٹویٹ',
+      ur: {
+        tag: 'سرکاری موقف و ٹویٹ',
+        headline: 'ایرانی مسلح افواج کا سخت انتباہ: کسی بھی جارحیت کا فوری جواب دیا جائے گا',
+        subheading: 'دفاعی کمانڈ کا باضابطہ اعلامیہ',
+        speaker: 'فرماندہی نیروی دریایی سپاه',
+        body: 'دشمن کی ہر نقل و حرکت کی مکمل نگرانی کی جا رہی ہے۔ دشمن کی جانب سے کسی بھی کارروائی کی تصدیق کی صورت میں ہمارا ردعمل فوری، اثر انگیز اور بغیر جغرافیائی حدود کے ہوگا۔',
+        footer: 'QESF مانیٹرنگ ڈیسک • سرکاری ذرائع ابلاغ',
+        dateline: '20 نومبر 2026 • تہران و اسلام آباد',
+        website: 'www.qasreshabbir.org'
+      },
+      en: {
+        tag: 'OFFICIAL STATEMENT',
+        headline: 'Strategic Command Issues Direct Warning: Readiness at Peak Alert',
+        subheading: 'Official Communiqué Released via Defense Headquarters',
+        speaker: 'Commander-in-Chief Central Staff',
+        body: 'Whenever signs of hostile enemy action are confirmed, the armed forces will respond immediately, impactfully, and without territorial limits.',
+        footer: 'QESF Verified Statement Wire • Official Bulletin',
+        dateline: '20 Nov 2026 • Official Communiqué',
+        website: 'www.qasreshabbir.org'
+      }
+    },
+    latest: {
+      nameEn: '4. Latest News',
+      nameUr: '4. تازہ ترین خبریں',
+      ur: {
+        tag: 'تازہ ترین اپڈیٹس',
+        headline: 'قصرِ شبیر فاؤنڈیشن کا موسم سرما امدادی پیکج: 5000 مستحق خاندانوں میں تقسیم',
+        subheading: 'گرم ملبوسات، لحاف اور راشن کٹس کی ترسیل کا پہلا مرحلہ مکمل',
+        speaker: 'شعبہ خدمت خلق',
+        body: 'موسم سرما کے پیش نظر دور دراز پسماندہ علاقوں کے یتامیٰ اور بیواؤں میں اشیائے خورونوش اور گرم کپڑے شفاف طریقے سے تقسیم کر دیے گئے۔',
+        footer: 'قصرِ شبیر فاؤنڈیشن میڈیا سیل • خدمت خلق ہمارا مشن',
+        dateline: '20 نومبر 2026 • لاہور سنٹرل',
+        website: 'www.qasreshabbir.org'
+      },
+      en: {
+        tag: 'COMMUNITY IMPACT',
+        headline: 'QESF Winter Relief Mission Delivers Aid to 5,000 Vulnerable Families',
+        subheading: 'Warm Clothing, Blankets & Nutritional Supplies Dispatched',
+        speaker: 'QESF Welfare Operations',
+        body: 'Phase one of the comprehensive winterization project has concluded, reaching remote villages with emergency heating essentials and rations.',
+        footer: 'Qasr-e-Shabir Foundation • Transparency & Service',
+        dateline: '20 Nov 2026 • Lahore Central',
+        website: 'www.qasreshabbir.org'
+      }
+    },
+    political: {
+      nameEn: '5. Political Dialogue',
+      nameUr: '5. سیاسی و سفارتی',
+      ur: {
+        tag: 'سعودی ہم منصب',
+        headline: 'امریکہ اور سعودی وزرائے جنگ کی ٹیلیفونی گفتگو',
+        subheading: 'دوطرفہ دفاعی تعاون اور یمنی فوج کی کارروائیوں کا تفصیلی جائزہ',
+        speaker: 'امریکی وزیر جنگ "پیٹ ہیگسیٹھ"',
+        body: 'امریکی وزیر جنگ نے سعودی ہم منصب خالد بن سلمان سے ٹیلیفونی رابطے میں دوطرفہ فوجی تعاون اور خطے کی مجموعی سیکیورٹی صورتحال پر تفصیلی مشورہ کیا۔',
+        footer: 'QESF ڈپلومیٹک وائر • خصوصی رپورٹ',
+        dateline: '20 نومبر 2026 • واشنگٹن و ریاض',
+        website: 'www.qasreshabbir.org'
+      },
+      en: {
+        tag: 'MINISTERIAL ALLIANCE',
+        headline: 'Strategic High-Level Phone Dialogue on Regional Security & Coalitions',
+        subheading: 'Defense Chiefs Review Joint Military Readiness & Deterrence Protocols',
+        speaker: 'Sec. of Defense Pete Hegseth',
+        body: 'Defense leadership confirmed mutual operational alignment, intelligence coordination, and strategic stability protocols during direct bilateral talks.',
+        footer: 'QESF Diplomatic Wire • Global Geopolitics',
+        dateline: '20 Nov 2026 • Washington & Riyadh',
+        website: 'www.qasreshabbir.org'
+      }
+    },
+    humanitarian: {
+      nameEn: '6. Humanitarian Relief',
+      nameUr: '6. انسانی ہمدردی',
+      ur: {
+        tag: 'فلاحی مشن 2026',
+        headline: 'صاف پانی منصوبہ: تھرپارکر اور چولستان میں 25 نئے سولر واٹر پلانٹس فعال',
+        subheading: 'روزانہ 50 ہزار سے زائد باسیوں کو پینے کا شفاف پانی میسر',
+        speaker: 'پراجیکٹ ڈائریکٹر قصرِ شبیر',
+        body: 'جدید شمسی واٹر فلٹریشن سسٹمز کی تنصیب سے دور دراز پسماندہ دیہات میں پانی سے جنم لینے والی وبائی بیماریوں میں 80 فیصد کمی ریکارڈ کی گئی ہے۔',
+        footer: 'صدقہ جاریہ • اپنا تعاون جاری رکھیں • اکاؤنٹ: 01020304050607',
+        dateline: '20 نومبر 2026 • تھرپارکر و چولستان',
+        website: 'www.qasreshabbir.org'
+      },
+      en: {
+        tag: 'CLEAN WATER MISSION',
+        headline: 'Solar Water Infrastructure Activated: 50,000 Villagers Gain Daily Access',
+        subheading: 'Combatting Water Scarcity with Sustainable Solar Pumping Technology',
+        speaker: 'QESF Infrastructure Wing',
+        body: '25 high-capacity community filtration plants are now operational across arid districts, eliminating waterborne diseases and empowering local schools.',
+        footer: 'Clean Water For All • Donate Today • www.qasreshabbir.org',
+        dateline: '20 Nov 2026 • Desert Field Project',
+        website: 'www.qasreshabbir.org'
+      }
+    },
+    quote: {
+      nameEn: '7. Leader Quote',
+      nameUr: '7. خصوصی بیان',
+      ur: {
+        tag: 'خصوصی خطاب',
+        headline: 'امریکہ کا جواب دھوکہ دہی پر مبنی ہے۔',
+        subheading: 'سینئر دفاعی تجزیہ کار کا دوٹوک موقف',
+        speaker: 'محسن رضائی :',
+        body: 'مذاکرات کی آڑ میں پابندیاں عائد کرنا بین الاقوامی سفارتی آداب کے سراسر منافی ہے، قوم اپنے اصولی حقوق پر کبھی سمجھوتہ نہیں کرے گی۔',
+        footer: 'QESF خصوصی تجزیاتی فورم • اسلام آباد بیورو',
+        dateline: '20 نومبر 2026 • میڈیا سنٹر',
+        website: 'www.qasreshabbir.org'
+      },
+      en: {
+        tag: 'DIGNITARY QUOTE',
+        headline: '"Truth and Justice Form the Core Foundation of All Enduring Nations."',
+        subheading: 'Address to the Global Humanitarian Symposium',
+        speaker: 'Chairman Shabbir Hussain :',
+        body: 'No community can prosper while the vulnerable are forgotten. True societal elevation begins with compassion, clean water, and education for every child.',
+        footer: 'QESF Keynote Highlights • Annual Assembly',
+        dateline: '20 Nov 2026 • Keynote Address',
+        website: 'www.qasreshabbir.org'
+      }
+    },
+    islamic: {
+      nameEn: '8. Islamic Messages',
+      nameUr: '8. اقوال و پیغامات',
+      ur: {
+        tag: 'فرمانِ الٰہی و حدیثِ مبارکہ',
+        headline: 'مَنْ لَا يَرْحَمُ لَا يُرْحَمُ',
+        subheading: 'جو انسانوں پر رحم نہیں کرتا اس پر رحم نہیں کیا جاتا',
+        speaker: 'صحیح البخاری: 5997',
+        body: 'نبی کریم ﷺ نے فرمایا: اللہ تعالیٰ اس شخص پر رحم نہیں فرماتا جو لوگوں پر رحم نہیں کرتا۔ انسانیت کی بے لوث خدمت ہی اصل عبادت ہے۔',
+        footer: 'قصرِ شبیر فاؤنڈیشن • اشاعتِ اخلاق و انسانی ہمدردی',
+        dateline: '20 نومبر 2026 • ادارہ فروغِ اخلاقیات',
+        website: 'www.qasreshabbir.org'
+      },
+      en: {
+        tag: 'SACRED WISDOM',
+        headline: '"Whoever Saves One Life, It Is As If He Saved All Humanity."',
+        subheading: 'Surah Al-Maidah (5:32) • Universal Quranic Injunction',
+        speaker: 'The Holy Quran [5:32]',
+        body: 'True devotion to the Creator reflects in selfless service towards His creation. Extend your hands in charity, mercy, and compassion today.',
+        footer: 'Qasr-e-Shabir Foundation • Quranic Guidance & Values',
+        dateline: '20 Nov 2026 • Universal Injunction',
+        website: 'www.qasreshabbir.org'
+      }
+    },
+    photo: {
+      nameEn: '9. Photo News',
+      nameUr: '9. تصویری خبر',
+      ur: {
+        tag: 'تصویری جھلکیاں',
+        headline: 'پاسدارانِ انقلاب کا دعویٰ: بندر خمیر کے قریب دو امریکی لوکاس ڈرون مار گرائے گئے',
+        subheading: 'فضائی دفاعی یونٹ نے ہدف کو کامیابی سے نشانہ بنایا',
+        speaker: 'سرکاری خبر رساں ایجنسی',
+        body: 'دفاعی ذرائع نے گرائے گئے جدید جاسوس ڈرونز کے ملبے کی تصویری تفصیلات میڈیا کو جاری کر دیں۔',
+        footer: 'QESF تصویری وائر • تصدیق شدہ فوٹو رپورٹ',
+        dateline: '20 نومبر 2026 • کوسٹل کمانڈ',
+        website: 'www.qasreshabbir.org'
+      },
+      en: {
+        tag: 'PHOTO FEATURE',
+        headline: 'Advanced Aerial Reconnaissance Drone Intercepted Near Coastal Airspace',
+        subheading: 'Defense Surveillance Confirms Downed Target Telemetry',
+        speaker: 'Naval Defense Command',
+        body: 'Defense monitoring radar tracked the unmanned drone following restricted airspace penetration over strategic waterways.',
+        footer: 'QESF Verified Photo Wire • Defense Analytics',
+        dateline: '20 Nov 2026 • Coastal Command',
+        website: 'www.qasreshabbir.org'
+      }
+    },
+    special: {
+      nameEn: '10. Special Report',
+      nameUr: '10. خصوصی رپورٹ',
+      ur: {
+        tag: 'خصوصی جائزہ',
+        headline: 'پاکستان میں موسمیاتی تبدیلیاں اور غذائی تحفظ: 2026 کا جامع جائزہ',
+        subheading: 'پسماندہ اضلاع کے لیے پائیدار حکمتِ عملی اور ایمرجنسی پلان',
+        speaker: 'قصرِ شبیر ریسرچ ونگ',
+        body: 'موسمیاتی تباہ کاریوں سے نمٹنے کے لیے کسانوں کو سولر ٹیوب ویل، بیج اور بلا سود قرضوں کی فوری فراہمی ناگزیر قرار دی گئی ہے۔',
+        footer: 'تحقیقی رپورٹ نمبر 42 • QESF پالیسی سنٹر',
+        dateline: '20 نومبر 2026 • پالیسی ریسرچ ڈائریکٹوریٹ',
+        website: 'www.qasreshabbir.org'
+      },
+      en: {
+        tag: 'SPECIAL REPORT',
+        headline: 'Climate Vulnerability & Food Security in South Asia: 2026 Policy Review',
+        subheading: 'Sustainable Agricultural Interventions for Drought-Stricken Zones',
+        speaker: 'QESF Strategic Research Unit',
+        body: 'A holistic analysis demonstrating how community micro-irrigation and seed banks buffer rural agrarian families from climate shocks.',
+        footer: 'Special Investigation • QESF Policy Directorate',
+        dateline: '20 Nov 2026 • Strategic Policy Directorate',
+        website: 'www.qasreshabbir.org'
+      }
+    },
+    emergency: {
+      nameEn: '11. Emergency Alert',
+      nameUr: '11. ہنگامی ریڈ الرٹ',
+      ur: {
+        tag: 'ہنگامی ریڈ الرٹ',
+        headline: 'سیلابی صورتحال میں شدت: جنوبی اضلاع کے لیے ایمرجنسی وارننگ جاری',
+        subheading: 'محکمہ موسمیات و ریلیف کمشنر کا ہائی الرٹ، انخلا کی فوری ہدایات',
+        speaker: 'چیف ریلیف کوآرڈینیٹر',
+        body: 'تمام مکین فوری طور پر محفوظ پناہ گاہوں میں منتقل ہوں۔ قصرِ شبیر فاؤنڈیشن کی ریسکیو کشتیاں اور ایمبولینسز فیلڈ میں تعینات کر دی گئی ہیں۔',
+        footer: 'ایمرجنسی رسپانس سیل • 24/7 لائیو کنٹرول روم',
+        dateline: '20 نومبر 2026 • نیشنل ڈیزاسٹر کنٹرول',
+        website: 'www.qasreshabbir.org'
+      },
+      en: {
+        tag: 'EMERGENCY RED ALERT',
+        headline: 'Severe Flash Flood Warning: Immediate Evacuation Ordered for Delta Zones',
+        subheading: 'Disaster Authority Issues Level-3 Emergency Protocol Across 8 Districts',
+        speaker: 'Chief Relief Commissioner',
+        body: 'Civil defense and QESF emergency boats deployed. Residents urged to follow mandatory evacuation corridors to designated relief centers.',
+        footer: 'Emergency 24/7 Hotline: 0300-0817702 • Live Wire',
+        dateline: '20 Nov 2026 • Disaster Control Center',
+        website: 'www.qasreshabbir.org'
+      }
+    },
+    live: {
+      nameEn: '12. Live Field Coverage',
+      nameUr: '12. براہ راست کوریج',
+      ur: {
+        tag: 'براہ راست کوریج',
+        headline: 'قصرِ شبیر فاؤنڈیشن کے فری میڈیکل کیمپ سے براہ راست مناظر',
+        subheading: '2000 سے زائد مریضوں کا معائنہ اور مفت ادویات کی فراہمی جاری',
+        speaker: 'آن گراؤنڈ رپورٹر: سید علی رضا',
+        body: 'ماہر سرجنز اور فزیشنز کی زیر نگرانی سینکڑوں مستحقین کے لیب ٹیسٹ، ایکسرے اور ادویات بلا معاوضہ فراہم کی جا رہی ہیں۔',
+        footer: 'براہ راست نشریات • فیلڈ یونٹ نمبر 4',
+        dateline: '20 نومبر 2026 • راجن پور فیلڈ ہسپتال',
+        website: 'www.qasreshabbir.org'
+      },
+      en: {
+        tag: 'LIVE ON-GROUND',
+        headline: 'Free Comprehensive Medical Mission: Over 2,000 Patients Treated Live',
+        subheading: 'Specialist Doctors & Mobile Surgical Units Deployed in Arid Sector',
+        speaker: 'Field Correspondent: Ali Raza',
+        body: 'On-site triage units provide immediate medical consultations, pediatric screenings, and free prescription dispensaries.',
+        footer: 'Live Field Dispatch • Mobile Health Convoy',
+        dateline: '20 Nov 2026 • Southern District Medical Camp',
+        website: 'www.qasreshabbir.org'
+      }
+    },
+    exclusive: {
+      nameEn: '13. Exclusive Report',
+      nameUr: '13. خصوصی انکشاف',
+      ur: {
+        tag: 'خصوصی انکشاف',
+        headline: 'پسماندہ علاقوں میں یتیم بچوں کی کفالت کا نیا انقلابی ماڈل متعارف',
+        subheading: 'کفالت سے خود کفالت تک: 1000 یتامیٰ کے لیے اسٹیٹ آف دی آرٹ اکیڈمی',
+        speaker: 'خصوصی انویسٹیگیٹو رپورٹ',
+        body: 'قصرِ شبیر فاؤنڈیشن نے یتیم بچوں کے لیے جدید تعلیمی، رہائشی اور آئی ٹی اسکلز کمپلیکس کا سنگ بنیاد رکھ دیا ہے۔',
+        footer: 'خصوصی دستاویزی رپورٹ • QESF میڈیا سنٹر',
+        dateline: '20 نومبر 2026 • لاہور بیورو',
+        website: 'www.qasreshabbir.org'
+      },
+      en: {
+        tag: 'EXCLUSIVE INVESTIGATION',
+        headline: 'Revolutionizing Orphan Care: Modern Smart Academy Groundbreaking',
+        subheading: 'Beyond Basic Sustenance: Holistic STEM Education & Digital Mastery',
+        speaker: 'Special Investigation Bureau',
+        body: 'A premier child development campus featuring boarding, advanced computer science labs, and vocational training takes shape.',
+        footer: 'Special Investigation Wire • QESF Media Directorate',
+        dateline: '20 Nov 2026 • Central Bureau',
+        website: 'www.qasreshabbir.org'
+      }
+    },
+    announcement: {
+      nameEn: '14. Official Notice',
+      nameUr: '14. اہم سرکاری اعلامیہ',
+      ur: {
+        tag: 'باضابطہ سرکاری اعلامیہ',
+        headline: 'رمضان المبارک 2026 راشن پیکیج کے لیے رجسٹریشن کا باقاعدہ آغاز',
+        subheading: 'مستحق و سفید پوش خاندانوں کے لیے آن لائن اور فیلڈ تصدیقی کاؤنٹرز فعال',
+        speaker: 'دفترِ جنرل سیکرٹری قصرِ شبیر',
+        body: 'تمام اضلاع کے کوآرڈینیٹرز کو شفاف سروے مکمل کرنے کی ہدایت۔ نادرا ویریفائیڈ سسٹم کے تحت راشن کارڈز کا اجرا کیا جائے گا۔',
+        footer: 'اعلامیہ نمبر QESF/RAM-2026 • مصدقہ کاپی',
+        dateline: '20 نومبر 2026 • مرکزی سیکرٹریٹ',
+        website: 'www.qasreshabbir.org'
+      },
+      en: {
+        tag: 'OFFICIAL PUBLIC NOTICE',
+        headline: 'Beneficiary Registration Commences for Ramadan Food Basket 2026',
+        subheading: 'Digital Verification & Distribution Counters Activated Nationwide',
+        speaker: 'Office of General Secretary',
+        body: 'All district coordinators directed to verify eligible families via automated biometric identification ensuring zero leakage.',
+        footer: 'Public Directive Ref: QESF/RAM-2026 • Official Copy',
+        dateline: '20 Nov 2026 • Central Secretariat',
+        website: 'www.qasreshabbir.org'
+      }
+    },
+    bulletin: {
+      nameEn: '15. News Bulletin',
+      nameUr: '15. خبر نامہ و ہیڈلائنز',
+      ur: {
+        tag: 'خبر نامہ و ہیڈلائنز',
+        headline: 'قصرِ شبیر فاؤنڈیشن ڈیلی بلیٹن: آج کی اہم ترین سرگرمیاں',
+        subheading: 'تعلیم، صاف پانی اور روزگار سکیم کے اہم پیش رفت رپورٹس',
+        speaker: 'نیوز روم اینکر ڈیسک',
+        body: '1. چولستان میں 10 واٹر پلانٹس کی تکمیل • 2. 350 بیواؤں میں سلائی مشینیں تقسیم • 3. ہنر مند نوجوانوں کو بلا سود مائیکرو فنانس',
+        footer: 'شام کا خصوصی بلیٹن • روزانہ لائیو اپ ڈیٹس',
+        dateline: '20 نومبر 2026 • سنٹرل نیوز ڈیسک',
+        website: 'www.qasreshabbir.org'
+      },
+      en: {
+        tag: 'NEWS BULLETIN DESK',
+        headline: 'QESF Daily Broadcast Bulletin: Key Impact Headlines Today',
+        subheading: 'Summary of Education, Clean Water & Microfinance Progress',
+        speaker: 'Newsroom Anchor Desk',
+        body: '1. Ten solar wells commissioned in Cholistan • 2. Sewing machines granted to 350 widows • 3. Interest-free youth loans dispatched',
+        footer: 'Evening Daily Bulletin • Certified Impact Metrics',
+        dateline: '20 Nov 2026 • Central News Desk',
+        website: 'www.qasreshabbir.org'
+      }
+    },
+    journalism: {
+      nameEn: '16. Photo Journalism',
+      nameUr: '16. تصویری صحافت',
+      ur: {
+        tag: 'تصویری صحافت',
+        headline: 'مسکراہٹیں جو امید جگاتی ہیں: تھر کے صحرا میں پہلی بار میٹھا پانی',
+        subheading: 'بچیوں کے چہروں کی خوشی جب برسوں بعد کوسوں دور کا سفر ختم ہوا',
+        speaker: 'فوٹو جرنلسٹ: کامران خان',
+        body: 'سولر فلٹریشن پلانٹ کے نل سے بہتا شفاف پانی نہ صرف پیاس بجھا رہا ہے بلکہ بچیوں کو اسکول جانے کا قیمتی وقت بھی لوٹا رہا ہے۔',
+        footer: 'تصویری صحافت اعزازی سیریز • حقائق پر مبنی اسٹوری',
+        dateline: '20 نومبر 2026 • ننگر پارکر، سندھ',
+        website: 'www.qasreshabbir.org'
+      },
+      en: {
+        tag: 'PHOTO JOURNALISM',
+        headline: 'Smiles of Hope: Fresh Clean Water Springs in the Arid Wilderness',
+        subheading: 'Young Schoolgirls Relieved from Walking Miles for Daily Water',
+        speaker: 'Photojournalist: Kamran Khan',
+        body: 'Clean piped water flows from solar filtration pumps, restoring daily dignity, health, and classroom hours to young girls.',
+        footer: 'Visual Storytelling Series • Human Rights Lens',
+        dateline: '20 Nov 2026 • Thar Desert Field Bureau',
+        website: 'www.qasreshabbir.org'
+      }
+    },
+    achievement: {
+      nameEn: '17. Milestone & Honor',
+      nameUr: '17. اہم فلاحی سنگ میل',
+      ur: {
+        tag: 'اہم فلاحی سنگ میل',
+        headline: '100,000 مستحق افراد تک امداد کی فراہمی کا تاریخی ہدف مکمل',
+        subheading: 'شفافیت، امانت اور بے لوث خدمت کے 10 سال کا سفر',
+        speaker: 'بورڈ آف ڈائریکٹرز',
+        body: 'مخیر حضرات کے اعتماد اور رضاکاروں کی انتھک محنت سے ملک گیر فلاحی نیٹ ورک نے ایک لاکھ گھرانوں کی زندگیوں میں مثبت تبدیلی رقم کی۔',
+        footer: 'سالانہ اعزازات 2026 • فخرِ انسانیت',
+        dateline: '20 نومبر 2026 • سالانہ کونسل اجلاس',
+        website: 'www.qasreshabbir.org'
+      },
+      en: {
+        tag: 'MILESTONE ACHIEVED',
+        headline: 'Historical Milestone: Over 100,000 Lives Uplifted Nationwide',
+        subheading: 'A Decade of Uncompromising Transparency and Dedicated Service',
+        speaker: 'Board of Trustees',
+        body: 'Thanks to compassionate global donors and ground volunteers, 100,000 vulnerable families now enjoy clean water, education, and livelihood stability.',
+        footer: 'Decade Milestone Celebrations • Service To Humanity',
+        dateline: '20 Nov 2026 • Annual General Assembly',
+        website: 'www.qasreshabbir.org'
+      }
+    },
+    education: {
+      nameEn: '18. Awareness Drive',
+      nameUr: '18. تعلیمی شعور و آگاہی',
+      ur: {
+        tag: 'تعلیمی شعور و آگاہی',
+        headline: 'ایک قلم، ایک کتاب اور ایک بچہ دنیا کو بدل سکتے ہیں',
+        subheading: 'آؤ ہم سب مل کر ہر یتیم اور نادار بچے کے اسکول جانے کا خواب پورا کریں',
+        speaker: 'شعبہ فروغِ تعلیم قصرِ شبیر',
+        body: 'مفت کتابیں، یونیفارم اور اسکول بیگز فراہم کریں۔ صرف 3000 روپے ماہانہ میں ایک غریب بچے کی کفالت کا ذمہ اٹھائیں۔',
+        footer: 'عوامی آگاہی مہم • تعلیم سب کے لیے',
+        dateline: '20 نومبر 2026 • ایجوکیشن ڈائریکٹوریٹ',
+        website: 'www.qasreshabbir.org'
+      },
+      en: {
+        tag: 'EDUCATION AWARENESS',
+        headline: '"One Child, One Teacher, One Book and One Pen Can Change the World"',
+        subheading: 'Empower an Underprivileged Student with Quality Schooling Today',
+        speaker: 'QESF Education Directorate',
+        body: 'Sponsor uniforms, textbooks, and tuition for orphan students. Rs. 3,000 monthly guarantees a vulnerable child safe, transformative education.',
+        footer: 'Public Awareness Initiative • Education For All',
+        dateline: '20 Nov 2026 • Directorate of Education',
+        website: 'www.qasreshabbir.org'
+      }
+    },
+    presswire: {
+      nameEn: '19. News Agency Wire',
+      nameUr: '19. پریس وائر ڈسپیچ',
+      ur: {
+        tag: 'پریس وائر ڈسپیچ',
+        headline: '[اسلام آباد وائر] قصرِ شبیر فاؤنڈیشن کا پسماندہ اضلاع کے لیے ونٹر ریلیف کٹس تیار',
+        subheading: 'محکمہ ریلیف نے 15 رکنی خصوصی موبائل ٹاسک فورس روانہ کر دی',
+        speaker: 'ایسوسی ایٹڈ پریس وائر سروس',
+        body: 'درجہ حرارت نقطہ انجماد سے نیچے گرنے کے باعث گلگت بلتستان اور کوہ سلیمان کے متاثرین کے لیے تھرمل لحاف اور راشن روانہ کر دیا گیا ہے۔',
+        footer: 'پریس وائر سروس • تصدیق شدہ میڈیا ڈسپیچ',
+        dateline: '20 نومبر 2026 • اسلام آباد سنٹرل وائر',
+        website: 'www.qasreshabbir.org'
+      },
+      en: {
+        tag: 'PRESS WIRE DISPATCH',
+        headline: '[ISLAMABAD WIRE] Emergency Winter Survival Kits Dispatched to Highland Districts',
+        subheading: 'Mobile Logistics Task Force Mobilized as Sub-Zero Temperatures Intensify',
+        speaker: 'Associated News Wire',
+        body: 'Consignments containing thermal quilts, emergency rations, and heating stoves are in transit to remote mountain hamlets cut off by snowfall.',
+        footer: 'News Agency Wire Dispatch • Priority Flash Level',
+        dateline: '20 Nov 2026 • Associated News Wire Bureau',
+        website: 'www.qasreshabbir.org'
+      }
+    },
+    spotlight: {
+      nameEn: '20. Video Spotlight',
+      nameUr: '20. ویڈیو و رپورٹ اسپاٹ لائٹ',
+      ur: {
+        tag: 'ویڈیو و رپورٹ اسپاٹ لائٹ',
+        headline: 'دستاویزی فلم: اندھیروں سے روشنی کا سفر — قصرِ شبیر شیلٹر ہوم',
+        subheading: 'بے سہارا ماؤں اور معصوم یتامیٰ کے دکھ اور ان کی نئی زندگی کی کہانی',
+        speaker: 'ڈائریکٹر ڈاکومینٹریز: احمد حسن',
+        body: 'دیکھیے کیسے آپ کے ایک چھوٹے سے صدقے نے ایک بے سہارا ماں کے چہرے پر عزت اور اس کے بچوں کے ہاتھوں میں قلم تھما دیا۔',
+        footer: 'یوٹیوب و فیس بک خصوصی پیشکش • دورانیہ 03:45 منٹ',
+        dateline: '20 نومبر 2026 • میڈیا پروڈکشنز',
+        website: 'www.qasreshabbir.org'
+      },
+      en: {
+        tag: 'VIDEO SPOTLIGHT',
+        headline: 'Documentary Spotlight: The Journey from Shadows to Hope',
+        subheading: 'Inside the QESF Foster Shelter: Transforming Hopelessness into Opportunity',
+        speaker: 'Director of Media: Ahmad Hassan',
+        body: 'Witness how consistent donor compassion gave a struggling mother economic self-reliance and provided her children a school desk.',
+        footer: 'Official Documentary Release • Duration 03:45 Mins',
+        dateline: '20 Nov 2026 • Media Productions Unit',
+        website: 'www.qasreshabbir.org'
+      }
+    }
+  };
+
+  let currentNewsDimensions = { w: 1920, h: 1080 };
+  let newsCanvasResizeObserver = null;
+
+  const NEWS_FORMAT_PRESETS = {
+    landscape:   { w: 1920, h: 1080, cssDim: 'landscape', orientation: 'landscape', badge: '1920 × 1080 px (16:9) • Landscape',            short: 'Landscape • 1920 × 1080 px' },
+    portrait:    { w: 1080, h: 1350, cssDim: 'portrait',  orientation: 'portrait',  badge: '1080 × 1350 px (4:5) • Portrait',              short: 'Portrait • 1080 × 1350 px' },
+    square:      { w: 1080, h: 1080, cssDim: 'square',    orientation: 'square',    badge: '1080 × 1080 px (1:1) • Square',                short: 'Square • 1080 × 1080 px' },
+    fb_post:     { w: 1200, h: 630,  cssDim: 'landscape', orientation: 'landscape', badge: '1200 × 630 px (1.91:1) • Facebook Post',       short: 'FB Post • 1200 × 630 px' },
+    fb_reels:    { w: 1080, h: 1920, cssDim: 'story',     orientation: 'story',     badge: '1080 × 1920 px (9:16) • Facebook Reels',       short: 'FB Reels • 1080 × 1920 px' },
+    ig_post:     { w: 1080, h: 1080, cssDim: 'square',    orientation: 'square',    badge: '1080 × 1080 px (1:1) • Instagram Post',        short: 'IG Post • 1080 × 1080 px' },
+    ig_portrait: { w: 1080, h: 1350, cssDim: 'portrait',  orientation: 'portrait',  badge: '1080 × 1350 px (4:5) • Instagram 4:5',         short: 'IG 4:5 • 1080 × 1350 px' },
+    story:       { w: 1080, h: 1920, cssDim: 'story',     orientation: 'story',     badge: '1080 × 1920 px (9:16) • IG Reels & Story',     short: 'IG Reels • 1080 × 1920 px' },
+    youtube:     { w: 1280, h: 720,  cssDim: 'youtube',   orientation: 'landscape', badge: '1280 × 720 px (16:9) • YouTube Thumbnail',     short: 'YT Thumb • 1280 × 720 px' },
+    yt_video:    { w: 1920, h: 1080, cssDim: 'youtube',   orientation: 'landscape', badge: '1920 × 1080 px (16:9) • YouTube Full HD',      short: 'YT 1080p • 1920 × 1080 px' },
+    linkedin:    { w: 1200, h: 1350, cssDim: 'linkedin',  orientation: 'portrait',  badge: '1200 × 1350 px (4:5) • LinkedIn Post',         short: 'LinkedIn • 1200 × 1350 px' },
+    x_post:      { w: 1600, h: 900,  cssDim: 'youtube',   orientation: 'landscape', badge: '1600 × 900 px (16:9) • X / Twitter Post',      short: 'X Post • 1600 × 900 px' },
+    wa_status:   { w: 1080, h: 1920, cssDim: 'story',     orientation: 'story',     badge: '1080 × 1920 px (9:16) • WhatsApp Status',      short: 'WA Status • 1080 × 1920 px' }
+  };
+
+  /* =============================================================
+     CENTRALIZED EDITABLE QSF OFFICIAL NEWS BRANDING CONFIGURATION
+     One-time global persistence + individual template overrides
+     ============================================================= */
+  const BRANDING_STORAGE_KEY_GLOBAL = 'qsf_broadcast_global_branding_v1';
+  const BRANDING_STORAGE_KEY_OVERRIDES = 'qsf_broadcast_template_branding_overrides_v1';
+
+  const BRANDING_PRESETS = {
+    qsf_official: {
+      titleEn: 'QSF Official News',
+      titleUr: 'QSF | سرکاری نیوز',
+      subEn: 'OFFICIAL NEWS',
+      subUr: 'سرکاری نشریات'
+    },
+    qsf_breaking: {
+      titleEn: 'QSF Breaking News',
+      titleUr: 'QSF | بریکنگ نیوز',
+      subEn: 'BREAKING NEWS',
+      subUr: 'ہنگامی نشریات'
+    },
+    qsf_foundation: {
+      titleEn: 'Qasr-e-Shabir Foundation',
+      titleUr: 'قصرِ شبیر فاؤنڈیشن',
+      subEn: 'WELFARE FOUNDATION',
+      subUr: 'فلاحی ادارہ'
+    },
+    official_announcement: {
+      titleEn: 'Official Announcement',
+      titleUr: 'سرکاری اعلامیہ',
+      subEn: 'OFFICIAL NOTICE',
+      subUr: 'باضابطہ اعلامیہ'
+    },
+    special_report: {
+      titleEn: 'Special Report',
+      titleUr: 'خصوصی رپورٹ',
+      subEn: 'SPECIAL COVERAGE',
+      subUr: 'خصوصی کوریج'
+    },
+    qesf_official: {
+      titleEn: 'QESF Official News',
+      titleUr: 'QESF | نیوز',
+      subEn: 'OFFICIAL BROADCAST',
+      subUr: 'سرکاری نشریات'
+    },
+    official_update: {
+      titleEn: 'Official Update',
+      titleUr: 'آفیشل اپڈیٹ',
+      subEn: 'LATEST UPDATE',
+      subUr: 'تازہ ترین اپڈیٹ'
+    }
+  };
+
+  const BRANDING_COLOR_THEMES = {
+    classic: { bgColor: '#FFFFFF', textColor: '#B91C1C', subColor: '#065F46', borderColor: '#F59E0B' },
+    crimson: { bgColor: '#B91C1C', textColor: '#FFFFFF', subColor: '#FDE047', borderColor: '#FCA5A5' },
+    navy:    { bgColor: '#0F172A', textColor: '#FFFFFF', subColor: '#38BDF8', borderColor: '#F59E0B' },
+    emerald: { bgColor: '#064E3B', textColor: '#FDE047', subColor: '#FFFFFF', borderColor: '#D97706' },
+    onyx:    { bgColor: '#111827', textColor: '#FDE047', subColor: '#E2E8F0', borderColor: '#F59E0B' }
+  };
+
+  const DEFAULT_BRANDING_CONFIG = {
+    presetKey: 'qsf_official',
+    customTitle: '',
+    customSubLabel: '',
+    visible: true,
+    showLogo: true,
+    position: 'auto',
+    fontSize: 'md',
+    shape: 'pill',
+    bgColor: '#FFFFFF',
+    textColor: '#B91C1C',
+    subColor: '#065F46',
+    borderColor: '#F59E0B'
+  };
+
+  let globalBrandingConfig = Object.assign({}, DEFAULT_BRANDING_CONFIG);
+  let templateBrandingOverrides = {};
+
+  function loadStoredBrandingConfig() {
+    try {
+      const savedGlobal = localStorage.getItem(BRANDING_STORAGE_KEY_GLOBAL);
+      if (savedGlobal) {
+        globalBrandingConfig = Object.assign({}, DEFAULT_BRANDING_CONFIG, JSON.parse(savedGlobal));
+      }
+      const savedOverrides = localStorage.getItem(BRANDING_STORAGE_KEY_OVERRIDES);
+      if (savedOverrides) {
+        templateBrandingOverrides = JSON.parse(savedOverrides) || {};
+      }
+    } catch (e) {
+      console.warn('[BrandingConfig] Failed to read localStorage:', e);
+    }
+  }
+
+  function getEffectiveBrandingConfig() {
+    if (templateBrandingOverrides && templateBrandingOverrides[currentNewsTemplate]) {
+      return Object.assign({}, globalBrandingConfig, templateBrandingOverrides[currentNewsTemplate], { _isOverride: true });
+    }
+    return Object.assign({}, globalBrandingConfig, { _isOverride: false });
+  }
+
+  function applyBrandingToCanvas(draftOverride = null) {
+    const cfg = draftOverride || getEffectiveBrandingConfig();
+    const isUrdu = currentNewsLang === 'ur';
+    const preset = BRANDING_PRESETS[cfg.presetKey] || BRANDING_PRESETS.qsf_official;
+
+    const resolvedTitle = (cfg.customTitle && cfg.customTitle.trim().length > 0)
+      ? cfg.customTitle.trim()
+      : (isUrdu ? preset.titleUr : preset.titleEn);
+
+    const resolvedSub = (cfg.customSubLabel !== undefined && cfg.customSubLabel !== null && cfg.customSubLabel.trim().length > 0)
+      ? cfg.customSubLabel.trim()
+      : (cfg.customSubLabel === '' && cfg.presetKey === 'custom' ? '' : (isUrdu ? preset.subUr : preset.subEn));
+
+    const bugEl = document.getElementById('canvasNewsChannelBug');
+    const emblemEl = document.getElementById('canvasBugEmblem') || bugEl?.querySelector('.news-bug-emblem');
+    const titleEl = document.getElementById('canvasBugChannelTitle');
+    const subEl = document.getElementById('canvasBugSubTitle');
+    const topBarEl = document.getElementById('canvasTopBar');
+
+    if (bugEl) {
+      bugEl.style.display = cfg.visible ? 'inline-flex' : 'none';
+      bugEl.style.backgroundColor = cfg.bgColor || '#FFFFFF';
+      bugEl.style.borderColor = cfg.borderColor || '#F59E0B';
+
+      ['sm', 'md', 'lg', 'xl'].forEach(s => bugEl.classList.remove(`bug-size-${s}`));
+      bugEl.classList.add(`bug-size-${cfg.fontSize || 'md'}`);
+
+      ['pill', 'box', 'angled', 'glass'].forEach(sh => bugEl.classList.remove(`bug-shape-${sh}`));
+      bugEl.classList.add(`bug-shape-${cfg.shape || 'pill'}`);
+    }
+
+    if (emblemEl) {
+      emblemEl.style.display = cfg.showLogo ? 'flex' : 'none';
+      emblemEl.style.borderColor = cfg.textColor || '#B91C1C';
+    }
+
+    if (titleEl) {
+      titleEl.textContent = resolvedTitle;
+      titleEl.style.color = cfg.textColor || '#B91C1C';
+    }
+
+    if (subEl) {
+      subEl.textContent = resolvedSub;
+      subEl.style.color = cfg.subColor || '#065F46';
+      subEl.style.display = resolvedSub ? 'block' : 'none';
+    }
+
+    if (topBarEl) {
+      ['auto', 'left', 'right', 'center'].forEach(p => topBarEl.classList.remove(`bug-pos-${p}`));
+      topBarEl.classList.add(`bug-pos-${cfg.position || 'auto'}`);
+    }
+
+    // Update Left Column shortcut summary & scope indicator
+    const sumEl = document.getElementById('leftBrandingSummaryText');
+    if (sumEl) {
+      sumEl.textContent = cfg.visible
+        ? `${resolvedTitle}${resolvedSub ? ' • ' + resolvedSub : ''}`
+        : 'Hidden (Branding Off)';
+    }
+
+    const scopeBadge = document.getElementById('leftBrandingScopeBadge');
+    if (scopeBadge) {
+      const hasOverride = !!(templateBrandingOverrides && templateBrandingOverrides[currentNewsTemplate]);
+      scopeBadge.textContent = hasOverride ? '(Template)' : '(Global)';
+      scopeBadge.style.color = hasOverride ? '#0284C7' : '#059669';
+    }
+
+    const modalScope = document.getElementById('brandingModalScopeReadout');
+    if (modalScope) {
+      const hasOverride = !!(templateBrandingOverrides && templateBrandingOverrides[currentNewsTemplate]);
+      modalScope.textContent = hasOverride ? `Template Override (${NEWS_TEMPLATES[currentNewsTemplate]?.nameEn || currentNewsTemplate})` : 'Global Default (All 20 Templates)';
+      modalScope.style.background = hasOverride ? '#0284C7' : '#065F46';
+    }
+
+    const visIcon = document.getElementById('iconQuickBrandingVis');
+    if (visIcon) {
+      visIcon.className = cfg.visible ? 'fas fa-eye' : 'fas fa-eye-slash';
+      visIcon.style.color = cfg.visible ? '#059669' : '#94A3B8';
+    }
+  }
+
+  function populateBrandingModalFields(cfg) {
+    const isUrdu = currentNewsLang === 'ur';
+    const preset = BRANDING_PRESETS[cfg.presetKey] || BRANDING_PRESETS.qsf_official;
+
+    document.querySelectorAll('.branding-preset-chip').forEach(btn => btn.classList.remove('active'));
+    const activeChip = document.getElementById(`brandPreset_${cfg.presetKey}`);
+    if (activeChip) activeChip.classList.add('active');
+
+    const titleInp = document.getElementById('brandingInputTitle');
+    const subInp = document.getElementById('brandingInputSubLabel');
+    const visSel = document.getElementById('brandingInputVisible');
+    const logoSel = document.getElementById('brandingInputShowLogo');
+    const posSel = document.getElementById('brandingInputPosition');
+    const sizeSel = document.getElementById('brandingInputFontSize');
+    const shapeSel = document.getElementById('brandingInputShape');
+    const bgInp = document.getElementById('brandingInputBgColor');
+    const txtInp = document.getElementById('brandingInputTextColor');
+    const subColInp = document.getElementById('brandingInputSubColor');
+    const brdInp = document.getElementById('brandingInputBorderColor');
+
+    if (titleInp) titleInp.value = cfg.customTitle || (isUrdu ? preset.titleUr : preset.titleEn);
+    if (subInp) subInp.value = cfg.customSubLabel || (isUrdu ? preset.subUr : preset.subEn);
+    if (visSel) visSel.value = String(cfg.visible !== false);
+    if (logoSel) logoSel.value = String(cfg.showLogo !== false);
+    if (posSel) posSel.value = cfg.position || 'auto';
+    if (sizeSel) sizeSel.value = cfg.fontSize || 'md';
+    if (shapeSel) shapeSel.value = cfg.shape || 'pill';
+    if (bgInp) bgInp.value = cfg.bgColor || '#FFFFFF';
+    if (txtInp) txtInp.value = cfg.textColor || '#B91C1C';
+    if (subColInp) subColInp.value = cfg.subColor || '#065F46';
+    if (brdInp) brdInp.value = cfg.borderColor || '#F59E0B';
+  }
+
+  function readBrandingModalDraft() {
+    const activeChip = document.querySelector('.branding-preset-chip.active');
+    const presetKey = activeChip ? activeChip.id.replace('brandPreset_', '') : 'custom';
+    const isUrdu = currentNewsLang === 'ur';
+    const preset = BRANDING_PRESETS[presetKey];
+
+    const rawTitle = document.getElementById('brandingInputTitle')?.value.trim() || '';
+    const rawSub = document.getElementById('brandingInputSubLabel')?.value.trim() || '';
+
+    // Check if user modified the preset's default title
+    const isCustomTitle = !preset || (rawTitle !== preset.titleUr && rawTitle !== preset.titleEn);
+    const isCustomSub = !preset || (rawSub !== preset.subUr && rawSub !== preset.subEn);
+
+    return {
+      presetKey: (isCustomTitle || isCustomSub) ? (presetKey || 'qsf_official') : presetKey,
+      customTitle: isCustomTitle ? rawTitle : '',
+      customSubLabel: isCustomSub ? rawSub : '',
+      visible: document.getElementById('brandingInputVisible')?.value !== 'false',
+      showLogo: document.getElementById('brandingInputShowLogo')?.value !== 'false',
+      position: document.getElementById('brandingInputPosition')?.value || 'auto',
+      fontSize: document.getElementById('brandingInputFontSize')?.value || 'md',
+      shape: document.getElementById('brandingInputShape')?.value || 'pill',
+      bgColor: document.getElementById('brandingInputBgColor')?.value || '#FFFFFF',
+      textColor: document.getElementById('brandingInputTextColor')?.value || '#B91C1C',
+      subColor: document.getElementById('brandingInputSubColor')?.value || '#065F46',
+      borderColor: document.getElementById('brandingInputBorderColor')?.value || '#F59E0B'
+    };
+  }
+
+  function openBrandingSettingsModal() {
+    const modal = document.getElementById('brandingSettingsModal');
+    if (!modal) return;
+    const cfg = getEffectiveBrandingConfig();
+    populateBrandingModalFields(cfg);
+    modal.classList.remove('hidden');
+  }
+
+  function closeBrandingSettingsModal() {
+    const modal = document.getElementById('brandingSettingsModal');
+    if (modal) modal.classList.add('hidden');
+    applyBrandingToCanvas();
+    syncCanvasResponsiveTypography();
+  }
+
+  function handleBrandingModalBackdropClick(event) {
+    if (event && event.target && event.target.id === 'brandingSettingsModal') {
+      closeBrandingSettingsModal();
+    }
+  }
+
+  function selectBrandingPreset(presetKey) {
+    const preset = BRANDING_PRESETS[presetKey];
+    if (!preset) return;
+    document.querySelectorAll('.branding-preset-chip').forEach(btn => btn.classList.remove('active'));
+    const chip = document.getElementById(`brandPreset_${presetKey}`);
+    if (chip) chip.classList.add('active');
+
+    const isUrdu = currentNewsLang === 'ur';
+    const titleInp = document.getElementById('brandingInputTitle');
+    const subInp = document.getElementById('brandingInputSubLabel');
+    if (titleInp) titleInp.value = isUrdu ? preset.titleUr : preset.titleEn;
+    if (subInp) subInp.value = isUrdu ? preset.subUr : preset.subEn;
+
+    previewBrandingFromModal();
+  }
+
+  function selectBrandingColorTheme(themeKey) {
+    const theme = BRANDING_COLOR_THEMES[themeKey];
+    if (!theme) return;
+    const bgInp = document.getElementById('brandingInputBgColor');
+    const txtInp = document.getElementById('brandingInputTextColor');
+    const subColInp = document.getElementById('brandingInputSubColor');
+    const brdInp = document.getElementById('brandingInputBorderColor');
+    if (bgInp) bgInp.value = theme.bgColor;
+    if (txtInp) txtInp.value = theme.textColor;
+    if (subColInp) subColInp.value = theme.subColor;
+    if (brdInp) brdInp.value = theme.borderColor;
+    previewBrandingFromModal();
+  }
+
+  function previewBrandingFromModal() {
+    const draft = readBrandingModalDraft();
+    applyBrandingToCanvas(draft);
+    syncCanvasResponsiveTypography();
+  }
+
+  function saveBrandingConfiguration(scope = 'global') {
+    const draft = readBrandingModalDraft();
+    if (scope === 'template') {
+      templateBrandingOverrides[currentNewsTemplate] = draft;
+      try {
+        localStorage.setItem(BRANDING_STORAGE_KEY_OVERRIDES, JSON.stringify(templateBrandingOverrides));
+      } catch (e) {}
+      applyBrandingToCanvas();
+      syncCanvasResponsiveTypography();
+      closeBrandingSettingsModal();
+      showToast(`Branding saved for template "${NEWS_TEMPLATES[currentNewsTemplate]?.nameEn || currentNewsTemplate}"!`);
+    } else {
+      globalBrandingConfig = draft;
+      // Clear current template override so global branding applies cleanly across all templates
+      if (templateBrandingOverrides && templateBrandingOverrides[currentNewsTemplate]) {
+        delete templateBrandingOverrides[currentNewsTemplate];
+      }
+      try {
+        localStorage.setItem(BRANDING_STORAGE_KEY_GLOBAL, JSON.stringify(globalBrandingConfig));
+        localStorage.setItem(BRANDING_STORAGE_KEY_OVERRIDES, JSON.stringify(templateBrandingOverrides));
+      } catch (e) {}
+      applyBrandingToCanvas();
+      syncCanvasResponsiveTypography();
+      closeBrandingSettingsModal();
+      showToast('Global QSF Official Branding saved and applied across all 20 broadcast templates!');
+    }
+  }
+
+  function resetBrandingConfiguration() {
+    globalBrandingConfig = Object.assign({}, DEFAULT_BRANDING_CONFIG);
+    templateBrandingOverrides = {};
+    try {
+      localStorage.removeItem(BRANDING_STORAGE_KEY_GLOBAL);
+      localStorage.removeItem(BRANDING_STORAGE_KEY_OVERRIDES);
+    } catch (e) {}
+    populateBrandingModalFields(globalBrandingConfig);
+    applyBrandingToCanvas();
+    syncCanvasResponsiveTypography();
+    showToast('Branding reset to default QSF Official News configuration.');
+  }
+
+  function quickToggleBrandingVisibility() {
+    const hasOverride = !!(templateBrandingOverrides && templateBrandingOverrides[currentNewsTemplate]);
+    if (hasOverride) {
+      templateBrandingOverrides[currentNewsTemplate].visible = !templateBrandingOverrides[currentNewsTemplate].visible;
+      try { localStorage.setItem(BRANDING_STORAGE_KEY_OVERRIDES, JSON.stringify(templateBrandingOverrides)); } catch (e) {}
+    } else {
+      globalBrandingConfig.visible = !globalBrandingConfig.visible;
+      try { localStorage.setItem(BRANDING_STORAGE_KEY_GLOBAL, JSON.stringify(globalBrandingConfig)); } catch (e) {}
+    }
+    applyBrandingToCanvas();
+    syncCanvasResponsiveTypography();
+  }
+
+  /* =============================================================
+     UNIVERSAL ELEMENT CUSTOMIZER SYSTEM (ALL GRIDS, BOXES, TEXT)
+     Supports Hover Highlight, Click-to-Customize Popup,
+     Global Defaults (All 20 Templates) & Per-Template Overrides
+     ============================================================= */
+  const ELEMENT_STORAGE_KEY_GLOBAL = 'qsf_broadcast_el_global_v1';
+  const ELEMENT_STORAGE_KEY_TPL = 'qsf_broadcast_el_tpl_v1';
+
+  const ELEMENT_TEXT_INPUT_MAP = {
+    headlineText:   'newsInputHeadline',
+    subheadingText: 'newsInputSubheading',
+    bodyText:       'newsInputBody',
+    speakerLabel:   'newsInputSpeaker',
+    tickerText:     'newsInputFooter',
+    websitePill:    'newsInputWebsite'
+  };
+
+  const ELEMENT_LABELS = {
+    topBanner:      'Top Category / Flash Banner',
+    centerCard:     'Center Grid / Showcase Card',
+    headlineBox:    'Headline Container Card',
+    headlineText:   'Main Headline Text',
+    subheadingText: 'Subheading / Kicker Text',
+    bodyText:       'Story Body / Bullet Copy',
+    detailBox:      'Detail / Directive Box',
+    speakerLabel:   'Speaker / Source Label',
+    tickerStrap:    'Footer Ticker Bar (Outer)',
+    tickerLabel:    'Footer Ticker Badge',
+    tickerText:     'Footer Ticker Text',
+    datelineBar:    'Footer Dateline Bar',
+    websitePill:    'Official Website Badge'
+  };
+
+  let globalElementConfigs = {};
+  let templateElementOverrides = {};
+  let activeCustomizeElKey = 'headlineBox';
+
+  function loadStoredElementConfigs() {
+    try {
+      const g = localStorage.getItem(ELEMENT_STORAGE_KEY_GLOBAL);
+      if (g) globalElementConfigs = JSON.parse(g) || {};
+      const t = localStorage.getItem(ELEMENT_STORAGE_KEY_TPL);
+      if (t) templateElementOverrides = JSON.parse(t) || {};
+    } catch (e) {
+      console.warn('[ElementCustomizer] Failed to read storage:', e);
+    }
+  }
+
+  function getEffectiveElementConfig(elKey) {
+    const g = (globalElementConfigs && globalElementConfigs[elKey]) || {};
+    const t = (templateElementOverrides && templateElementOverrides[currentNewsTemplate] && templateElementOverrides[currentNewsTemplate][elKey]) || null;
+    if (t) {
+      return Object.assign({}, g, t, { _isOverride: true });
+    }
+    return Object.assign({}, g, { _isOverride: false });
+  }
+
+  function applySingleElementConfig(el, elKey, cfg) {
+    if (!el || !cfg) return;
+
+    // Preserve template's native inline styles (e.g. #slotNewsSubheading color: #FEF08A)
+    if (el.dataset.origInlineStyle === undefined) {
+      el.dataset.origInlineStyle = el.getAttribute('style') || '';
+    }
+    const touchedSet = new Set((el.dataset.custTouchedProps || '').split(',').filter(Boolean));
+    const applyProp = (prop, val) => {
+      if (val !== null && val !== undefined && val !== '') {
+        el.style.setProperty(prop, String(val), 'important');
+        touchedSet.add(prop);
+      } else if (touchedSet.has(prop)) {
+        el.style.removeProperty(prop);
+        touchedSet.delete(prop);
+        // Restore any original inline value for this property if template defined one
+        if (el.dataset.origInlineStyle) {
+          const m = el.dataset.origInlineStyle.match(new RegExp(`(?:^|;)\\s*${prop}\\s*:\\s*([^;]+)`, 'i'));
+          if (m && m[1]) el.style.setProperty(prop, m[1].trim());
+        }
+      }
+    };
+
+    if (cfg.visible === false) {
+      applyProp('display', 'none');
+      el.dataset.custTouchedProps = [...touchedSet].join(',');
+      return;
+    } else {
+      applyProp('display', null);
+    }
+
+    applyProp('font-family', (cfg.fontFamily && cfg.fontFamily !== 'auto') ? cfg.fontFamily : null);
+    applyProp('font-size', (cfg.fontSize && parseFloat(cfg.fontSize) > 0) ? `${parseFloat(cfg.fontSize)}px` : null);
+    applyProp('font-weight', (cfg.fontWeight && cfg.fontWeight !== 'auto') ? cfg.fontWeight : null);
+    applyProp('line-height', (cfg.lineHeight && cfg.lineHeight !== 'auto') ? cfg.lineHeight : null);
+    applyProp('text-align', (cfg.textAlign && cfg.textAlign !== 'auto') ? cfg.textAlign : null);
+    applyProp('color', (cfg.useTextColor && cfg.textColor) ? cfg.textColor : null);
+
+    let bgVal = null;
+    if (cfg.bgMode === 'solid' && cfg.bg1) bgVal = cfg.bg1;
+    else if (cfg.bgMode === 'gradient' && cfg.bg1 && cfg.bg2) bgVal = `linear-gradient(${cfg.bgAngle || '135deg'}, ${cfg.bg1} 0%, ${cfg.bg2} 100%)`;
+    else if (cfg.bgMode === 'transparent') bgVal = 'transparent';
+    applyProp('background', bgVal);
+
+    if (cfg.width && cfg.width !== 'auto') {
+      applyProp('width', cfg.width);
+      applyProp('max-width', cfg.width === 'fit-content' ? '100%' : cfg.width);
+    } else {
+      applyProp('width', null);
+      applyProp('max-width', null);
+    }
+
+    applyProp('min-height', (cfg.minHeight && parseFloat(cfg.minHeight) > 0) ? `${parseFloat(cfg.minHeight)}px` : null);
+    applyProp('padding', (cfg.padding !== '' && cfg.padding !== undefined && cfg.padding !== null && !isNaN(parseFloat(cfg.padding))) ? `${parseFloat(cfg.padding)}px` : null);
+    applyProp('margin-bottom', (cfg.spacing !== '' && cfg.spacing !== undefined && cfg.spacing !== null && !isNaN(parseFloat(cfg.spacing))) ? `${parseFloat(cfg.spacing)}px` : null);
+    applyProp('align-self', (cfg.alignSelf && cfg.alignSelf !== 'auto') ? cfg.alignSelf : null);
+
+    if (cfg.borderWidth && cfg.borderWidth !== 'auto') {
+      applyProp('border-width', cfg.borderWidth);
+      applyProp('border-style', cfg.borderStyle || 'solid');
+      applyProp('border-color', cfg.borderColor || null);
+    } else {
+      applyProp('border-width', null);
+      applyProp('border-style', null);
+      applyProp('border-color', null);
+    }
+
+    applyProp('border-radius', (cfg.borderRadius !== '' && cfg.borderRadius !== undefined && cfg.borderRadius !== null && !isNaN(parseFloat(cfg.borderRadius))) ? `${parseFloat(cfg.borderRadius)}px` : null);
+
+    el.dataset.custTouchedProps = [...touchedSet].join(',');
+
+    // Apply custom non-form text overrides (for badges like tickerLabel, topBanner, etc.)
+    if (cfg.customText && !ELEMENT_TEXT_INPUT_MAP[elKey]) {
+      const textTarget = el.querySelector('.custom-text-slot') || el.querySelector('span:last-child') || el;
+      if (textTarget && textTarget.childNodes.length <= 1) {
+        textTarget.textContent = cfg.customText;
+      }
+    }
+  }
+
+  function applyElementCustomizationsToCanvas(draftKey = null, draftCfg = null) {
+    const canvas = document.getElementById('qesfNewsCanvas');
+    if (!canvas) return;
+    canvas.querySelectorAll('[data-el-key]').forEach(el => {
+      const key = el.getAttribute('data-el-key');
+      if (!key) return;
+      const cfg = (draftKey && draftKey === key && draftCfg) ? draftCfg : getEffectiveElementConfig(key);
+      applySingleElementConfig(el, key, cfg);
+    });
+  }
+
+  function getElementDisplayText(elKey) {
+    const inputId = ELEMENT_TEXT_INPUT_MAP[elKey];
+    if (inputId) {
+      return document.getElementById(inputId)?.value || '';
+    }
+    const el = document.querySelector(`#qesfNewsCanvas [data-el-key="${elKey}"]`);
+    if (!el) return '';
+    const textTarget = el.querySelector('.custom-text-slot') || el.querySelector('span:last-child') || el;
+    return (textTarget?.textContent || '').trim();
+  }
+
+  function populateElementCustomizerModal(elKey) {
+    activeCustomizeElKey = elKey || 'headlineBox';
+    const cfg = getEffectiveElementConfig(activeCustomizeElKey);
+
+    const sel = document.getElementById('elCustSelector');
+    if (sel) sel.value = activeCustomizeElKey;
+
+    const titleEl = document.getElementById('elCustHeaderTitle');
+    if (titleEl) titleEl.textContent = `Customize: ${ELEMENT_LABELS[activeCustomizeElKey] || activeCustomizeElKey}`;
+
+    const scopeEl = document.getElementById('elCustScopeReadout');
+    if (scopeEl) {
+      const hasOverride = !!(templateElementOverrides[currentNewsTemplate] && templateElementOverrides[currentNewsTemplate][activeCustomizeElKey]);
+      scopeEl.textContent = hasOverride
+        ? `Template Override (${NEWS_TEMPLATES[currentNewsTemplate]?.nameEn || currentNewsTemplate})`
+        : 'Global Default (All 20 Templates)';
+      scopeEl.style.background = hasOverride ? '#0284C7' : '#065F46';
+    }
+
+    // Populate text editing area for text elements & badges
+    const textGroup = document.getElementById('elCustTextGroup');
+    const textInp = document.getElementById('elCustText');
+    const isContainerOnly = ['headlineBox', 'centerCard', 'detailBox', 'tickerStrap', 'datelineBar'].includes(activeCustomizeElKey);
+    if (textGroup) textGroup.style.display = isContainerOnly ? 'none' : 'block';
+    if (textInp && !isContainerOnly) {
+      textInp.value = getElementDisplayText(activeCustomizeElKey);
+      textInp.dir = currentNewsLang === 'ur' ? 'rtl' : 'ltr';
+    }
+
+    const setVal = (id, val) => {
+      const n = document.getElementById(id);
+      if (n) n.value = (val !== undefined && val !== null) ? String(val) : '';
+    };
+
+    setVal('elCustVisible', cfg.visible === false ? 'false' : 'true');
+    setVal('elCustFontFamily', cfg.fontFamily || 'auto');
+    setVal('elCustFontSize', cfg.fontSize || '');
+    setVal('elCustFontWeight', cfg.fontWeight || 'auto');
+    setVal('elCustTextAlign', cfg.textAlign || 'auto');
+    setVal('elCustLineHeight', cfg.lineHeight || 'auto');
+    setVal('elCustTextColor', cfg.textColor || '#FFFFFF');
+    const colorUse = document.getElementById('elCustTextColorUse');
+    if (colorUse) colorUse.checked = !!cfg.useTextColor;
+    setVal('elCustAlignSelf', cfg.alignSelf || 'auto');
+    setVal('elCustWidth', cfg.width || 'auto');
+    setVal('elCustBgMode', cfg.bgMode || 'auto');
+    setVal('elCustBg1', cfg.bg1 || '#0F172A');
+    setVal('elCustBg2', cfg.bg2 || '#7F1D1D');
+    setVal('elCustBgAngle', cfg.bgAngle || '135deg');
+    setVal('elCustMinHeight', cfg.minHeight || '');
+    setVal('elCustPadding', cfg.padding !== undefined ? cfg.padding : '');
+    setVal('elCustSpacing', cfg.spacing !== undefined ? cfg.spacing : '');
+    setVal('elCustRadius', cfg.borderRadius !== undefined ? cfg.borderRadius : '');
+    setVal('elCustBorderWidth', cfg.borderWidth || 'auto');
+    setVal('elCustBorderStyle', cfg.borderStyle || 'solid');
+    setVal('elCustBorderColor', cfg.borderColor || '#F59E0B');
+
+    // Mark active selected highlight on canvas
+    const canvas = document.getElementById('qesfNewsCanvas');
+    if (canvas) {
+      canvas.querySelectorAll('.el-active-selected').forEach(x => x.classList.remove('el-active-selected'));
+      const targetEl = canvas.querySelector(`[data-el-key="${activeCustomizeElKey}"]`);
+      if (targetEl) targetEl.classList.add('el-active-selected');
+    }
+  }
+
+  function readElementCustomizerDraft() {
+    const val = (id) => document.getElementById(id)?.value ?? '';
+    return {
+      visible: val('elCustVisible') !== 'false',
+      customText: val('elCustText'),
+      fontFamily: val('elCustFontFamily') || 'auto',
+      fontSize: val('elCustFontSize'),
+      fontWeight: val('elCustFontWeight') || 'auto',
+      lineHeight: val('elCustLineHeight') || 'auto',
+      textAlign: val('elCustTextAlign') || 'auto',
+      useTextColor: !!document.getElementById('elCustTextColorUse')?.checked,
+      textColor: val('elCustTextColor') || '#FFFFFF',
+      alignSelf: val('elCustAlignSelf') || 'auto',
+      width: val('elCustWidth') || 'auto',
+      bgMode: val('elCustBgMode') || 'auto',
+      bg1: val('elCustBg1') || '#0F172A',
+      bg2: val('elCustBg2') || '#7F1D1D',
+      bgAngle: val('elCustBgAngle') || '135deg',
+      minHeight: val('elCustMinHeight'),
+      padding: val('elCustPadding'),
+      spacing: val('elCustSpacing'),
+      borderRadius: val('elCustRadius'),
+      borderWidth: val('elCustBorderWidth') || 'auto',
+      borderStyle: val('elCustBorderStyle') || 'solid',
+      borderColor: val('elCustBorderColor') || '#F59E0B'
+    };
+  }
+
+  function openElementCustomizerModal(elKey = 'headlineBox') {
+    const modal = document.getElementById('elementCustomizerModal');
+    if (!modal) return;
+    populateElementCustomizerModal(elKey);
+    modal.classList.remove('hidden');
+  }
+
+  function switchElementCustomizerTarget(elKey) {
+    populateElementCustomizerModal(elKey);
+  }
+
+  function closeElementCustomizerModal() {
+    const modal = document.getElementById('elementCustomizerModal');
+    if (modal) modal.classList.add('hidden');
+    const canvas = document.getElementById('qesfNewsCanvas');
+    if (canvas) {
+      canvas.querySelectorAll('.el-active-selected').forEach(x => x.classList.remove('el-active-selected'));
+    }
+    applyElementCustomizationsToCanvas();
+    syncCanvasResponsiveTypography();
+  }
+
+  function handleElementModalBackdropClick(event) {
+    if (event && event.target && event.target.id === 'elementCustomizerModal') {
+      closeElementCustomizerModal();
+    }
+  }
+
+  function previewElementCustomizerDraft(isTextChanged = false) {
+    const draft = readElementCustomizerDraft();
+    const mappedInputId = ELEMENT_TEXT_INPUT_MAP[activeCustomizeElKey];
+    if (isTextChanged && mappedInputId) {
+      const sidebarInp = document.getElementById(mappedInputId);
+      if (sidebarInp) {
+        sidebarInp.value = draft.customText || '';
+        updateNewsGraphicPreview();
+      }
+    }
+    applyElementCustomizationsToCanvas(activeCustomizeElKey, draft);
+    syncCanvasResponsiveTypography();
+  }
+
+  function saveElementCustomizerConfig(scope = 'global') {
+    const draft = readElementCustomizerDraft();
+    const key = activeCustomizeElKey;
+    const mappedInputId = ELEMENT_TEXT_INPUT_MAP[key];
+    // Don't persist shared content strings into visual style configs for standard content fields
+    const styleDraft = Object.assign({}, draft);
+    if (mappedInputId) delete styleDraft.customText;
+
+    if (scope === 'template') {
+      if (!templateElementOverrides[currentNewsTemplate]) templateElementOverrides[currentNewsTemplate] = {};
+      templateElementOverrides[currentNewsTemplate][key] = styleDraft;
+      try { localStorage.setItem(ELEMENT_STORAGE_KEY_TPL, JSON.stringify(templateElementOverrides)); } catch (e) {}
+      closeElementCustomizerModal();
+      showToast(`Saved "${ELEMENT_LABELS[key] || key}" settings for template "${NEWS_TEMPLATES[currentNewsTemplate]?.nameEn || currentNewsTemplate}"!`);
+    } else {
+      globalElementConfigs[key] = styleDraft;
+      if (templateElementOverrides[currentNewsTemplate] && templateElementOverrides[currentNewsTemplate][key]) {
+        delete templateElementOverrides[currentNewsTemplate][key];
+      }
+      try {
+        localStorage.setItem(ELEMENT_STORAGE_KEY_GLOBAL, JSON.stringify(globalElementConfigs));
+        localStorage.setItem(ELEMENT_STORAGE_KEY_TPL, JSON.stringify(templateElementOverrides));
+      } catch (e) {}
+      closeElementCustomizerModal();
+      showToast(`Saved Global Default for "${ELEMENT_LABELS[key] || key}" across all 20 templates!`);
+    }
+  }
+
+  function resetElementCustomizerTarget() {
+    const key = activeCustomizeElKey;
+    if (templateElementOverrides[currentNewsTemplate] && templateElementOverrides[currentNewsTemplate][key]) {
+      delete templateElementOverrides[currentNewsTemplate][key];
+    } else if (globalElementConfigs[key]) {
+      delete globalElementConfigs[key];
+    }
+    try {
+      localStorage.setItem(ELEMENT_STORAGE_KEY_GLOBAL, JSON.stringify(globalElementConfigs));
+      localStorage.setItem(ELEMENT_STORAGE_KEY_TPL, JSON.stringify(templateElementOverrides));
+    } catch (e) {}
+    renderNewsCanvasSlots();
+    applyBrandingToCanvas();
+    updateNewsGraphicPreview();
+    populateElementCustomizerModal(key);
+    showToast(`Reset "${ELEMENT_LABELS[key] || key}" back to theme defaults.`);
+  }
+
+  function resetAllElementCustomizations() {
+    globalElementConfigs = {};
+    templateElementOverrides = {};
+    try {
+      localStorage.removeItem(ELEMENT_STORAGE_KEY_GLOBAL);
+      localStorage.removeItem(ELEMENT_STORAGE_KEY_TPL);
+    } catch (e) {}
+    renderNewsCanvasSlots();
+    applyBrandingToCanvas();
+    updateNewsGraphicPreview();
+    populateElementCustomizerModal(activeCustomizeElKey);
+    showToast('All element customizations cleared.');
+  }
+
+  function setupCanvasInteractiveDelegation() {
+    const canvas = document.getElementById('qesfNewsCanvas');
+    if (!canvas || canvas.dataset.customizerWired === 'true') return;
+    canvas.dataset.customizerWired = 'true';
+
+    let currentHoverEl = null;
+    canvas.addEventListener('mouseover', (e) => {
+      const bug = e.target.closest('#canvasNewsChannelBug');
+      const target = bug ? null : e.target.closest('[data-el-key]');
+      if (currentHoverEl && currentHoverEl !== target) {
+        currentHoverEl.classList.remove('el-hover-highlight');
+      }
+      if (target) {
+        target.classList.add('el-hover-highlight');
+        currentHoverEl = target;
+      } else {
+        currentHoverEl = null;
+      }
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+      if (currentHoverEl) {
+        currentHoverEl.classList.remove('el-hover-highlight');
+        currentHoverEl = null;
+      }
+    });
+
+    canvas.addEventListener('click', (e) => {
+      if (e.target.closest('#canvasNewsChannelBug')) return; // Handled by Branding Modal
+      const target = e.target.closest('[data-el-key]');
+      if (!target) return;
+      e.stopPropagation();
+      const key = target.getAttribute('data-el-key');
+      if (key) openElementCustomizerModal(key);
+    });
+  }
+
+  /* =============================================================
+     INTELLIGENT MULTI-TIER RESPONSIVE TYPOGRAPHY & ZERO-CLIP ENGINE
+     Dynamically adjusts scale curves for Headings, Subheadings,
+     Body, Badges & Ticker; guarantees zero Urdu Nastaliq clipping
+     ============================================================= */
+  function syncCanvasResponsiveTypography() {
+    const canvas = document.getElementById('qesfNewsCanvas');
+    const fg = document.getElementById('newsCanvasForeground');
+    if (!canvas || !fg) return;
+
+    const cw = canvas.clientWidth || 540;
+    const ch = canvas.clientHeight || 304;
+    const isUrdu = currentNewsLang === 'ur';
+    const aspect = cw / Math.max(1, ch);
+
+    const wRatio = cw / 540;
+    const hRatio = ch / (aspect >= 1.3 ? 304 : aspect >= 0.95 ? 430 : 450);
+    const effectiveRatio = Math.min(wRatio, hRatio * 1.08);
+
+    const sizeMultipliers = { sm: 0.85, md: 0.94, lg: 1.0, xl: 1.1 };
+    const userMult = sizeMultipliers[currentNewsSize] || 1.0;
+
+    const headText = document.getElementById('newsInputHeadline')?.value || '';
+    const bodyText = document.getElementById('newsInputBody')?.value || '';
+    const totalLen = headText.length + bodyText.length * 0.45;
+    const lenFactor = totalLen > 165 ? 0.78 : totalLen > 115 ? 0.85 : totalLen > 75 ? 0.92 : 1.0;
+
+    const baseHead = aspect >= 1.35 ? 16.0 : aspect >= 0.95 ? 17.5 : 15.5;
+    const baseSub  = aspect >= 1.35 ? 11.0 : aspect >= 0.95 ? 11.8 : 10.8;
+    const baseBody = aspect >= 1.35 ? 10.4 : aspect >= 0.95 ? 11.2 : 10.2;
+    const baseTag  = aspect >= 1.35 ? 10.8 : aspect >= 0.95 ? 11.4 : 10.4;
+    const baseFoot = aspect >= 1.35 ? 9.8  : aspect >= 0.95 ? 10.4 : 9.6;
+
+    const headPx = Math.max(8.5, Math.min(23.0, baseHead * Math.pow(effectiveRatio, 0.82) * userMult * lenFactor));
+    const subPx  = Math.max(7.6, Math.min(14.5, baseSub  * Math.pow(effectiveRatio, 0.70) * lenFactor));
+    const bodyPx = Math.max(7.4, Math.min(13.5, baseBody * Math.pow(effectiveRatio, 0.66) * (bodyText.length > 140 ? 0.86 : 1)));
+    const tagPx  = Math.max(7.5, Math.min(14.0, baseTag  * Math.pow(effectiveRatio, 0.72)));
+    const footPx = Math.max(7.0, Math.min(12.0, baseFoot * Math.pow(effectiveRatio, 0.60)));
+    const padPx  = Math.max(4.0, Math.min(14.0, 9.0 * Math.pow(effectiveRatio, 0.85)));
+    const gapPx  = Math.max(2.0, Math.min(8.0,  4.0 * Math.pow(effectiveRatio, 0.85)));
+
+    const applyVars = (mult = 1.0) => {
+      canvas.style.setProperty('--cv-head-size', `${(headPx * mult).toFixed(2)}px`);
+      canvas.style.setProperty('--cv-sub-size',  `${(subPx  * Math.pow(mult, 0.82)).toFixed(2)}px`);
+      canvas.style.setProperty('--cv-body-size', `${(bodyPx * Math.pow(mult, 0.82)).toFixed(2)}px`);
+      canvas.style.setProperty('--cv-tag-size',  `${(tagPx  * Math.pow(mult, 0.78)).toFixed(2)}px`);
+      canvas.style.setProperty('--cv-foot-size', `${(footPx * Math.pow(mult, 0.72)).toFixed(2)}px`);
+      canvas.style.setProperty('--cv-pad',       `${(padPx  * Math.max(0.45, mult)).toFixed(2)}px`);
+      canvas.style.setProperty('--cv-gap',       `${(gapPx  * Math.max(0.45, mult)).toFixed(2)}px`);
+      canvas.style.setProperty('--cv-head-lh',   isUrdu ? (mult < 0.58 ? '1.34' : mult < 0.78 ? '1.46' : '1.58') : '1.22');
+      canvas.style.setProperty('--cv-sub-lh',    isUrdu ? (mult < 0.58 ? '1.34' : mult < 0.78 ? '1.46' : '1.56') : '1.30');
+      canvas.style.setProperty('--cv-body-lh',   isUrdu ? (mult < 0.58 ? '1.36' : mult < 0.78 ? '1.48' : '1.62') : '1.36');
+    };
+
+    applyVars(1.0);
+    canvas.classList.toggle('is-compact-canvas', ch <= 215);
+
+    // Multi-pass Zero-Overflow Guard: guarantees Urdu & English never extend past canvas height or width
+    let mult = 1.0;
+    let attempts = 0;
+    while ((fg.scrollHeight > canvas.clientHeight + 1 || fg.scrollWidth > canvas.clientWidth + 1) && attempts < 12) {
+      const hRatioNeeded = canvas.clientHeight / Math.max(1, fg.scrollHeight);
+      const wRatioNeeded = canvas.clientWidth / Math.max(1, fg.scrollWidth);
+      const ratioNeeded = Math.min(hRatioNeeded, wRatioNeeded);
+      mult = Math.max(0.32, mult * Math.min(0.90, ratioNeeded));
+      applyVars(mult);
+      attempts++;
+    }
+  }
+
+  function initNewsStudio() {
+    const studio = document.getElementById('newsGraphicsStudioCard');
+    if (!studio) return;
+    loadStoredBrandingConfig();
+    loadStoredElementConfigs();
+    setupCanvasInteractiveDelegation();
+    setNewsRatio(currentNewsRatio || 'landscape');
+    selectNewsTemplate(currentNewsTemplate || 'breaking');
+
+    const canvas = document.getElementById('qesfNewsCanvas');
+    if (canvas && typeof ResizeObserver === 'function' && !newsCanvasResizeObserver) {
+      newsCanvasResizeObserver = new ResizeObserver(() => {
+        syncCanvasResponsiveTypography();
+      });
+      newsCanvasResizeObserver.observe(canvas);
+    }
+  }
+
+  function selectNewsTemplate(tplKey) {
+    if (!NEWS_TEMPLATES[tplKey]) return;
+    currentNewsTemplate = tplKey;
+
+    // Highlight active card in 2-column template grid
+    document.querySelectorAll('.news-tpl-card').forEach(c => c.classList.remove('active'));
+    const activeCard = document.getElementById(`tplCard_${tplKey}`);
+    if (activeCard) {
+      activeCard.classList.add('active');
+      const gridContainer = document.getElementById('newsTemplates2ColGrid');
+      if (gridContainer) {
+        const cardTop = activeCard.offsetTop - gridContainer.offsetTop;
+        const targetScroll = Math.max(0, cardTop - gridContainer.clientHeight / 2 + activeCard.clientHeight / 2);
+        gridContainer.scrollTo({ top: targetScroll, behavior: 'smooth' });
+      }
+    }
+
+    // Update active label & control room telemetry
+    const ind = document.getElementById('activeTemplateIndicator');
+    if (ind) {
+      ind.textContent = `Active: ${NEWS_TEMPLATES[tplKey].nameEn} (${NEWS_TEMPLATES[tplKey].nameUr})`;
+    }
+    const telemetryTpl = document.getElementById('telemetryActiveTemplate');
+    if (telemetryTpl) {
+      telemetryTpl.innerHTML = `<i class="fas fa-satellite"></i> CH-${String(Object.keys(NEWS_TEMPLATES).indexOf(tplKey) + 1).padStart(2, '0')} • ${NEWS_TEMPLATES[tplKey].nameEn}`;
+    }
+
+    // Update canvas classes
+    const canvas = document.getElementById('qesfNewsCanvas');
+    if (canvas) {
+      const allTpls = Object.keys(NEWS_TEMPLATES);
+      allTpls.forEach(k => canvas.classList.remove(`tpl-${k}`));
+      canvas.classList.add(`tpl-${tplKey}`);
+    }
+
+    // Load template preset data into form inputs
+    const data = NEWS_TEMPLATES[tplKey][currentNewsLang] || NEWS_TEMPLATES[tplKey]['ur'];
+    const tagInp = document.getElementById('newsInputTag');
+    const headInp = document.getElementById('newsInputHeadline');
+    const subInp = document.getElementById('newsInputSubheading');
+    const spkInp = document.getElementById('newsInputSpeaker');
+    const bodyInp = document.getElementById('newsInputBody');
+    const footInp = document.getElementById('newsInputFooter');
+    const dateInp = document.getElementById('newsInputDateline');
+    const webInp = document.getElementById('newsInputWebsite');
+
+    if (tagInp) tagInp.value = data.tag || '';
+    if (headInp) headInp.value = data.headline || '';
+    if (subInp) subInp.value = data.subheading || '';
+    if (spkInp) spkInp.value = data.speaker || '';
+    if (bodyInp) bodyInp.value = data.body || '';
+    if (footInp) footInp.value = data.footer || '';
+    if (dateInp) dateInp.value = data.dateline || '';
+    if (webInp) webInp.value = data.website || 'www.qasreshabbir.org';
+
+    // Render template-specific markup into canvas slots & apply branding + element customizations
+    renderNewsCanvasSlots();
+    applyBrandingToCanvas();
+    updateNewsGraphicPreview();
+  }
+
+  function applyDimensionStateToDOM(ratioKey, w, h, cssDim, orientation, badgeText, shortText) {
+    currentNewsRatio = ratioKey;
+    currentNewsDimensions = { w, h };
+
+    const canvas = document.getElementById('qesfNewsCanvas');
+    const container = document.getElementById('newsCanvasContainer');
+    const stage = document.getElementById('liveBroadcastMonitorStage');
+
+    if (canvas) {
+      const allRatios = ['square', 'portrait', 'landscape', 'story', 'youtube', 'linkedin', 'fb_post', 'fb_reels', 'ig_post', 'ig_portrait', 'yt_video', 'x_post', 'wa_status', 'custom'];
+      allRatios.forEach(r => canvas.classList.remove(`dim-${r}`));
+      canvas.classList.add(`dim-${cssDim}`);
+      if (ratioKey !== cssDim) {
+        canvas.classList.add(`dim-${ratioKey}`);
+      }
+      canvas.style.aspectRatio = `${w} / ${h}`;
+    }
+
+    if (container) container.setAttribute('data-orientation', orientation);
+    if (stage) stage.setAttribute('data-orientation', orientation);
+
+    document.querySelectorAll('.aspect-ratio-group .aspect-btn').forEach(btn => btn.classList.remove('active'));
+    const activeBtn = document.getElementById(`newsRatioBtn_${ratioKey}`);
+    if (activeBtn) activeBtn.classList.add('active');
+
+    const badge = document.getElementById('newsRatioBadge');
+    if (badge) badge.textContent = badgeText;
+
+    const leftSum = document.getElementById('leftOutputSummaryText');
+    if (leftSum) leftSum.textContent = shortText;
+
+    const headerTag = document.getElementById('headerOutputDimTag');
+    if (headerTag) headerTag.textContent = `${w}×${h}`;
+
+    const modalReadout = document.getElementById('outputModalDimensionReadout');
+    if (modalReadout) modalReadout.textContent = `${w} × ${h} px`;
+
+    const telemetryAspect = document.getElementById('telemetryActiveAspect');
+    if (telemetryAspect) {
+      telemetryAspect.innerHTML = `<i class="fas fa-lock"></i> Aspect Locked (${w}×${h} px)`;
+    }
+
+    const inpW = document.getElementById('newsCustomWidthInput');
+    const inpH = document.getElementById('newsCustomHeightInput');
+    if (inpW && document.activeElement !== inpW) inpW.value = w;
+    if (inpH && document.activeElement !== inpH) inpH.value = h;
+
+    syncCanvasResponsiveTypography();
+    setTimeout(syncCanvasResponsiveTypography, 30);
+  }
+
+  function setNewsRatio(ratioKey) {
+    const preset = NEWS_FORMAT_PRESETS[ratioKey] || NEWS_FORMAT_PRESETS.landscape;
+    applyDimensionStateToDOM(
+      ratioKey,
+      preset.w,
+      preset.h,
+      preset.cssDim,
+      preset.orientation,
+      preset.badge,
+      preset.short
+    );
+  }
+
+  function applyCustomNewsDimensions(shouldCloseModal = false) {
+    const inpW = document.getElementById('newsCustomWidthInput');
+    const inpH = document.getElementById('newsCustomHeightInput');
+    let w = parseInt(inpW?.value, 10) || 1920;
+    let h = parseInt(inpH?.value, 10) || 1080;
+    w = Math.max(300, Math.min(3840, w));
+    h = Math.max(300, Math.min(3840, h));
+
+    const ratio = w / h;
+    let cssDim = 'landscape';
+    let orientation = 'landscape';
+    if (ratio >= 1.35) {
+      cssDim = 'landscape';
+      orientation = 'landscape';
+    } else if (ratio >= 0.95) {
+      cssDim = 'square';
+      orientation = 'square';
+    } else if (ratio >= 0.68) {
+      cssDim = 'portrait';
+      orientation = 'portrait';
+    } else {
+      cssDim = 'story';
+      orientation = 'story';
+    }
+
+    const ratioStr = ratio.toFixed(2) + ':1';
+    applyDimensionStateToDOM(
+      'custom',
+      w,
+      h,
+      cssDim,
+      orientation,
+      `${w} × ${h} px (${ratioStr}) • Custom Output`,
+      `Custom • ${w} × ${h} px`
+    );
+
+    if (shouldCloseModal) {
+      if (inpW) inpW.value = w;
+      if (inpH) inpH.value = h;
+      closeOutputSettingsModal();
+      showToast(`Custom output dimensions applied: ${w} × ${h} px`);
+    }
+  }
+
+  function openOutputSettingsModal() {
+    const modal = document.getElementById('outputSettingsModal');
+    if (modal) modal.classList.remove('hidden');
+  }
+
+  function closeOutputSettingsModal() {
+    const modal = document.getElementById('outputSettingsModal');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  function toggleOutputSettingsModal() {
+    const modal = document.getElementById('outputSettingsModal');
+    if (!modal) return;
+    modal.classList.toggle('hidden');
+  }
+
+  function handleOutputModalBackdropClick(event) {
+    if (event && event.target && event.target.id === 'outputSettingsModal') {
+      closeOutputSettingsModal();
+    }
+  }
+
+  function setNewsLang(lang) {
+    currentNewsLang = lang;
+    const isUrdu = lang === 'ur';
+
+    const btnEn = document.getElementById('btnNewsLangEn');
+    const btnUr = document.getElementById('btnNewsLangUr');
+    if (btnEn) btnEn.classList.toggle('active', !isUrdu);
+    if (btnUr) btnUr.classList.toggle('active', isUrdu);
+
+    const canvas = document.getElementById('qesfNewsCanvas');
+    if (canvas) {
+      canvas.dir = isUrdu ? 'rtl' : 'ltr';
+      canvas.classList.toggle('is-urdu', isUrdu);
+    }
+
+    const telemetryLang = document.getElementById('telemetryActiveLang');
+    if (telemetryLang) {
+      telemetryLang.innerHTML = `<i class="fas fa-globe"></i> ${isUrdu ? 'URDU (RTL)' : 'ENGLISH (LTR)'} • 300 DPI`;
+    }
+
+    // Update input directions & font styles
+    const inputs = ['newsInputTag', 'newsInputHeadline', 'newsInputSubheading', 'newsInputSpeaker', 'newsInputBody', 'newsInputFooter', 'newsInputDateline', 'newsInputWebsite'];
+    inputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.dir = isUrdu ? 'rtl' : 'ltr';
+        el.style.textAlign = isUrdu ? 'right' : 'left';
+        el.style.fontFamily = isUrdu ? "var(--font-ur, 'Noto Nastaliq Urdu', Tahoma, sans-serif)" : '';
+      }
+    });
+
+    // Reload active template in new language
+    const data = NEWS_TEMPLATES[currentNewsTemplate][lang] || NEWS_TEMPLATES[currentNewsTemplate]['ur'];
+    const tagInp = document.getElementById('newsInputTag');
+    const headInp = document.getElementById('newsInputHeadline');
+    const subInp = document.getElementById('newsInputSubheading');
+    const spkInp = document.getElementById('newsInputSpeaker');
+    const bodyInp = document.getElementById('newsInputBody');
+    const footInp = document.getElementById('newsInputFooter');
+    const dateInp = document.getElementById('newsInputDateline');
+    const webInp = document.getElementById('newsInputWebsite');
+
+    if (tagInp) tagInp.value = data.tag || '';
+    if (headInp) headInp.value = data.headline || '';
+    if (subInp) subInp.value = data.subheading || '';
+    if (spkInp) spkInp.value = data.speaker || '';
+    if (bodyInp) bodyInp.value = data.body || '';
+    if (footInp) footInp.value = data.footer || '';
+    if (dateInp) dateInp.value = data.dateline || '';
+    if (webInp) webInp.value = data.website || 'www.qasreshabbir.org';
+
+    renderNewsCanvasSlots();
+    applyBrandingToCanvas();
+    updateNewsGraphicPreview();
+  }
+
+  function setNewsHeadlineColor(colorKey) {
+    currentNewsColor = colorKey;
+    const canvas = document.getElementById('qesfNewsCanvas');
+    if (canvas) {
+      ['white', 'yellow', 'gold', 'red', 'cyan'].forEach(c => canvas.classList.remove(`color-${c}`));
+      canvas.classList.add(`color-${colorKey}`);
+    }
+
+    document.querySelectorAll('.headline-color-chips .color-chip').forEach(c => c.classList.remove('active'));
+    const activeChip = document.getElementById(`chipColor_${colorKey}`);
+    if (activeChip) activeChip.classList.add('active');
+  }
+
+  function setNewsHeadlineSize(sizeKey) {
+    currentNewsSize = sizeKey;
+    const canvas = document.getElementById('qesfNewsCanvas');
+    if (canvas) {
+      ['sm', 'md', 'lg', 'xl'].forEach(s => canvas.classList.remove(`headline-${s}`));
+      canvas.classList.add(`headline-${sizeKey}`);
+    }
+
+    ['sm', 'md', 'lg', 'xl'].forEach(s => {
+      const btn = document.getElementById(`btnNewsSize_${s}`);
+      if (btn) {
+        if (s === sizeKey) {
+          btn.style.background = '#FFF1F2';
+          btn.style.color = '#B91C1C';
+          btn.style.borderColor = '#FECDD3';
+          btn.classList.add('active');
+        } else {
+          btn.style.background = '';
+          btn.style.color = '';
+          btn.style.borderColor = '';
+          btn.classList.remove('active');
+        }
+      }
+    });
+    syncCanvasResponsiveTypography();
+  }
+
+  /* -------------------------------------------------------------
+     Dynamic Slot Markup Generator for all 20 Broadcast Templates
+     Guaranteed WCAG AA/AAA High Contrast & Responsive Scaling
+     ------------------------------------------------------------- */
+  function renderNewsCanvasSlots() {
+    const topSlot = document.getElementById('canvasTopBannerSlot');
+    const centerSlot = document.getElementById('canvasCenterSlot');
+    const lowerSlot = document.getElementById('canvasLowerThirdSlot');
+    if (!topSlot || !centerSlot || !lowerSlot) return;
+
+    const tpl = currentNewsTemplate;
+    const isUrdu = currentNewsLang === 'ur';
+
+    // Standard High-Contrast Broadcast Footer Component (Every piece customizable)
+    const buildBroadcastFooter = (tickerBadge, tickerBorderCol = '#DC2626') => `
+      <div class="news-broadcast-footer" id="slotBroadcastFooter">
+        <div class="news-ticker-strap" id="slotTickerStrap" data-el-key="tickerStrap" data-el-label="Footer Ticker Bar" style="border-top: 2px solid ${tickerBorderCol} !important;">
+          <span class="ticker-label-badge" id="slotTickerBadge" data-el-key="tickerLabel" data-el-label="Footer Ticker Badge">
+            <i class="fas fa-bolt"></i>
+            <span class="custom-text-slot" id="slotTickerBadgeText">${tickerBadge}</span>
+          </span>
+          <span class="ticker-marquee-text" id="slotNewsFooterText" data-el-key="tickerText" data-el-label="Footer Ticker Text"></span>
+        </div>
+        <div class="news-dateline-bar" id="slotDatelineBar" data-el-key="datelineBar" data-el-label="Footer Dateline Bar">
+          <div class="dateline-source-info">
+            <span class="source-tag" id="slotSourceTag"><i class="fas fa-shield-halved"></i> <span id="slotDatelineSource">${isUrdu ? 'QESF نیوز ڈیسک' : 'QESF News Bureau'}</span></span>
+            <span class="date-tag" id="slotDateTag"><i class="fas fa-calendar-day"></i> <span id="slotNewsDateline"></span></span>
+          </div>
+          <div class="dateline-website-pill" id="slotWebsitePill" data-el-key="websitePill" data-el-label="Official Website Badge">
+            <i class="fas fa-globe" style="color: #FDE047;"></i>
+            <span class="custom-text-slot" id="slotNewsWebsite"></span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // 1. Top Banner Slot (All 20 templates keep balanced compact top banner tag)
+    if (tpl === 'breaking') {
+      topSlot.innerHTML = `
+        <div class="breaking-angled-banner" data-el-key="topBanner" data-el-label="Top Breaking Banner">
+          <i class="fas fa-bolt" style="color: #FDE047;"></i>
+          <span class="custom-text-slot" id="slotBreakingLabel">${isUrdu ? 'بریکنگ نیوز' : 'BREAKING NEWS'}</span>
+        </div>`;
+    } else if (tpl === 'international') {
+      topSlot.innerHTML = `
+        <div class="location-pill" data-el-key="topBanner" data-el-label="Top Location / Category Pill">
+          <i class="fas fa-globe"></i>
+          <span class="custom-text-slot" id="slotNewsTag"></span>
+        </div>`;
+    } else if (tpl === 'statement') {
+      topSlot.innerHTML = `
+        <div class="statement-top-breaking-pill" data-el-key="topBanner" data-el-label="Top Statement Banner">
+          <i class="fas fa-bullhorn" style="color: #FDE047;"></i>
+          <span class="custom-text-slot">${isUrdu ? 'بریکنگ نیوز' : 'BREAKING NEWS'}</span>
+        </div>`;
+    } else if (tpl === 'latest') {
+      topSlot.innerHTML = `
+        <div class="latest-category-chip" data-el-key="topBanner" data-el-label="Top Category Chip">
+          <i class="fas fa-bell"></i>
+          <span class="custom-text-slot" id="slotNewsTag"></span>
+        </div>`;
+    } else if (tpl === 'political') {
+      topSlot.innerHTML = `
+        <div class="political-top-pill" data-el-key="topBanner" data-el-label="Top Political / Diplomatic Badge">
+          <i class="fas fa-landmark" style="color: #FDE047;"></i>
+          <span class="custom-text-slot">${isUrdu ? 'سیاسی و سفارتی ڈیسک' : 'DIPLOMATIC DESK'}</span>
+        </div>`;
+    } else if (tpl === 'humanitarian') {
+      topSlot.innerHTML = `
+        <div class="relief-tag" data-el-key="topBanner" data-el-label="Top Humanitarian Tag">
+          <i class="fas fa-hand-holding-heart"></i>
+          <span class="custom-text-slot" id="slotNewsTag"></span>
+        </div>`;
+    } else if (tpl === 'quote') {
+      topSlot.innerHTML = `
+        <div class="special-report-bar" data-el-key="topBanner" data-el-label="Top Quote Category Badge">
+          <i class="fas fa-quote-right"></i>
+          <span class="custom-text-slot">${isUrdu ? 'خصوصی بیان' : 'LEADER STATEMENT'}</span>
+        </div>`;
+    } else if (tpl === 'islamic') {
+      topSlot.innerHTML = `
+        <div class="islamic-top-pill" data-el-key="topBanner" data-el-label="Top Islamic Theme Badge">
+          <i class="fas fa-star-and-crescent"></i>
+          <span class="custom-text-slot" id="slotNewsTag"></span>
+        </div>`;
+    } else if (tpl === 'photo') {
+      topSlot.innerHTML = `
+        <div class="photo-top-pill" data-el-key="topBanner" data-el-label="Top Photo Story Badge">
+          <i class="fas fa-camera" style="color: #F59E0B;"></i>
+          <span class="custom-text-slot" id="slotNewsTag"></span>
+        </div>`;
+    } else if (tpl === 'special') {
+      topSlot.innerHTML = `
+        <div class="special-report-bar" data-el-key="topBanner" data-el-label="Top Special Report Banner">
+          <i class="fas fa-star"></i>
+          <span class="custom-text-slot" id="slotNewsTag"></span>
+        </div>`;
+    } else if (tpl === 'emergency') {
+      topSlot.innerHTML = `
+        <div class="emergency-strobe-banner" data-el-key="topBanner" data-el-label="Top Emergency Alert Banner">
+          <i class="fas fa-triangle-exclamation" style="color: #FDE047;"></i>
+          <span class="custom-text-slot" id="slotEmergencyLabel">${isUrdu ? 'ہنگامی ریڈ الرٹ' : 'EMERGENCY RED ALERT'}</span>
+        </div>`;
+    } else if (tpl === 'live') {
+      topSlot.innerHTML = `
+        <div class="live-top-group" data-el-key="topBanner" data-el-label="Top Live Broadcast Pill">
+          <div class="live-broadcast-pill">
+            <span class="live-dot-pulse"></span>
+            <span class="custom-text-slot">${isUrdu ? 'براہ راست' : 'LIVE'}</span>
+          </div>
+          <div class="live-time-chip">${isUrdu ? 'ابھی براہ راست' : 'LIVE ON-AIR'}</div>
+        </div>`;
+    } else if (tpl === 'exclusive') {
+      topSlot.innerHTML = `
+        <div class="exclusive-gold-ribbon" data-el-key="topBanner" data-el-label="Top Exclusive Gold Ribbon">
+          <i class="fas fa-crown" style="color: #0F172A;"></i>
+          <span class="custom-text-slot">${isUrdu ? 'خصوصی پیشکش' : 'EXCLUSIVE REPORT'}</span>
+        </div>`;
+    } else if (tpl === 'announcement') {
+      topSlot.innerHTML = `
+        <div class="announcement-badge" data-el-key="topBanner" data-el-label="Top Official Notice Badge">
+          <i class="fas fa-scroll" style="color: #FDE047;"></i>
+          <span class="custom-text-slot">${isUrdu ? 'باضابطہ سرکاری اعلامیہ' : 'OFFICIAL DIRECTIVE'}</span>
+        </div>`;
+    } else if (tpl === 'bulletin') {
+      topSlot.innerHTML = `
+        <div class="bulletin-top-header" data-el-key="topBanner" data-el-label="Top Bulletin Desk Badge">
+          <i class="fas fa-newspaper"></i>
+          <span class="custom-text-slot" id="slotNewsTag"></span>
+        </div>`;
+    } else if (tpl === 'journalism') {
+      topSlot.innerHTML = `
+        <div class="journalism-credit-tag" data-el-key="topBanner" data-el-label="Top Photo Credit Badge">
+          <i class="fas fa-camera-retro"></i>
+          <span class="custom-text-slot" id="slotNewsSpeaker" data-el-key="speakerLabel" data-el-label="Photo Credit / Speaker Label"></span>
+        </div>`;
+    } else if (tpl === 'achievement') {
+      topSlot.innerHTML = `
+        <div class="achievement-ribbon" data-el-key="topBanner" data-el-label="Top Milestone Ribbon">
+          <i class="fas fa-trophy" style="color: #FDE047;"></i>
+          <span class="custom-text-slot">${isUrdu ? 'اہم فلاحی سنگ میل' : 'MILESTONE ACHIEVED'}</span>
+        </div>`;
+    } else if (tpl === 'education') {
+      topSlot.innerHTML = `
+        <div class="education-badge" data-el-key="topBanner" data-el-label="Top Education Awareness Badge">
+          <i class="fas fa-graduation-cap"></i>
+          <span class="custom-text-slot" id="slotNewsTag"></span>
+        </div>`;
+    } else if (tpl === 'presswire') {
+      topSlot.innerHTML = `
+        <div class="presswire-agency-strap" data-el-key="topBanner" data-el-label="Top Agency Wire Strap">
+          <span class="presswire-urgent-pill">${isUrdu ? 'فوری' : 'URGENT'}</span>
+          <span class="custom-text-slot" id="slotNewsTag"></span>
+        </div>`;
+    } else if (tpl === 'spotlight') {
+      topSlot.innerHTML = `
+        <div class="spotlight-top-group" data-el-key="topBanner" data-el-label="Top Video Spotlight Tag">
+          <div class="spotlight-video-tag"><i class="fas fa-video"></i> <span class="custom-text-slot">${isUrdu ? 'ویڈیو اسپاٹ لائٹ' : 'VIDEO SPOTLIGHT'}</span></div>
+          <div class="spotlight-duration-pill"><i class="fas fa-clock"></i> 03:45 MINS</div>
+        </div>`;
+    }
+
+    // 2. Center Slot (Consistent Responsive Grids)
+    if (tpl === 'statement') {
+      centerSlot.innerHTML = `
+        <div class="floating-statement-window" data-el-key="centerCard" data-el-label="Center Floating Statement Box">
+          <div class="statement-author-row">
+            <div class="statement-avatar-circle">
+              <img src="/media/branding/Qasr-e-Shabir_Foundation_Emble_1792086383401_940589.webp" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='/media/branding/logo.svg';" />
+            </div>
+            <div style="flex: 1; min-width: 0; text-align: ${isUrdu ? 'right' : 'left'};">
+              <div class="statement-author-name" id="slotNewsSpeaker" data-el-key="speakerLabel" data-el-label="Statement Author Name"></div>
+              <div class="statement-author-tag" id="slotNewsTag"></div>
+            </div>
+            <i class="fas fa-check-circle statement-verified-icon"></i>
+          </div>
+          <div class="news-body-text statement-body-copy" id="slotNewsBody" data-el-key="bodyText" data-el-label="Statement Body Copy" style="text-align: ${isUrdu ? 'right' : 'left'};"></div>
+        </div>`;
+    } else if (tpl === 'political') {
+      centerSlot.innerHTML = `
+        <div class="political-call-row" data-el-key="centerCard" data-el-label="Center Diplomatic Dialogue Grid">
+          <div class="political-caller-box caller-left">
+            <span id="slotNewsSpeaker" data-el-key="speakerLabel" data-el-label="Caller / Envoy Left"></span>
+          </div>
+          <div class="political-phone-circle">
+            <i class="fas fa-phone-volume"></i>
+          </div>
+          <div class="political-caller-box caller-right">
+            <span id="slotNewsTag"></span>
+          </div>
+        </div>`;
+    } else if (tpl === 'islamic') {
+      centerSlot.innerHTML = `
+        <div class="islamic-mihrab-frame" data-el-key="centerCard" data-el-label="Center Islamic Frame Card">
+          <div class="islamic-bismillah-text">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+          <div class="news-headline news-headline-text islamic-verse-headline" id="slotNewsHeadline" data-el-key="headlineText" data-el-label="Main Verse / Quote Headline"></div>
+          <div class="news-body-text islamic-verse-body" id="slotNewsBody" data-el-key="bodyText" data-el-label="Translation / Body Text"></div>
+          <div class="islamic-verse-ref" id="slotNewsSpeaker" data-el-key="speakerLabel" data-el-label="Verse / Hadith Reference"></div>
+        </div>`;
+    } else if (tpl === 'achievement') {
+      centerSlot.innerHTML = `
+        <div class="achievement-stat-chips" id="slotAchievementStats" data-el-key="centerCard" data-el-label="Center Milestone Stat Grid">
+          <div class="achievement-stat-card">
+            <div class="achievement-stat-num">100,000+</div>
+            <div class="achievement-stat-lbl">${isUrdu ? 'مستفیدین' : 'Beneficiaries'}</div>
+          </div>
+          <div class="achievement-stat-card">
+            <div class="achievement-stat-num">100%</div>
+            <div class="achievement-stat-lbl">${isUrdu ? 'شفافیت' : 'Verified Transparency'}</div>
+          </div>
+          <div class="achievement-stat-card">
+            <div class="achievement-stat-num">25+</div>
+            <div class="achievement-stat-lbl">${isUrdu ? 'اضلاع' : 'Districts Reached'}</div>
+          </div>
+        </div>`;
+    } else if (tpl === 'spotlight') {
+      centerSlot.innerHTML = `
+        <div class="spotlight-play-btn" data-el-key="centerCard" data-el-label="Center Video Play Indicator">
+          <i class="fas fa-play" style="margin-left: ${isUrdu ? '0' : '3px'}; margin-right: ${isUrdu ? '3px' : '0'};"></i>
+        </div>`;
+    } else {
+      centerSlot.innerHTML = '';
+    }
+
+    // 3. Lower Third & Headlines Slot with Consistent Full-Width Cards + Footer
+    if (tpl === 'breaking') {
+      lowerSlot.innerHTML = `
+        <div class="breaking-headline-box" data-el-key="headlineBox" data-el-label="Headline Container Card">
+          <div class="breaking-tag-row">
+            <i class="fas fa-circle-dot"></i>
+            <span id="slotNewsTag"></span>
+          </div>
+          <div class="news-headline news-headline-text" id="slotNewsHeadline" data-el-key="headlineText" data-el-label="Main Headline Text"></div>
+          <div class="news-subheading news-subheading-text" id="slotNewsSubheading" data-el-key="subheadingText" data-el-label="Subheading / Kicker Text" style="color: #FEF08A;"></div>
+        </div>
+        <div class="breaking-detail-card" id="slotDetailCard" data-el-key="detailBox" data-el-label="Detail / Dispatch Box">
+          <div class="detail-pill">${isUrdu ? 'اہم ترین رپورٹ' : 'OFFICIAL DISPATCH'}</div>
+          <div class="news-body-text" id="slotNewsBody" data-el-key="bodyText" data-el-label="Story Body Copy"></div>
+        </div>
+        ${buildBroadcastFooter(isUrdu ? 'بریکنگ ٹکر' : 'LIVE WIRE', '#DC2626')}`;
+    } else if (tpl === 'international') {
+      lowerSlot.innerHTML = `
+        <div class="intl-headline-bar" data-el-key="headlineBox" data-el-label="Headline Container Card">
+          <div class="intl-badge-row">
+            <i class="fas fa-satellite"></i>
+            <span>${isUrdu ? 'عالمی ڈیسک • خصوصی کوریج' : 'GLOBAL DESK • WORLD DISPATCH'}</span>
+          </div>
+          <div class="news-headline news-headline-text" id="slotNewsHeadline" data-el-key="headlineText" data-el-label="Main Headline Text"></div>
+          <div class="news-subheading news-subheading-text" id="slotNewsSubheading" data-el-key="subheadingText" data-el-label="Subheading / Kicker Text"></div>
+          <div class="news-body-text" id="slotNewsBody" data-el-key="bodyText" data-el-label="Story Body Copy"></div>
+        </div>
+        ${buildBroadcastFooter(isUrdu ? 'عالمی وائر' : 'WORLD WIRE', '#38BDF8')}`;
+    } else if (tpl === 'statement') {
+      lowerSlot.innerHTML = `
+        <div class="statement-lower-third" data-el-key="headlineBox" data-el-label="Headline Container Card">
+          <div class="statement-kicker-row">
+            <span class="statement-kicker-label">
+              <i class="fas fa-bolt"></i> ${isUrdu ? 'اہم ترین بریکنگ' : 'OFFICIAL STATEMENT'}
+            </span>
+            <span class="news-subheading news-subheading-text" style="color: #FEF08A;" id="slotNewsSubheading" data-el-key="subheadingText" data-el-label="Subheading / Kicker Text"></span>
+          </div>
+          <div class="news-headline news-headline-text" id="slotNewsHeadline" data-el-key="headlineText" data-el-label="Main Headline Text"></div>
+        </div>
+        ${buildBroadcastFooter(isUrdu ? 'سرکاری اعلامیہ' : 'OFFICIAL WIRE', '#10B981')}`;
+    } else if (tpl === 'latest') {
+      lowerSlot.innerHTML = `
+        <div class="latest-content-card" data-el-key="headlineBox" data-el-label="Headline Container Card">
+          <div class="news-headline news-headline-text" id="slotNewsHeadline" data-el-key="headlineText" data-el-label="Main Headline Text"></div>
+          <div class="news-subheading news-subheading-text" id="slotNewsSubheading" data-el-key="subheadingText" data-el-label="Subheading / Kicker Text" style="color: #FEF08A;"></div>
+          <div class="news-body-text" id="slotNewsBody" data-el-key="bodyText" data-el-label="Story Body Copy" style="color: #F8FAFC;"></div>
+          <div class="card-byline-row">
+            <span id="slotNewsSpeaker" data-el-key="speakerLabel" data-el-label="Reporter / Source Label"><i class="fas fa-user-pen"></i></span>
+            <span id="slotNewsSourceMini">${isUrdu ? 'قصرِ شبیر میڈیا سیل' : 'QESF Media'}</span>
+          </div>
+        </div>
+        ${buildBroadcastFooter(isUrdu ? 'تازہ ترین' : 'LATEST WIRE', '#F59E0B')}`;
+    } else if (tpl === 'political') {
+      lowerSlot.innerHTML = `
+        <div class="political-top-banner" data-el-key="headlineBox" data-el-label="Political Headline Banner">
+          <div class="news-headline news-headline-text" id="slotNewsHeadline" data-el-key="headlineText" data-el-label="Main Headline Text"></div>
+        </div>
+        <div class="political-discussion-box" data-el-key="detailBox" data-el-label="Discussion Details Card">
+          <div class="news-subheading news-subheading-text" style="color: #93C5FD;" id="slotNewsSubheading" data-el-key="subheadingText" data-el-label="Subheading / Kicker Text"></div>
+          <div class="news-body-text" id="slotNewsBody" data-el-key="bodyText" data-el-label="Story Body Copy" style="color: #F8FAFC;"></div>
+        </div>
+        ${buildBroadcastFooter(isUrdu ? 'سفارتی وائر' : 'DIPLOMATIC', '#3B82F6')}`;
+    } else if (tpl === 'humanitarian') {
+      lowerSlot.innerHTML = `
+        <div class="humanitarian-content-box" data-el-key="headlineBox" data-el-label="Headline Container Card">
+          <div class="humanitarian-kicker-row">
+            <i class="fas fa-hands-holding-child"></i>
+            <span class="news-subheading news-subheading-text" id="slotNewsSubheading" data-el-key="subheadingText" data-el-label="Subheading / Kicker Text"></span>
+          </div>
+          <div class="news-headline news-headline-text" id="slotNewsHeadline" data-el-key="headlineText" data-el-label="Main Headline Text"></div>
+          <div class="news-body-text" id="slotNewsBody" data-el-key="bodyText" data-el-label="Story Body Copy" style="color: #FED7AA;"></div>
+          <div class="card-byline-row">
+            <span id="slotNewsSpeaker" data-el-key="speakerLabel" data-el-label="Welfare Team Label"></span>
+          </div>
+        </div>
+        ${buildBroadcastFooter(isUrdu ? 'فلاحی اپیل' : 'HUMANITARIAN', '#D97706')}`;
+    } else if (tpl === 'quote') {
+      lowerSlot.innerHTML = `
+        <div class="quote-lower-container" data-el-key="headlineBox" data-el-label="Quote Headline Card">
+          <div class="quote-speaker-banner" id="slotNewsSpeaker" data-el-key="speakerLabel" data-el-label="Speaker Name Banner"></div>
+          <div class="news-headline news-headline-text quote-main-statement" id="slotNewsHeadline" data-el-key="headlineText" data-el-label="Main Quote Statement"></div>
+          <div class="quote-dynamic-underline"></div>
+          <div class="news-body-text quote-body-box" id="slotNewsBody" data-el-key="bodyText" data-el-label="Supporting Context Copy"></div>
+        </div>
+        ${buildBroadcastFooter(isUrdu ? 'خصوصی بیان' : 'QUOTE WIRE', '#EF4444')}`;
+    } else if (tpl === 'islamic') {
+      lowerSlot.innerHTML = `
+        ${buildBroadcastFooter(isUrdu ? 'فرمانِ الٰہی' : 'SACRED WISDOM', '#D97706')}`;
+    } else if (tpl === 'photo') {
+      lowerSlot.innerHTML = `
+        <div class="photo-news-lower-third" data-el-key="headlineBox" data-el-label="Photo Headline Lower Third">
+          <div class="news-subheading news-subheading-text" style="color: #F59E0B;" id="slotNewsSubheading" data-el-key="subheadingText" data-el-label="Subheading / Kicker Text"></div>
+          <div class="news-headline news-headline-text" id="slotNewsHeadline" data-el-key="headlineText" data-el-label="Main Headline Text"></div>
+          <div class="news-body-text" id="slotNewsBody" data-el-key="bodyText" data-el-label="Story Body Copy" style="color: #F8FAFC;"></div>
+        </div>
+        ${buildBroadcastFooter(isUrdu ? 'تصویری خبر' : 'PHOTO WIRE', '#F59E0B')}`;
+    } else if (tpl === 'special') {
+      lowerSlot.innerHTML = `
+        <div class="special-editorial-card" data-el-key="headlineBox" data-el-label="Editorial Headline Card">
+          <div class="news-subheading news-subheading-text" style="color: #F59E0B;" id="slotNewsSubheading" data-el-key="subheadingText" data-el-label="Subheading / Kicker Text"></div>
+          <div class="news-headline news-headline-text" id="slotNewsHeadline" data-el-key="headlineText" data-el-label="Main Headline Text"></div>
+          <div class="news-body-text" id="slotNewsBody" data-el-key="bodyText" data-el-label="Story Body Copy" style="color: #F1F5F9;"></div>
+          <div class="card-byline-row">
+            <span id="slotNewsSpeaker" data-el-key="speakerLabel" data-el-label="Editorial Desk Label"><i class="fas fa-chart-line" style="color: #F59E0B;"></i></span>
+          </div>
+        </div>
+        ${buildBroadcastFooter(isUrdu ? 'تحقیقی رپورٹ' : 'SPECIAL REPORT', '#D97706')}`;
+    } else if (tpl === 'emergency') {
+      lowerSlot.innerHTML = `
+        <div class="emergency-alert-card" data-el-key="headlineBox" data-el-label="Emergency Headline Card">
+          <div class="breaking-tag-row" style="color: #EF4444;">
+            <i class="fas fa-siren-on"></i>
+            <span id="slotNewsTag"></span>
+          </div>
+          <div class="news-headline news-headline-text" id="slotNewsHeadline" data-el-key="headlineText" data-el-label="Main Headline Text" style="color: #FDE047 !important;"></div>
+          <div class="news-subheading news-subheading-text" id="slotNewsSubheading" data-el-key="subheadingText" data-el-label="Subheading / Kicker Text" style="color: #FFFFFF !important;"></div>
+        </div>
+        <div class="emergency-directive-box" id="slotDetailCard" data-el-key="detailBox" data-el-label="Emergency Directive Box">
+          <div class="detail-pill">${isUrdu ? 'فوری ہدایات و انخلا' : 'IMMEDIATE DIRECTIVE'}</div>
+          <div class="news-body-text" id="slotNewsBody" data-el-key="bodyText" data-el-label="Directive Body Copy" style="color: #0F172A; font-weight: 600;"></div>
+        </div>
+        ${buildBroadcastFooter(isUrdu ? 'ایمرجنسی وائر' : 'EMERGENCY WIRE', '#DC2626')}`;
+    } else if (tpl === 'live') {
+      lowerSlot.innerHTML = `
+        <div class="live-content-box" data-el-key="headlineBox" data-el-label="Live Coverage Headline Card">
+          <div class="live-reporter-strap" data-el-key="speakerLabel" data-el-label="Live Correspondent Label">
+            <i class="fas fa-microphone" style="color: #EF4444;"></i>
+            <span class="custom-text-slot" id="slotNewsSpeaker"></span>
+          </div>
+          <div class="news-headline news-headline-text" id="slotNewsHeadline" data-el-key="headlineText" data-el-label="Main Headline Text"></div>
+          <div class="news-subheading news-subheading-text" id="slotNewsSubheading" data-el-key="subheadingText" data-el-label="Subheading / Kicker Text" style="color: #FEF08A;"></div>
+          <div class="news-body-text" id="slotNewsBody" data-el-key="bodyText" data-el-label="Story Body Copy" style="color: #F8FAFC;"></div>
+        </div>
+        ${buildBroadcastFooter(isUrdu ? 'براہ راست الرٹ' : 'LIVE ON-AIR', '#DC2626')}`;
+    } else if (tpl === 'exclusive') {
+      lowerSlot.innerHTML = `
+        <div class="exclusive-content-card" data-el-key="headlineBox" data-el-label="Exclusive Headline Card">
+          <div class="news-subheading news-subheading-text" style="color: #F59E0B;" id="slotNewsSubheading" data-el-key="subheadingText" data-el-label="Subheading / Kicker Text"></div>
+          <div class="news-headline news-headline-text" id="slotNewsHeadline" data-el-key="headlineText" data-el-label="Main Headline Text" style="color: #FFFFFF !important;"></div>
+          <div class="news-body-text" id="slotNewsBody" data-el-key="bodyText" data-el-label="Story Body Copy" style="color: #F1F5F9;"></div>
+          <div class="card-byline-row">
+            <span><i class="fas fa-fingerprint"></i> <span id="slotNewsSpeaker" data-el-key="speakerLabel" data-el-label="Investigation Source"></span></span>
+          </div>
+        </div>
+        ${buildBroadcastFooter(isUrdu ? 'خصوصی رپورٹ' : 'EXCLUSIVE WIRE', '#F59E0B')}`;
+    } else if (tpl === 'announcement') {
+      lowerSlot.innerHTML = `
+        <div class="announcement-card" data-el-key="headlineBox" data-el-label="Announcement Card">
+          <div class="directive-num-tag"><i class="fas fa-stamp"></i> REF: QESF-NOTIF-2026</div>
+          <div class="news-headline news-headline-text" id="slotNewsHeadline" data-el-key="headlineText" data-el-label="Main Headline Text" style="color: #FDE047 !important;"></div>
+          <div class="news-subheading news-subheading-text" id="slotNewsSubheading" data-el-key="subheadingText" data-el-label="Subheading / Kicker Text" style="color: #93C5FD;"></div>
+          <div class="news-body-text" id="slotNewsBody" data-el-key="bodyText" data-el-label="Announcement Copy" style="color: #FFFFFF;"></div>
+          <div class="card-byline-row" id="slotNewsSpeaker" data-el-key="speakerLabel" data-el-label="Issuing Authority Label"></div>
+        </div>
+        ${buildBroadcastFooter(isUrdu ? 'باضابطہ نوٹس' : 'PUBLIC NOTICE', '#38BDF8')}`;
+    } else if (tpl === 'bulletin') {
+      lowerSlot.innerHTML = `
+        <div class="bulletin-split-card" data-el-key="headlineBox" data-el-label="Bulletin Desk Card">
+          <div class="news-headline news-headline-text" id="slotNewsHeadline" data-el-key="headlineText" data-el-label="Main Headline Text"></div>
+          <div class="news-subheading news-subheading-text" id="slotNewsSubheading" data-el-key="subheadingText" data-el-label="Subheading / Kicker Text" style="color: #93C5FD;"></div>
+          <div class="bulletin-points-row" id="slotBulletinPoints" data-el-key="bodyText" data-el-label="Bulletin Points List">
+            <div class="bulletin-point-item"><span class="bulletin-num-dot">1</span> <span class="point-text"></span></div>
+          </div>
+        </div>
+        ${buildBroadcastFooter(isUrdu ? 'ڈیلی نیوز ڈیسک' : 'DAILY BULLETIN', '#0284C7')}`;
+    } else if (tpl === 'journalism') {
+      lowerSlot.innerHTML = `
+        <div class="journalism-lower-overlay" data-el-key="headlineBox" data-el-label="Journalism Headline Overlay">
+          <div class="news-subheading news-subheading-text" style="color: #F59E0B;" id="slotNewsSubheading" data-el-key="subheadingText" data-el-label="Subheading / Kicker Text"></div>
+          <div class="news-headline news-headline-text" id="slotNewsHeadline" data-el-key="headlineText" data-el-label="Main Headline Text"></div>
+          <div class="news-body-text" id="slotNewsBody" data-el-key="bodyText" data-el-label="Story Body Copy" style="color: #F1F5F9;"></div>
+        </div>
+        ${buildBroadcastFooter(isUrdu ? 'تصویری صحافت' : 'PHOTO ESSAY', '#F59E0B')}`;
+    } else if (tpl === 'achievement') {
+      lowerSlot.innerHTML = `
+        <div class="achievement-lower-card" data-el-key="headlineBox" data-el-label="Milestone Lower Card">
+          <div class="news-headline news-headline-text" id="slotNewsHeadline" data-el-key="headlineText" data-el-label="Main Headline Text" style="color: #FDE047 !important;"></div>
+          <div class="news-subheading news-subheading-text" id="slotNewsSubheading" data-el-key="subheadingText" data-el-label="Subheading / Kicker Text" style="color: #FFFFFF;"></div>
+          <div class="news-body-text" id="slotNewsBody" data-el-key="bodyText" data-el-label="Milestone Summary" style="color: #FED7AA;"></div>
+        </div>
+        ${buildBroadcastFooter(isUrdu ? 'فلاحی اعزاز' : 'MILESTONE', '#D97706')}`;
+    } else if (tpl === 'education') {
+      lowerSlot.innerHTML = `
+        <div class="education-content-card" data-el-key="headlineBox" data-el-label="Education Content Card">
+          <div class="news-subheading news-subheading-text" style="color: #FEF08A;" id="slotNewsSubheading" data-el-key="subheadingText" data-el-label="Subheading / Kicker Text"></div>
+          <div class="news-headline news-headline-text" id="slotNewsHeadline" data-el-key="headlineText" data-el-label="Main Headline Text" style="color: #FFFFFF !important;"></div>
+          <div class="news-body-text" id="slotNewsBody" data-el-key="bodyText" data-el-label="Awareness Copy" style="color: #F0FDF4;"></div>
+          <div class="card-byline-row" id="slotNewsSpeaker" data-el-key="speakerLabel" data-el-label="Program Desk Label"></div>
+        </div>
+        ${buildBroadcastFooter(isUrdu ? 'تعلیمی مہم' : 'AWARENESS', '#10B981')}`;
+    } else if (tpl === 'presswire') {
+      lowerSlot.innerHTML = `
+        <div class="presswire-content-box" data-el-key="headlineBox" data-el-label="Press Wire Headline Box">
+          <div class="news-headline news-headline-text" id="slotNewsHeadline" data-el-key="headlineText" data-el-label="Main Headline Text" style="color: #FFFFFF !important;"></div>
+          <div class="news-subheading news-subheading-text" id="slotNewsSubheading" data-el-key="subheadingText" data-el-label="Subheading / Kicker Text" style="color: #FDE047;"></div>
+          <div class="news-body-text" id="slotNewsBody" data-el-key="bodyText" data-el-label="Dispatch Copy" style="color: #E2E8F0;"></div>
+        </div>
+        ${buildBroadcastFooter(isUrdu ? 'پریس وائر ڈسپیچ' : 'PRESS WIRE', '#EF4444')}`;
+    } else if (tpl === 'spotlight') {
+      lowerSlot.innerHTML = `
+        <div class="spotlight-headline-strap" data-el-key="headlineBox" data-el-label="Spotlight Headline Card">
+          <div class="news-subheading news-subheading-text" style="color: #F59E0B;" id="slotNewsSubheading" data-el-key="subheadingText" data-el-label="Subheading / Kicker Text"></div>
+          <div class="news-headline news-headline-text" id="slotNewsHeadline" data-el-key="headlineText" data-el-label="Main Headline Text"></div>
+          <div class="news-body-text" id="slotNewsBody" data-el-key="bodyText" data-el-label="Spotlight Summary" style="color: #F8FAFC;"></div>
+          <div class="card-byline-row" id="slotNewsSpeaker" data-el-key="speakerLabel" data-el-label="Story Desk Label"></div>
+        </div>
+        ${buildBroadcastFooter(isUrdu ? 'ویڈیو اسپاٹ لائٹ' : 'VIDEO WIRE', '#F59E0B')}`;
+    }
+  }
+
+  function updateNewsGraphicPreview() {
+    const tagVal = document.getElementById('newsInputTag')?.value || '';
+    const headVal = document.getElementById('newsInputHeadline')?.value || '';
+    const subVal = document.getElementById('newsInputSubheading')?.value || '';
+    const spkVal = document.getElementById('newsInputSpeaker')?.value || '';
+    const bodyVal = document.getElementById('newsInputBody')?.value || '';
+    const footVal = document.getElementById('newsInputFooter')?.value || '';
+    const dateVal = document.getElementById('newsInputDateline')?.value || (currentNewsLang === 'ur' ? '20 نومبر 2026 • اسلام آباد' : '20 Nov 2026 • Islamabad');
+    const webVal = document.getElementById('newsInputWebsite')?.value || 'www.qasreshabbir.org';
+
+    const slotTag = document.getElementById('slotNewsTag');
+    const slotHead = document.getElementById('slotNewsHeadline');
+    const slotSub = document.getElementById('slotNewsSubheading');
+    const slotSpk = document.getElementById('slotNewsSpeaker');
+    const slotBody = document.getElementById('slotNewsBody');
+    const slotFoot = document.getElementById('slotNewsFooterText');
+    const slotDate = document.getElementById('slotNewsDateline');
+    const slotWeb = document.getElementById('slotNewsWebsite');
+    const detailCard = document.getElementById('slotDetailCard');
+
+    if (slotTag) slotTag.textContent = tagVal;
+    if (slotHead) slotHead.textContent = headVal;
+    if (slotSub) slotSub.textContent = subVal;
+    if (slotSpk) {
+      if (currentNewsTemplate === 'latest' || currentNewsTemplate === 'special') {
+        slotSpk.innerHTML = `<i class="fas ${currentNewsTemplate === 'latest' ? 'fa-user-pen' : 'fa-chart-line'}"></i> ${spkVal}`;
+      } else {
+        slotSpk.textContent = spkVal;
+      }
+    }
+    if (slotBody) slotBody.textContent = bodyVal;
+    if (slotFoot) slotFoot.textContent = footVal;
+    if (slotDate) slotDate.textContent = dateVal;
+    if (slotWeb) slotWeb.textContent = webVal;
+
+    // Special bullet points parser for bulletin template
+    if (currentNewsTemplate === 'bulletin') {
+      const container = document.getElementById('slotBulletinPoints');
+      if (container && bodyVal) {
+        const parts = bodyVal.split(/•|\n/).map(s => s.trim()).filter(Boolean);
+        if (parts.length > 0) {
+          container.innerHTML = parts.map((p, idx) => `
+            <div class="bulletin-point-item">
+              <span class="bulletin-num-dot">${idx + 1}</span>
+              <span class="point-text">${p}</span>
+            </div>
+          `).join('');
+        }
+      }
+    }
+
+    if (detailCard) {
+      detailCard.style.display = bodyVal.trim().length > 0 ? 'block' : 'none';
+    }
+
+    applyElementCustomizationsToCanvas();
+    syncCanvasResponsiveTypography();
+  }
+
+  function handleNewsPhotoUpload(input) {
+    if (!input || !input.files || !input.files[0]) return;
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = document.getElementById('canvasNewsPhotoImg');
+      if (img) {
+        img.src = e.target.result;
+        showToast('Photo uploaded successfully into news canvas!');
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function openNewsMediaPicker() {
+    if (typeof window.openMediaPicker === 'function') {
+      window.openMediaPicker({
+        folder: 'news',
+        onSelect: (url) => {
+          const img = document.getElementById('canvasNewsPhotoImg');
+          if (img) {
+            img.src = url;
+            showToast('Photograph selected from Media Library!');
+          }
+        }
+      });
+    } else {
+      const url = prompt('Enter image URL or path:');
+      if (url) {
+        const img = document.getElementById('canvasNewsPhotoImg');
+        if (img) img.src = url;
+      }
+    }
+  }
+
+  function updateNewsPhotoTransform() {
+    const zoom = document.getElementById('sliderNewsPhotoZoom')?.value || 100;
+    const darkness = document.getElementById('sliderNewsPhotoDarkness')?.value || 40;
+    const panX = document.getElementById('sliderNewsPhotoPanX')?.value || 0;
+    const panY = document.getElementById('sliderNewsPhotoPanY')?.value || 0;
+
+    const lblZoom = document.getElementById('labelNewsPhotoZoom');
+    const lblDarkness = document.getElementById('labelNewsPhotoDarkness');
+    const lblPanX = document.getElementById('labelNewsPhotoPanX');
+    const lblPanY = document.getElementById('labelNewsPhotoPanY');
+
+    if (lblZoom) lblZoom.textContent = `${zoom}%`;
+    if (lblDarkness) lblDarkness.textContent = `${darkness}%`;
+    if (lblPanX) lblPanX.textContent = `${panX}%`;
+    if (lblPanY) lblPanY.textContent = `${panY}%`;
+
+    const img = document.getElementById('canvasNewsPhotoImg');
+    const overlay = document.getElementById('canvasNewsPhotoOverlay');
+
+    if (img) {
+      img.style.transform = `translate(${panX}%, ${panY}%) scale(${zoom / 100})`;
+    }
+    if (overlay) {
+      overlay.style.opacity = `${darkness / 100}`;
+    }
+  }
+
+  function resetNewsPhotoControls() {
+    const sZoom = document.getElementById('sliderNewsPhotoZoom');
+    const sDark = document.getElementById('sliderNewsPhotoDarkness');
+    const sPanX = document.getElementById('sliderNewsPhotoPanX');
+    const sPanY = document.getElementById('sliderNewsPhotoPanY');
+
+    if (sZoom) sZoom.value = 100;
+    if (sDark) sDark.value = 40;
+    if (sPanX) sPanX.value = 0;
+    if (sPanY) sPanY.value = 0;
+
+    updateNewsPhotoTransform();
+    showToast('Photo positioning reset to defaults.');
+  }
+
+  /* =============================================================
+     HIGH-FIDELITY PNG / JPG EXPORT ENGINE
+     1. Waits for all Urdu/English/Icon fonts & DOM images to decode
+     2. Embeds WOFF2 font faces & images as Base64 data URIs
+     3. Renders vector SVG foreignObject onto exact Target Dimensions
+        Canvas (1920x1080, 1080x1350, 1080x1920, 1080x1080) with
+        pixel-resolved fallback via html2canvas if needed
+     ============================================================= */
+  let _cachedEmbeddedFontCss = null;
+
+  function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  async function ensureAllFontsReady() {
+    if (!document.fonts) return;
+    await document.fonts.ready;
+    const probes = [
+      '700 20px "Noto Nastaliq Urdu"',
+      '400 16px "Noto Nastaliq Urdu"',
+      '700 16px "Noto Naskh Arabic"',
+      '800 20px "Outfit"',
+      '600 16px "Inter"',
+      '900 16px "Font Awesome 6 Free"',
+      '400 16px "Font Awesome 6 Brands"'
+    ];
+    await Promise.allSettled(probes.map(p => document.fonts.load(p)));
+    await document.fonts.ready;
+  }
+
+  async function buildEmbeddedFontCss() {
+    if (_cachedEmbeddedFontCss) return _cachedEmbeddedFontCss;
+
+    const cssParts = [];
+    const woffCache = {};
+    const fetchAsDataUri = async (urlPath) => {
+      if (woffCache[urlPath]) return woffCache[urlPath];
+      const res = await fetch(urlPath, { credentials: 'same-origin' });
+      if (!res.ok) return urlPath;
+      const blob = await res.blob();
+      const b64 = await blobToBase64(blob);
+      woffCache[urlPath] = b64;
+      return b64;
+    };
+
+    try {
+      // 1. Local Google Fonts CSS -> Keep Arabic, Latin, and Latin-Ext subsets + inline WOFF2
+      const fRes = await fetch('/fonts/fonts.css', { credentials: 'same-origin' });
+      if (fRes.ok) {
+        const rawCss = await fRes.text();
+        const blocks = rawCss.split(/(?=@font-face\s*\{)/);
+        const keptBlocks = [];
+        for (const blk of blocks) {
+          if (!blk.includes('@font-face')) continue;
+          const mUrl = blk.match(/url\(([^)]+\.woff2)\)/);
+          // Skip cyrillic/greek/vietnamese comments unless needed to keep SVG lean
+          const lower = blk.toLowerCase();
+          const isRelevant = blk.includes('U+0600-06FF') || blk.includes('U+0000-00FF') || blk.includes('U+0100-02BA') || lower.includes('arabic');
+          if (mUrl && isRelevant) {
+            const dataUri = await fetchAsDataUri(mUrl[1].replace(/['"]/g, '').trim());
+            keptBlocks.push(blk.replace(mUrl[1], dataUri));
+          }
+        }
+        cssParts.push(keptBlocks.join('\n'));
+      }
+
+      // 2. Local FontAwesome CSS -> keep WOFF2 webfonts and drop redundant .ttf fallbacks
+      const faRes = await fetch('/fonts/fa.min.css', { credentials: 'same-origin' });
+      if (faRes.ok) {
+        let faCss = await faRes.text();
+        const faFiles = ['/fonts/fa-solid-900.woff2', '/fonts/fa-brands-400.woff2', '/fonts/fa-regular-400.woff2'];
+        for (const f of faFiles) {
+          const b64 = await fetchAsDataUri(f);
+          faCss = faCss.split(f).join(b64);
+        }
+        faCss = faCss.replace(/,url\(\/fonts\/fa-[^)]+\.ttf\)\s*format\(["']truetype["']\)/g, '');
+        cssParts.push(faCss);
+      }
+    } catch (e) {
+      console.warn('[ExportFonts] Partial font inline warning:', e);
+    }
+
+    _cachedEmbeddedFontCss = cssParts.join('\n');
+    return _cachedEmbeddedFontCss;
+  }
+
+  function collectCanvasStylesheetRules() {
+    const out = [];
+    for (const sheet of Array.from(document.styleSheets)) {
+      if (sheet.href && !sheet.href.startsWith(window.location.origin)) continue;
+      if (sheet.href && (sheet.href.includes('/fonts/fonts.css') || sheet.href.includes('/fonts/fa.min.css'))) continue;
+      let rules;
+      try {
+        rules = sheet.cssRules;
+      } catch (e) {
+        continue;
+      }
+      if (!rules) continue;
+      for (const rule of Array.from(rules)) {
+        if (rule.type === CSSRule.IMPORT_RULE) continue;
+        const txt = rule.cssText || '';
+        if (!txt || txt.includes('el-hover-highlight') || txt.includes('el-active-selected')) continue;
+        if (/url\(\s*['"]?\/media\//i.test(txt)) continue;
+        out.push(txt);
+      }
+    }
+    return out.join('\n');
+  }
+
+  async function waitAndInlineCloneImages(liveEl, cloneEl) {
+    const liveImgs = Array.from(liveEl.querySelectorAll('img'));
+    const cloneImgs = Array.from(cloneEl.querySelectorAll('img'));
+
+    for (let i = 0; i < cloneImgs.length; i++) {
+      const liveImg = liveImgs[i];
+      const cloneImg = cloneImgs[i];
+      if (!liveImg || !cloneImg) continue;
+
+      if (!liveImg.complete) {
+        await new Promise(res => {
+          liveImg.addEventListener('load', res, { once: true });
+          liveImg.addEventListener('error', res, { once: true });
+          setTimeout(res, 2500);
+        });
+      }
+      if (typeof liveImg.decode === 'function') {
+        await liveImg.decode().catch(() => {});
+      }
+
+      const src = liveImg.currentSrc || liveImg.src || cloneImg.getAttribute('src') || '';
+      if (!src || src.startsWith('data:')) continue;
+
+      try {
+        // Draw already-decoded same-origin image synchronously onto temp canvas -> clean PNG/JPEG Data URI
+        const w = liveImg.naturalWidth || 800;
+        const h = liveImg.naturalHeight || 600;
+        const tmp = document.createElement('canvas');
+        tmp.width = w;
+        tmp.height = h;
+        const tCtx = tmp.getContext('2d');
+        tCtx.drawImage(liveImg, 0, 0, w, h);
+        const isPng = src.includes('.png') || src.includes('.svg') || src.includes('.webp');
+        cloneImg.setAttribute('src', tmp.toDataURL(isPng ? 'image/png' : 'image/jpeg', 0.94));
+      } catch (e) {
+        try {
+          const resp = await fetch(src, { credentials: 'same-origin' });
+          if (resp.ok) {
+            const b = await resp.blob();
+            cloneImg.setAttribute('src', await blobToBase64(b));
+          }
+        } catch (err2) {}
+      }
+    }
+  }
+
+  async function renderNewsCanvasToDataUrl(format = 'png') {
+    const canvasEl = document.getElementById('qesfNewsCanvas');
+    if (!canvasEl) throw new Error('Broadcast canvas not found.');
+
+    // Strip any temporary editor highlight outlines before capture
+    canvasEl.querySelectorAll('.el-hover-highlight, .el-active-selected').forEach(el => {
+      el.classList.remove('el-hover-highlight', 'el-active-selected');
+    });
+
+    await ensureAllFontsReady();
+
+    const preset = NEWS_FORMAT_PRESETS[currentNewsRatio];
+    const targetDim = currentNewsDimensions || (preset ? { w: preset.w, h: preset.h } : { w: 1920, h: 1080 });
+    const clientW = Math.max(200, Math.round(canvasEl.offsetWidth || canvasEl.getBoundingClientRect().width || 540));
+    const clientH = Math.max(150, Math.round(canvasEl.offsetHeight || canvasEl.getBoundingClientRect().height || 304));
+
+    const [embeddedFontsCss] = await Promise.all([buildEmbeddedFontCss()]);
+    const appCssRules = collectCanvasStylesheetRules();
+
+    const clone = canvasEl.cloneNode(true);
+    await waitAndInlineCloneImages(canvasEl, clone);
+
+    // Freeze live responsive CSS custom properties & exact pixel frame onto clone
+    const computedRoot = getComputedStyle(document.documentElement);
+    const rootVars = [
+      `--font-ur: ${computedRoot.getPropertyValue('--font-ur') || "'Noto Nastaliq Urdu', Tahoma, sans-serif"}`,
+      `--font-en-title: ${computedRoot.getPropertyValue('--font-en-title') || "'Outfit', sans-serif"}`,
+      `--font-en-body: ${computedRoot.getPropertyValue('--font-en-body') || "'Inter', sans-serif"}`,
+      `--admin-primary: ${computedRoot.getPropertyValue('--admin-primary') || '#B91C1C'}`
+    ].join('; ');
+
+    clone.style.width = `${clientW}px`;
+    clone.style.height = `${clientH}px`;
+    clone.style.maxWidth = 'none';
+    clone.style.aspectRatio = 'auto';
+    clone.style.margin = '0';
+    clone.style.borderRadius = '0';
+    clone.style.border = 'none';
+    clone.style.boxShadow = 'none';
+
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const xhtmlNS = 'http://www.w3.org/1999/xhtml';
+
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('xmlns', svgNS);
+    svg.setAttribute('viewBox', `0 0 ${clientW} ${clientH}`);
+    svg.setAttribute('width', String(targetDim.w));
+    svg.setAttribute('height', String(targetDim.h));
+
+    const styleNode = document.createElementNS(svgNS, 'style');
+    styleNode.textContent = `${embeddedFontsCss}\n${appCssRules}\n.qsf-news-canvas { border-radius: 0 !important; border: none !important; box-shadow: none !important; }`;
+    svg.appendChild(styleNode);
+
+    const foreignObj = document.createElementNS(svgNS, 'foreignObject');
+    foreignObj.setAttribute('x', '0');
+    foreignObj.setAttribute('y', '0');
+    foreignObj.setAttribute('width', String(clientW));
+    foreignObj.setAttribute('height', String(clientH));
+
+    const bodyWrapper = document.createElementNS(xhtmlNS, 'div');
+    bodyWrapper.setAttribute('xmlns', xhtmlNS);
+    bodyWrapper.setAttribute('class', 'admin-body');
+    bodyWrapper.setAttribute('style', `margin: 0; padding: 0; width: ${clientW}px; height: ${clientH}px; overflow: hidden; ${rootVars}`);
+    bodyWrapper.appendChild(clone);
+    foreignObj.appendChild(bodyWrapper);
+    svg.appendChild(foreignObj);
+
+    const isJpg = format === 'jpeg' || format === 'jpg';
+    const mimeType = isJpg ? 'image/jpeg' : 'image/png';
+
+    const serializedSvg = new XMLSerializer().serializeToString(svg);
+    const svgUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(serializedSvg);
+
+    try {
+      const svgImg = await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = (e) => reject(e);
+        img.src = svgUrl;
+      });
+      if (typeof svgImg.decode === 'function') {
+        await svgImg.decode().catch(() => {});
+      }
+
+      const finalCanvas = document.createElement('canvas');
+      finalCanvas.width = targetDim.w;
+      finalCanvas.height = targetDim.h;
+      const ctx = finalCanvas.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      if (isJpg) {
+        ctx.fillStyle = '#0A0A0E';
+        ctx.fillRect(0, 0, targetDim.w, targetDim.h);
+      }
+      ctx.drawImage(svgImg, 0, 0, targetDim.w, targetDim.h);
+
+      const dataUrl = finalCanvas.toDataURL(mimeType, 0.96);
+      return { dataUrl, targetDim, engine: 'svg-foreignObject' };
+    } catch (svgErr) {
+      console.warn('[Export] SVG rasterizer fallback triggered:', svgErr);
+      if (typeof html2canvas !== 'function') throw svgErr;
+
+      // Pixel-resolved fallback via html2canvas (eliminates CSS var/clamp/line-clamp bugs)
+      const scale = Math.max(2, Math.min(4, Math.round((targetDim.w / clientW) * 10) / 10));
+      const renderedCanvas = await html2canvas(canvasEl, {
+        scale,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: isJpg ? '#0A0A0E' : null,
+        logging: false,
+        onclone: (doc) => {
+          const cl = doc.getElementById('qesfNewsCanvas');
+          if (!cl) return;
+          const liveAll = [canvasEl, ...canvasEl.querySelectorAll('*')];
+          const cloneAll = [cl, ...cl.querySelectorAll('*')];
+          for (let j = 0; j < cloneAll.length; j++) {
+            const le = liveAll[j];
+            const ce = cloneAll[j];
+            if (!le || !ce || !ce.style) continue;
+            const cs = window.getComputedStyle(le);
+            ce.style.fontSize = cs.fontSize;
+            ce.style.lineHeight = cs.lineHeight;
+            ce.style.fontFamily = cs.fontFamily;
+            ce.style.padding = cs.padding;
+            ce.style.gap = cs.gap;
+          }
+        }
+      });
+
+      const fallbackCanvas = document.createElement('canvas');
+      fallbackCanvas.width = targetDim.w;
+      fallbackCanvas.height = targetDim.h;
+      const fCtx = fallbackCanvas.getContext('2d');
+      if (isJpg) {
+        fCtx.fillStyle = '#0A0A0E';
+        fCtx.fillRect(0, 0, targetDim.w, targetDim.h);
+      }
+      fCtx.imageSmoothingEnabled = true;
+      fCtx.imageSmoothingQuality = 'high';
+      fCtx.drawImage(renderedCanvas, 0, 0, targetDim.w, targetDim.h);
+      return { dataUrl: fallbackCanvas.toDataURL(mimeType, 0.95), targetDim, engine: 'html2canvas-resolved' };
+    }
+  }
+
+  async function downloadNewsGraphic(format = 'png') {
+    const canvasEl = document.getElementById('qesfNewsCanvas');
+    if (!canvasEl) return;
+
+    const btnPng = document.getElementById('btnDownloadNewsPng');
+    const origHtml = btnPng ? btnPng.innerHTML : '';
+    if (btnPng) {
+      btnPng.disabled = true;
+      btnPng.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting 300 DPI...';
+    }
+
+    try {
+      const result = await renderNewsCanvasToDataUrl(format);
+      const isJpg = format === 'jpeg' || format === 'jpg';
+      const extension = isJpg ? 'jpg' : 'png';
+
+      const headInput = document.getElementById('newsInputHeadline');
+      const safeTitle = (headInput?.value || 'Graphic').substring(0, 25).replace(/[^a-zA-Z0-9_\u0600-\u06FF]/g, '_');
+      const filename = `QESF_${currentNewsTemplate.toUpperCase()}_${currentNewsRatio.toUpperCase()}_${currentNewsLang.toUpperCase()}_${safeTitle}_${Date.now()}.${extension}`;
+
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = result.dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showToast(`Exported ${result.targetDim.w}×${result.targetDim.h} px high-resolution ${extension.toUpperCase()}!`);
+    } catch (err) {
+      console.error('[downloadNewsGraphic]', err);
+      alert('Error generating news graphic image. Please try again.');
+    } finally {
+      if (btnPng) {
+        btnPng.disabled = false;
+        btnPng.innerHTML = origHtml;
+      }
+    }
+  }
+
+  function resetNewsStudio() {
+    setNewsLang('ur');
+    setNewsRatio('landscape');
+    setNewsHeadlineColor('white');
+    setNewsHeadlineSize('lg');
+    resetNewsPhotoControls();
+    selectNewsTemplate('breaking');
+    showToast('News Studio reset to default Breaking News template in landscape format.');
+  }
+
+  function scrollToNewsStudio() {
+    const card = document.getElementById('newsGraphicsStudioCard') || document.getElementById('socialPostDesignerCard');
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const headInp = document.getElementById('newsInputHeadline');
+      if (headInp) setTimeout(() => headInp.focus(), 350);
+    }
+  }
+
+  function loadSocialMediaOverview() {
+    const channelMetric = document.getElementById('metricConnectedChannels');
+    if (channelMetric) channelMetric.textContent = '6';
+    const draftsMetric = document.getElementById('metricSocialDrafts');
+    if (draftsMetric) draftsMetric.textContent = '0';
+    initNewsStudio();
+  }
+
+  let activeSocialStudioMode = 'image';
+  let inStudioFullscreen = false;
+  let preStudioSidebarCollapsed = false;
+
+  function ensureVideoStudioLoaded() {
+    if (window.QSFVideoStudio) return Promise.resolve(window.QSFVideoStudio);
+    if (window.__vsLoadingPromise) return window.__vsLoadingPromise;
+    window.__vsLoadingPromise = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = '/js/video-studio.js?v=4.0.0';
+      s.onload = () => {
+        if (window.QSFVideoStudio) resolve(window.QSFVideoStudio);
+        else reject(new Error('QSFVideoStudio did not register'));
+      };
+      s.onerror = () => reject(new Error('Failed to load video-studio.js'));
+      document.body.appendChild(s);
+    });
+    return window.__vsLoadingPromise;
+  }
+
+  function enterSocialStudio(mode) {
+    if (!inStudioFullscreen) {
+      preStudioSidebarCollapsed = userSidebarCollapsed;
+      inStudioFullscreen = true;
+    }
+    document.body.classList.add('qsf-studio-fullscreen');
+    applySidebarCollapsed(true, false);
+
+    const hub = document.getElementById('socialStudioHubView');
+    const modeBar = document.getElementById('socialStudioModeBar');
+    if (hub) hub.classList.add('hidden');
+    if (modeBar) modeBar.classList.remove('hidden');
+
+    switchSocialStudioMode(mode);
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 180);
+  }
+
+  function exitSocialStudio(showHub = true) {
+    if (window.QSFVideoStudio && window.QSFVideoStudio.pausePlayback) {
+      window.QSFVideoStudio.pausePlayback();
+    }
+    inStudioFullscreen = false;
+    document.body.classList.remove('qsf-studio-fullscreen');
+    applySidebarCollapsed(preStudioSidebarCollapsed, false);
+
+    const hub = document.getElementById('socialStudioHubView');
+    const modeBar = document.getElementById('socialStudioModeBar');
+    const imgCard = document.getElementById('newsGraphicsStudioCard');
+    const vidCard = document.getElementById('videoStudioWorkspaceCard');
+
+    if (modeBar) modeBar.classList.add('hidden');
+    if (imgCard) imgCard.classList.add('hidden');
+    if (vidCard) vidCard.classList.add('hidden');
+    if (showHub && hub) hub.classList.remove('hidden');
+
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 220);
+  }
+
+  function switchSocialStudioMode(mode) {
+    if (!inStudioFullscreen) {
+      return enterSocialStudio(mode);
+    }
+    activeSocialStudioMode = mode === 'video' ? 'video' : 'image';
+    const imgCard = document.getElementById('newsGraphicsStudioCard');
+    const vidCard = document.getElementById('videoStudioWorkspaceCard');
+    const btnImg = document.getElementById('btnModeImageStudio');
+    const btnVid = document.getElementById('btnModeVideoStudio');
+
+    if (btnImg) {
+      btnImg.classList.toggle('active', activeSocialStudioMode === 'image');
+      btnImg.setAttribute('aria-selected', String(activeSocialStudioMode === 'image'));
+    }
+    if (btnVid) {
+      btnVid.classList.toggle('active', activeSocialStudioMode === 'video');
+      btnVid.setAttribute('aria-selected', String(activeSocialStudioMode === 'video'));
+    }
+
+    if (activeSocialStudioMode === 'video') {
+      if (imgCard) imgCard.classList.add('hidden');
+      if (vidCard) vidCard.classList.remove('hidden');
+
+      ensureVideoStudioLoaded()
+        .then(vs => vs.init())
+        .catch(err => showToast(err.message || 'Could not load Video Studio.', 'error'));
+    } else {
+      if (vidCard) vidCard.classList.add('hidden');
+      if (imgCard) imgCard.classList.remove('hidden');
+      if (window.QSFVideoStudio && window.QSFVideoStudio.pausePlayback) {
+        window.QSFVideoStudio.pausePlayback();
+      }
+      if (typeof syncCanvasResponsiveTypography === 'function') {
+        setTimeout(() => syncCanvasResponsiveTypography(), 100);
+      }
+    }
+  }
+
+  // Aliases for backwards compatibility
+  const scrollToSocialDesigner = scrollToNewsStudio;
+  const downloadSocialPost = downloadNewsGraphic;
+  const initSocialPostDesigner = initNewsStudio;
+
   window.loadAnnouncements = loadAnnouncements;
   window.loadMenus = loadMenus;
   window.loadHeroSlides = loadHeroSlides;
   window.loadPages = loadPages;
+  window.showToast = showToast;
+  window.loadSocialMediaOverview = loadSocialMediaOverview;
+  window.enterSocialStudio = enterSocialStudio;
+  window.exitSocialStudio = exitSocialStudio;
+  window.switchSocialStudioMode = switchSocialStudioMode;
+  window.toggleAdminSidebarCollapsed = () => applySidebarCollapsed(!isSidebarCollapsed(), true);
+  window.initNewsStudio = initNewsStudio;
+  window.selectNewsTemplate = selectNewsTemplate;
+  window.setNewsRatio = setNewsRatio;
+  window.applyCustomNewsDimensions = applyCustomNewsDimensions;
+  window.openOutputSettingsModal = openOutputSettingsModal;
+  window.closeOutputSettingsModal = closeOutputSettingsModal;
+  window.toggleOutputSettingsModal = toggleOutputSettingsModal;
+  window.handleOutputModalBackdropClick = handleOutputModalBackdropClick;
+  window.openBrandingSettingsModal = openBrandingSettingsModal;
+  window.closeBrandingSettingsModal = closeBrandingSettingsModal;
+  window.handleBrandingModalBackdropClick = handleBrandingModalBackdropClick;
+  window.selectBrandingPreset = selectBrandingPreset;
+  window.selectBrandingColorTheme = selectBrandingColorTheme;
+  window.previewBrandingFromModal = previewBrandingFromModal;
+  window.saveBrandingConfiguration = saveBrandingConfiguration;
+  window.resetBrandingConfiguration = resetBrandingConfiguration;
+  window.quickToggleBrandingVisibility = quickToggleBrandingVisibility;
+  window.applyBrandingToCanvas = applyBrandingToCanvas;
+  window.openElementCustomizerModal = openElementCustomizerModal;
+  window.closeElementCustomizerModal = closeElementCustomizerModal;
+  window.handleElementModalBackdropClick = handleElementModalBackdropClick;
+  window.switchElementCustomizerTarget = switchElementCustomizerTarget;
+  window.previewElementCustomizerDraft = previewElementCustomizerDraft;
+  window.saveElementCustomizerConfig = saveElementCustomizerConfig;
+  window.resetElementCustomizerTarget = resetElementCustomizerTarget;
+  window.resetAllElementCustomizations = resetAllElementCustomizations;
+  window.applyElementCustomizationsToCanvas = applyElementCustomizationsToCanvas;
+  window.syncCanvasResponsiveTypography = syncCanvasResponsiveTypography;
+  window.setNewsLang = setNewsLang;
+  window.setNewsHeadlineColor = setNewsHeadlineColor;
+  window.setNewsHeadlineSize = setNewsHeadlineSize;
+  window.renderNewsCanvasSlots = renderNewsCanvasSlots;
+  window.updateNewsGraphicPreview = updateNewsGraphicPreview;
+  window.handleNewsPhotoUpload = handleNewsPhotoUpload;
+  window.openNewsMediaPicker = openNewsMediaPicker;
+  window.resetNewsPhotoControls = resetNewsPhotoControls;
+  window.updateNewsPhotoTransform = updateNewsPhotoTransform;
+  window.renderNewsCanvasToDataUrl = renderNewsCanvasToDataUrl;
+  window.downloadNewsGraphic = downloadNewsGraphic;
+  window.resetNewsStudio = resetNewsStudio;
+  window.scrollToNewsStudio = scrollToNewsStudio;
+  window.scrollToSocialDesigner = scrollToSocialDesigner;
+  window.downloadSocialPost = downloadSocialPost;
+  window.initSocialPostDesigner = initSocialPostDesigner;
 });
+
+
 
 
