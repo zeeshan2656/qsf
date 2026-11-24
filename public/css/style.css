@@ -540,22 +540,26 @@ body.urdu .nav-dropdown-link:focus,
   align-items: center;
   gap: 10px;
   text-decoration: none;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .mobile-brand-logo {
   width: 48px;
   height: 48px;
   object-fit: contain;
+  flex-shrink: 0;
 }
 
 .mobile-brand-title {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .mobile-title-main {
   font-family: var(--font-en-title);
-  font-size: 1.05rem;
+  font-size: clamp(0.9rem, 3.6vw, 1.05rem);
   font-weight: 800;
   color: #7F1D1D;
   line-height: 1.2;
@@ -571,7 +575,58 @@ body.urdu .nav-dropdown-link:focus,
 .mobile-header-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.mobile-header-actions .lang-toggle,
+.mobile-lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 2px;
+  background: #FFF1F2;
+  border: 1px solid #FECDD3;
+  border-radius: 9999px;
+  padding: 3px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.mobile-header-actions .lang-toggle .lang-btn,
+.mobile-lang-toggle .lang-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 9px;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  color: #7F1D1D;
+  font-family: var(--font-en-title);
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.mobile-header-actions .lang-toggle .lang-btn[data-lang="ur"],
+.mobile-lang-toggle .lang-btn[data-lang="ur"] {
+  font-family: var(--font-ur);
+  font-size: 0.78rem;
+  line-height: 1.4;
+  padding: 0 10px 2px;
+}
+
+.mobile-header-actions .lang-toggle .lang-btn.active,
+.mobile-lang-toggle .lang-btn.active {
+  background: #B91C1C;
+  color: #FFFFFF;
+  box-shadow: 0 1px 4px rgba(185, 28, 28, 0.25);
 }
 
 .mobile-hamburger-btn {
@@ -587,6 +642,7 @@ body.urdu .nav-dropdown-link:focus,
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .mobile-nav-drawer {
@@ -637,16 +693,18 @@ body.urdu .mobile-nav-drawer.open {
 
 /* Breakpoint for Mobile Header Switch */
 @media (max-width: 900px) {
+  .announcement-bar,
   .header-dual-menu-wrap,
   .desktop-header-wrap,
   .nav-left-emblem-wrap {
     display: none !important;
-  }
-  .announcement-container,
-  body.urdu .announcement-container,
-  [dir="rtl"] .announcement-container {
-    padding-left: clamp(12px, 3vw, 24px) !important;
-    padding-right: clamp(12px, 3vw, 24px) !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    overflow: hidden !important;
   }
   .mobile-site-header {
     display: flex !important;
@@ -2332,22 +2390,26 @@ textarea.form-control {
   align-items: center;
   gap: 10px;
   text-decoration: none;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .mobile-brand-logo {
   width: 48px;
   height: 48px;
   object-fit: contain;
+  flex-shrink: 0;
 }
 
 .mobile-brand-title {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .mobile-title-main {
   font-family: var(--font-en-title);
-  font-size: 1.05rem;
+  font-size: clamp(0.9rem, 3.6vw, 1.05rem);
   font-weight: 800;
   color: #7F1D1D;
   line-height: 1.2;
@@ -2363,7 +2425,58 @@ textarea.form-control {
 .mobile-header-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.mobile-header-actions .lang-toggle,
+.mobile-lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 2px;
+  background: #FFF1F2;
+  border: 1px solid #FECDD3;
+  border-radius: 9999px;
+  padding: 3px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.mobile-header-actions .lang-toggle .lang-btn,
+.mobile-lang-toggle .lang-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 9px;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  color: #7F1D1D;
+  font-family: var(--font-en-title);
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.mobile-header-actions .lang-toggle .lang-btn[data-lang="ur"],
+.mobile-lang-toggle .lang-btn[data-lang="ur"] {
+  font-family: var(--font-ur);
+  font-size: 0.78rem;
+  line-height: 1.4;
+  padding: 0 10px 2px;
+}
+
+.mobile-header-actions .lang-toggle .lang-btn.active,
+.mobile-lang-toggle .lang-btn.active {
+  background: #B91C1C;
+  color: #FFFFFF;
+  box-shadow: 0 1px 4px rgba(185, 28, 28, 0.25);
 }
 
 .mobile-hamburger-btn {
@@ -2379,6 +2492,7 @@ textarea.form-control {
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 /* Mobile Slide-Out Drawer Navigation */
@@ -2553,11 +2667,60 @@ body.urdu .mobile-panel-link {
 
 /* Media Queries for Responsive Switching */
 @media (max-width: 900px) {
-  .header-dual-menu-wrap {
+  .announcement-bar,
+  .header-dual-menu-wrap,
+  .desktop-header-wrap,
+  .nav-left-emblem-wrap {
     display: none !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    overflow: hidden !important;
   }
   .mobile-site-header {
     display: flex !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .mobile-site-header {
+    padding: 0 12px;
+    height: 66px;
+  }
+  .mobile-brand-wrap {
+    gap: 8px;
+  }
+  .mobile-brand-logo {
+    width: 40px;
+    height: 40px;
+  }
+  .mobile-title-main {
+    font-size: 0.9rem;
+  }
+  .mobile-title-sub {
+    font-size: 0.6rem;
+  }
+  .mobile-header-actions {
+    gap: 6px;
+  }
+  .mobile-header-actions .lang-toggle,
+  .mobile-lang-toggle {
+    height: 34px;
+    padding: 2px;
+  }
+  .mobile-header-actions .lang-toggle .lang-btn,
+  .mobile-lang-toggle .lang-btn {
+    height: 28px;
+    padding: 0 7px;
+    font-size: 0.7rem;
+  }
+  .mobile-hamburger-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 1.15rem;
   }
 }
 

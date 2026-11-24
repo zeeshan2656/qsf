@@ -58,6 +58,17 @@
     .btn-nav-donate{background:#fff;color:#b91c1c!important;font-family:"Outfit",sans-serif;font-weight:800;font-size:.9rem;padding:7px 18px;border-radius:20px;display:inline-flex;align-items:center;gap:7px;text-decoration:none!important;box-shadow:0 2px 8px rgba(0,0,0,.2);transition:all .2s ease;white-space:nowrap}
     .btn-nav-donate:hover{background:#fff1f2;transform:translateY(-1px)}
     .mobile-site-header{display:none!important;align-items:center;justify-content:space-between;height:72px;padding:0 16px;background:#fff;border-bottom:1px solid #eef2f6;width:100%}
+    .mobile-brand-wrap{display:flex;align-items:center;gap:10px;text-decoration:none;min-width:0;flex:1 1 auto}
+    .mobile-brand-logo{width:48px;height:48px;object-fit:contain;flex-shrink:0}
+    .mobile-brand-title{display:flex;flex-direction:column;min-width:0}
+    .mobile-title-main{font-family:"Outfit",sans-serif;font-size:clamp(.9rem,3.6vw,1.05rem);font-weight:800;color:#7f1d1d;line-height:1.2}
+    .mobile-title-sub{font-size:.68rem;font-weight:600;color:#64748b;letter-spacing:.04em}
+    .mobile-header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+    .mobile-header-actions .lang-toggle,.mobile-lang-toggle{display:inline-flex;align-items:center;flex-direction:row;flex-wrap:nowrap;gap:2px;background:#fff1f2;border:1px solid #FECDD3;border-radius:9999px;padding:3px;height:36px;flex-shrink:0}
+    .mobile-header-actions .lang-toggle .lang-btn,.mobile-lang-toggle .lang-btn{display:inline-flex;align-items:center;justify-content:center;height:28px;padding:0 9px;border-radius:9999px;border:none;background:transparent;color:#7f1d1d;font-family:"Outfit",sans-serif;font-size:.74rem;font-weight:700;line-height:1;white-space:nowrap;cursor:pointer;transition:all .2s ease}
+    .mobile-header-actions .lang-toggle .lang-btn[data-lang="ur"],.mobile-lang-toggle .lang-btn[data-lang="ur"]{font-family:"Noto Nastaliq Urdu",Tahoma,sans-serif;font-size:.78rem;line-height:1.4;padding:0 10px 2px}
+    .mobile-header-actions .lang-toggle .lang-btn.active,.mobile-lang-toggle .lang-btn.active{background:#b91c1c;color:#fff;box-shadow:0 1px 4px rgba(185,28,28,.25)}
+    .mobile-hamburger-btn{width:42px;height:42px;border-radius:8px;background:#fff1f2;border:1px solid #FECDD3;color:#b91c1c;font-size:1.25rem;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s ease;flex-shrink:0}
     .mobile-nav-drawer{position:fixed;top:0;right:-320px;width:300px;max-width:85vw;height:100vh;background:#fff;z-index:10000;display:flex;flex-direction:column;transition:right .3s ease;overflow-y:auto}
     body.urdu .mobile-nav-drawer{right:auto;left:-320px;transition:left .3s ease}
     .mobile-nav-drawer.open{right:0}
@@ -65,13 +76,12 @@
     .mobile-drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;opacity:0;visibility:hidden;transition:all .3s ease}
     .mobile-drawer-backdrop.active{opacity:1;visibility:visible}
     @media(max-width:900px){
-      .desktop-header-wrap,.nav-left-emblem-wrap,.header-dual-menu-wrap{display:none!important}
-      .announcement-container,body.urdu .announcement-container,[dir="rtl"] .announcement-container{padding-left:clamp(12px,3vw,24px)!important;padding-right:clamp(12px,3vw,24px)!important}
+      .announcement-bar,.desktop-header-wrap,.nav-left-emblem-wrap,.header-dual-menu-wrap{display:none!important;height:0!important;min-height:0!important;max-height:0!important;margin:0!important;padding:0!important;border:none!important;overflow:hidden!important}
       .mobile-site-header{display:flex!important}
     }
   </style>
-  <link rel="stylesheet" href="/css/style.css?v=20261018_v1">
-  <link rel="stylesheet" href="/css/rtl.css?v=20261018_v1">
+  <link rel="stylesheet" href="/css/style.css?v=20261125_v1">
+  <link rel="stylesheet" href="/css/rtl.css?v=20261125_v1">
 </head>
 <body>
 
@@ -176,7 +186,7 @@
       </div>
     </a>
     <div class="mobile-header-actions">
-      <div class="lang-toggle" title="Switch Language / زبان تبدیل کریں">
+      <div class="lang-toggle mobile-lang-toggle" title="Switch Language / زبان تبدیل کریں" role="group" aria-label="Language switcher">
         <button type="button" class="lang-btn active" data-lang="en">EN</button>
         <button type="button" class="lang-btn" data-lang="ur">اردو</button>
       </div>
