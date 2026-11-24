@@ -15,6 +15,15 @@ const adminRoutes = require('./routes/admin');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+function getValidEnvMediaDir() {
+  const raw = process.env.MEDIA_DIR;
+  if (!raw) return null;
+  if (process.platform !== 'win32' && /^[A-Za-z]:[\\/]/.test(raw.trim())) {
+    return null;
+  }
+  return path.resolve(raw);
+}
+
 // Resolve External Media Directory (located outside project root)
 function getMediaCandidates() {
   return [
@@ -23,7 +32,7 @@ function getMediaCandidates() {
     path.resolve(process.cwd(), '../../../qasreshabbir_media'),
     path.resolve(process.cwd(), '../../qasreshabbir_media'),
     '/home/u434697879/domains/freehub.live/qasreshabbir_media',
-    process.env.MEDIA_DIR ? path.resolve(process.env.MEDIA_DIR) : null,
+    getValidEnvMediaDir(),
     '/home/u434697879/qasreshabbir_media',
     path.resolve(__dirname, '../../qasreshabbir_media'),
     path.resolve(__dirname, '../qasreshabbir_media'),
@@ -58,7 +67,7 @@ function resolveMediaDir() {
     if (fs.existsSync(c)) return c;
   }
 
-  return process.env.MEDIA_DIR ? path.resolve(process.env.MEDIA_DIR) : path.resolve(__dirname, '../qasreshabbir_media');
+  return getValidEnvMediaDir() || path.resolve(__dirname, '../qasreshabbir_media');
 }
 
 const mediaDir = resolveMediaDir();
@@ -167,7 +176,7 @@ app.use(
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: 'auto',
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     }

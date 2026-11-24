@@ -132,12 +132,24 @@ router.post('/login', loginLimiter, async (req, res) => {
     });
   } catch (err) {
     console.error('[Auth Error]', err);
-    const isDbError = ['ER_BAD_DB_ERROR', 'ECONNREFUSED', 'PROTOCOL_CONNECTION_LOST', 'ETIMEDOUT'].includes(err.code);
+    const { code, isMissingTable, isDbError } = typeof db.classifyDbError === 'function'
+      ? db.classifyDbError(err)
+      : {
+          code: err && err.code ? String(err.code) : '',
+          isMissingTable: err && err.code === 'ER_NO_SUCH_TABLE',
+          isDbError: ['ER_BAD_DB_ERROR', 'ER_ACCESS_DENIED_ERROR', 'ER_DBACCESS_DENIED_ERROR', 'ECONNREFUSED', 'PROTOCOL_CONNECTION_LOST', 'ETIMEDOUT', 'ENOTFOUND'].includes(err && err.code)
+        };
+
+    let message = 'Server error during authentication.';
+    if (isMissingTable) {
+      message = 'Database tables are missing on the server. Import the SQL database or run database initialization.';
+    } else if (isDbError) {
+      message = `Database connection failed (${code}). Please verify DB_HOST, DB_USER, DB_PASS/DB_PASSWORD, and DB_NAME in server environment variables.`;
+    }
+
     return res.status(500).json({
       success: false,
-      message: isDbError
-        ? 'Database service is unavailable. Please ensure MySQL is running and the qasreshabbir database is connected.'
-        : 'Server error during authentication.'
+      message
     });
   }
 });

@@ -234,6 +234,35 @@ router.get('/media-status', (req, res) => {
   });
 });
 
+// GET /api/public/db-status (Non-secret database & schema readiness diagnostic)
+router.get('/db-status', async (req, res) => {
+  const envKeys = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASS', 'DB_PASSWORD', 'DB_NAME', 'DATABASE_URL', 'NODE_ENV', 'MEDIA_DIR'];
+  const configuredEnvKeys = envKeys.filter(k => Boolean(process.env[k] && String(process.env[k]).trim()));
+
+  try {
+    await db.query('SELECT 1 AS ok');
+    const [tablesRows] = await db.query('SHOW TABLES');
+    const tableNames = new Set(tablesRows.map(r => Object.values(r)[0]));
+    return res.json({
+      connected: true,
+      tablesCount: tableNames.size,
+      hasUsersTable: tableNames.has('users'),
+      hasMartyrsTable: tableNames.has('martyrs'),
+      hasMartyrWarsTable: tableNames.has('martyr_wars'),
+      hasSiteSettingsTable: tableNames.has('site_settings'),
+      hasAnnouncementsTable: tableNames.has('announcements'),
+      configuredEnvKeys
+    });
+  } catch (err) {
+    return res.status(500).json({
+      connected: false,
+      errorCode: (err && err.code) || 'UNKNOWN',
+      errno: err && err.errno !== undefined ? err.errno : null,
+      configuredEnvKeys
+    });
+  }
+});
+
 // GET /api/public/sync-media (Auto-extracts zip and syncs media on Hostinger)
 router.get('/sync-media', (req, res) => {
   const { execSync } = require('child_process');
