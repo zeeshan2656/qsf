@@ -75,6 +75,15 @@
     };
   }
 
+  const MEMORIAL_COVER_TEMPLATES = [
+    { id: 'splatter_mountain', name: 'Crimson Splatter & Parachinar Ridge', ur: 'سرخ رنگ و کوہِ سفید', swatch: 'linear-gradient(90deg, #F3EFE8 0%, #B91C1C 65%, #7F1D1D 100%)' },
+    { id: 'halo_dove', name: 'Crimson Halo & Peace Dove', ur: 'سرخ ہالہ اور سفید کبوتر', swatch: 'linear-gradient(90deg, #170306 0%, #DC2626 55%, #FBBF24 100%)' },
+    { id: 'islamic_arch', name: 'Islamic Arch & Golden Lanterns', ur: 'اسلامی محراب اور قندیلیں', swatch: 'linear-gradient(90deg, #140204 0%, #881337 55%, #F59E0B 100%)' },
+    { id: 'fallen_memorial', name: 'Twilight Tribute & Candlelight', ur: 'شفقِ شہادت اور شمع', swatch: 'linear-gradient(90deg, #450A0A 0%, #B91C1C 60%, #FDE047 100%)' },
+    { id: 'maroon_ribbon', name: 'Royal Maroon & Memorial Ribbon', ur: 'شاہی عنابی اور ربن', swatch: 'linear-gradient(90deg, #3B070E 0%, #6B0F1A 65%, #FBBF24 100%)' },
+    { id: 'arabesque_plate', name: 'Ornate Arabesque & Gold Plate', ur: 'اسلامی نقوش اور سنہری تختی', swatch: 'linear-gradient(90deg, #450A0A 0%, #7F1D1D 60%, #F59E0B 100%)' }
+  ];
+
   function createEmptyFormState(presetWarId = null) {
     return {
       editId: null,
@@ -82,6 +91,11 @@
       primaryWarId: presetWarId ? Number(presetWarId) : null,
       additionalWarIds: [],
       profilePhotoUrl: '',
+      cutout_photo_url: '',
+      cover_template: 'splatter_mountain',
+      cover_portrait_pos: 'center',
+      memorial_cover_url: '',
+      memorial_cover_url_ur: '',
       full_name: '',
       full_name_ur: '',
       father_name: '',
@@ -189,13 +203,34 @@
 
   function computeAge(dob, dom) {
     if (!dob || !dom) return '';
-    const b = new Date(dob + 'T00:00:00Z');
-    const d = new Date(dom + 'T00:00:00Z');
+    const b = new Date(String(dob).slice(0, 10) + 'T00:00:00Z');
+    const d = new Date(String(dom).slice(0, 10) + 'T00:00:00Z');
     if (Number.isNaN(b.getTime()) || Number.isNaN(d.getTime()) || d < b) return '';
     let age = d.getUTCFullYear() - b.getUTCFullYear();
     const md = d.getUTCMonth() - b.getUTCMonth();
     if (md < 0 || (md === 0 && d.getUTCDate() < b.getUTCDate())) age--;
     return age >= 0 && age <= 140 ? String(age) : '';
+  }
+
+  function computeAgeBreakdown(dob, dom) {
+    if (!dob || !dom) return '';
+    const b = new Date(String(dob).slice(0, 10) + 'T00:00:00Z');
+    const d = new Date(String(dom).slice(0, 10) + 'T00:00:00Z');
+    if (Number.isNaN(b.getTime()) || Number.isNaN(d.getTime()) || d < b) return '';
+    let years = d.getUTCFullYear() - b.getUTCFullYear();
+    let months = d.getUTCMonth() - b.getUTCMonth();
+    let days = d.getUTCDate() - b.getUTCDate();
+    if (days < 0) {
+      const prevDays = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 0)).getUTCDate();
+      days += prevDays;
+      months--;
+    }
+    if (months < 0) {
+      months += 12;
+      years--;
+    }
+    if (years < 0 || years > 140) return '';
+    return `${years} yr${years === 1 ? '' : 's'}, ${months} mo${months === 1 ? '' : 's'}, ${days} d`;
   }
 
   function notify(msg, type = 'success') {
@@ -1949,6 +1984,34 @@
           </div>
         ` : ''}
 
+        ${(m.memorial_cover_url_ur || m.memorial_cover_url) ? `
+          <div class="admin-cover-studio" style="margin-top: 0; margin-bottom: 18px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+              <strong style="font-size: 0.88rem; color: #0F172A;">
+                <i class="fas fa-award" style="color: #881337; margin-right: 6px;"></i>
+                Generated Digital Memorial Cover Banners (Template: <code>${esc(m.cover_template || 'splatter_mountain')}</code>)
+              </strong>
+              <button type="button" class="btn-admin btn-admin-secondary" style="padding: 4px 10px; font-size: 0.76rem;" onclick="window.QSFMartyrs.regenerateCoverForMartyr(${m.id})">
+                <i class="fas fa-wand-magic-sparkles"></i> Regenerate Cover
+              </button>
+            </div>
+            <div class="admin-cover-preview-grid" style="margin-top: 0;">
+              ${m.memorial_cover_url ? `
+                <div class="admin-cover-preview-card">
+                  <header><span>English Memorial Banner (LTR)</span><a href="${esc(m.memorial_cover_url)}" target="_blank" style="color:#881337;">Open</a></header>
+                  <img src="${esc(m.memorial_cover_url)}" alt="English Memorial Cover" />
+                </div>
+              ` : ''}
+              ${m.memorial_cover_url_ur ? `
+                <div class="admin-cover-preview-card">
+                  <header><span>Urdu Memorial Banner (RTL · شہداءِ ملت)</span><a href="${esc(m.memorial_cover_url_ur)}" target="_blank" style="color:#881337;">Open</a></header>
+                  <img src="${esc(m.memorial_cover_url_ur)}" alt="Urdu Memorial Cover" />
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        ` : ''}
+
         <header class="martyr-memorial-header">
           <div class="martyr-memorial-portrait" ${m.profile_photo_url ? `onclick="window.QSFMartyrs.openLightbox(window.__qsfCurrentMartyrPhotos, 0)"` : ''}>
             ${m.profile_photo_url
@@ -1999,17 +2062,31 @@
           <div>
             <section class="martyr-editorial-section">
               <h3 class="martyr-section-heading"><span><i class="fas fa-id-card"></i> Personal &amp; Geographical Record</span></h3>
-              <dl class="martyr-info-dl">
-                <div class="martyr-info-pair"><dt>Full Name</dt><dd class="${urduName ? 'martyr-urdu' : ''}">${esc(m.full_name)}</dd></div>
-                <div class="martyr-info-pair"><dt>Father's Name</dt><dd class="${isUrdu(m.father_name) ? 'martyr-urdu' : ''}">${esc(m.father_name || 'Not Available')}</dd></div>
-                <div class="martyr-info-pair"><dt>Mother's Name</dt><dd>${esc(m.mother_name || 'Not Available')}</dd></div>
-                <div class="martyr-info-pair"><dt>Gender</dt><dd style="text-transform: capitalize;">${esc(m.gender || 'Not Available')}</dd></div>
-                <div class="martyr-info-pair"><dt>Place of Birth</dt><dd>${esc(m.birth_location_name || m.place_of_birth || 'Not Available')}</dd></div>
-                <div class="martyr-info-pair"><dt>Residential / Home Location</dt><dd>${esc(homeFull)}</dd></div>
-                <div class="martyr-info-pair"><dt>Place of Martyrdom / Death</dt><dd style="color:#881337;">${esc(martyrdomFull)}</dd></div>
-                <div class="martyr-info-pair"><dt>Religious / Community Identity</dt><dd>${esc(m.religious_community || 'Not Specified')}${m.community_source_note ? ` <small style="color:#64748B;">(${esc(m.community_source_note)})</small>` : ''}</dd></div>
-                <div class="martyr-info-pair"><dt>Complete Residential Address</dt><dd>${esc(m.residential_address || 'Not Available')}</dd></div>
-              </dl>
+              <div class="martyr-record-table-wrap">
+                <table class="martyr-record-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Field</th>
+                      <th scope="col">Details</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><th scope="row">Full Name</th><td class="${urduName ? 'martyr-urdu' : ''}">${esc(m.full_name)}</td></tr>
+                    <tr><th scope="row">Father's Name</th><td class="${isUrdu(m.father_name) ? 'martyr-urdu' : ''}">${esc(m.father_name || 'Not Available')}</td></tr>
+                    <tr><th scope="row">Mother's Name</th><td>${esc(m.mother_name || 'Not Available')}</td></tr>
+                    <tr><th scope="row">Gender</th><td style="text-transform: capitalize;">${esc(m.gender || 'Not Available')}</td></tr>
+                    <tr><th scope="row">Date of Birth</th><td>${m.date_of_birth ? fmtDate(m.date_of_birth) : 'Not Available'}</td></tr>
+                    <tr><th scope="row">Date of Martyrdom</th><td class="is-emphasis">${m.date_of_martyrdom ? fmtDate(m.date_of_martyrdom) : 'Not Available'}</td></tr>
+                    <tr><th scope="row">Age at Martyrdom</th><td>${m.age_at_death != null ? `${m.age_at_death} years` : 'Not Available'}</td></tr>
+                    <tr><th scope="row">Place of Birth</th><td>${esc(m.birth_location_name || m.place_of_birth || 'Not Available')}</td></tr>
+                    <tr><th scope="row">Residential / Home Location</th><td>${esc(homeFull)}</td></tr>
+                    <tr><th scope="row">Place of Martyrdom / Death</th><td class="is-emphasis">${esc(martyrdomFull)}</td></tr>
+                    <tr><th scope="row">Associated Conflict</th><td>${m.primary_war_name ? `<a href="#" class="martyr-record-table-link" onclick="event.preventDefault(); window.QSFMartyrs.openWarDetail(${m.primary_war_id})"><i class="fas fa-landmark" style="font-size:0.78em;"></i> ${esc(m.primary_war_name)}</a>` : 'Not Available'}</td></tr>
+                    <tr><th scope="row">Religious / Community Identity</th><td>${esc(m.religious_community || 'Not Specified')}${m.community_source_note ? ` <small style="color:#64748B;">(${esc(m.community_source_note)})</small>` : ''}</td></tr>
+                    <tr><th scope="row">Complete Residential Address</th><td>${esc(m.residential_address || 'Not Available')}</td></tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
 
             <section class="martyr-editorial-section">
@@ -2176,6 +2253,11 @@
         primaryWarId: Number(m.primary_war_id) || null,
         additionalWarIds: extraWars,
         profilePhotoUrl: m.profile_photo_url || '',
+        cutout_photo_url: m.cutout_photo_url || '',
+        cover_template: m.cover_template || 'splatter_mountain',
+        cover_portrait_pos: m.cover_portrait_pos || 'center',
+        memorial_cover_url: m.memorial_cover_url || '',
+        memorial_cover_url_ur: m.memorial_cover_url_ur || '',
         full_name: m.full_name || '',
         full_name_ur: m.full_name_ur || '',
         father_name: m.father_name || '',
@@ -2333,6 +2415,9 @@
             <div>
               <label class="form-label" for="mfAge">Age at Time of Death (Auto-Calculated)</label>
               <input type="number" id="mfAge" class="form-control" min="0" max="140" placeholder="Auto-calculated from dates" value="${esc(f.age_at_death)}" />
+              <div id="mfAgeExactNote" style="font-size: 0.72rem; color: #881337; font-weight: 700; margin-top: 3px;">
+                ${computeAgeBreakdown(f.date_of_birth, f.date_of_martyrdom) ? `Calculated: ${esc(computeAgeBreakdown(f.date_of_birth, f.date_of_martyrdom))}` : ''}
+              </div>
             </div>
             <div>
               <label class="form-label" for="mfStatus">Record Status</label>
@@ -2531,6 +2616,71 @@
           </div>
         </div>
 
+        <!-- SECTION D: MEMORIAL PHOTO GALLERY & DIGITAL MEMORIAL COVER STUDIO -->
+        <div class="martyr-form-section">
+          <h3 class="martyr-form-section-title">
+            <span><i class="fas fa-wand-magic-sparkles"></i> C2. Automatic Digital Memorial Cover Studio</span>
+          </h3>
+          <div class="admin-cover-studio" style="margin-top: 0;">
+            <p style="margin: 0 0 10px; font-size: 0.82rem; color: #475569;">
+              The authentic uploaded portrait above is permanently preserved for Table View &amp; Identity records.
+              Select a memorial banner style below to automatically extract a transparent portrait cutout and generate high-resolution English (LTR) &amp; Urdu (RTL) memorial banners with the official QSF emblem.
+            </p>
+            <div class="admin-template-grid" id="mfCoverTemplateGrid">
+              ${MEMORIAL_COVER_TEMPLATES.map(tpl => `
+                <button type="button" class="admin-template-option ${(f.cover_template || 'splatter_mountain') === tpl.id ? 'selected' : ''}" data-cover-tpl="${tpl.id}" onclick="window.QSFMartyrs.selectCoverTemplate('${tpl.id}')">
+                  <div class="admin-template-swatch" style="background: ${tpl.swatch};"></div>
+                  <div style="font-size: 0.78rem; font-weight: 800; color: #0F172A; line-height: 1.3;">${esc(tpl.name)}</div>
+                  <div style="font-size: 0.76rem; color: #64748B; margin-top: 3px;" dir="rtl">${esc(tpl.ur)}</div>
+                </button>
+              `).join('')}
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <label class="form-label" for="mfCoverPortraitPos" style="margin: 0; font-size: 0.8rem;">Portrait Placement:</label>
+                <select id="mfCoverPortraitPos" class="form-control" style="width: auto; height: 34px; font-size: 0.82rem;">
+                  <option value="center" ${(f.cover_portrait_pos || 'center') === 'center' ? 'selected' : ''}>Automatic (Balanced EN/UR)</option>
+                  <option value="left" ${f.cover_portrait_pos === 'left' ? 'selected' : ''}>Left Side</option>
+                  <option value="right" ${f.cover_portrait_pos === 'right' ? 'selected' : ''}>Right Side</option>
+                </select>
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="btn-admin btn-admin-secondary" id="btnMfPreviewCover" onclick="window.QSFMartyrs.previewFormMemorialCover()">
+                  <i class="fas fa-eye"></i> Preview EN &amp; UR Banners
+                </button>
+                ${isEdit ? `
+                  <button type="button" class="btn-admin btn-admin-primary" id="btnMfRegenCover" onclick="window.QSFMartyrs.regenerateCoverForMartyr(${f.editId}, true)">
+                    <i class="fas fa-arrows-rotate"></i> Regenerate &amp; Save Covers
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+
+            <div id="mfCoverPreviewBox" class="admin-cover-preview-grid">
+              ${(f.memorial_cover_url || f.memorial_cover_url_ur) ? `
+                ${f.memorial_cover_url ? `
+                  <div class="admin-cover-preview-card">
+                    <header><span>English Banner (LTR)</span><span style="color:#166534;">Ready</span></header>
+                    <img src="${esc(f.memorial_cover_url)}" alt="English Memorial Cover Preview" />
+                  </div>
+                ` : ''}
+                ${f.memorial_cover_url_ur ? `
+                  <div class="admin-cover-preview-card">
+                    <header><span>Urdu Banner (RTL · شہداءِ ملت)</span><span style="color:#166534;">Ready</span></header>
+                    <img src="${esc(f.memorial_cover_url_ur)}" alt="Urdu Memorial Cover Preview" />
+                  </div>
+                ` : ''}
+              ` : `
+                <div style="grid-column: 1 / -1; font-size: 0.8rem; color: #64748B; padding: 10px 0 0;">
+                  <i class="fas fa-circle-info" style="color: #881337;"></i>
+                  Upload a portrait photo above and click <strong>Preview EN &amp; UR Banners</strong> (or save the profile) to generate memorial visuals automatically.
+                </div>
+              `}
+            </div>
+          </div>
+        </div>
+
         <!-- SECTION D: MEMORIAL PHOTO GALLERY -->
         <div class="martyr-form-section">
           <h3 class="martyr-form-section-title">
@@ -2716,15 +2866,20 @@
       });
     }
 
-    // Auto-calculate Age at Death
+    // Auto-calculate Age at Death live on input & change
     const dobEl = document.getElementById('mfDob');
     const domEl = document.getElementById('mfDom');
     const ageEl = document.getElementById('mfAge');
+    const ageNoteEl = document.getElementById('mfAgeExactNote');
     const recalcAge = () => {
       const calc = computeAge(dobEl.value, domEl.value);
+      const exact = computeAgeBreakdown(dobEl.value, domEl.value);
       if (calc !== '') ageEl.value = calc;
+      if (ageNoteEl) ageNoteEl.textContent = exact ? `Calculated: ${exact}` : '';
     };
+    dobEl.addEventListener('input', recalcAge);
     dobEl.addEventListener('change', recalcAge);
+    domEl.addEventListener('input', recalcAge);
     domEl.addEventListener('change', () => { recalcAge(); scheduleDuplicateCheck(); });
 
     // Live Duplicate Check
@@ -3112,6 +3267,8 @@
       full_name: fullName || fullNameUr,
       full_name_ur: fullNameUr || null,
       profile_photo_url: f.profilePhotoUrl || null,
+      cover_template: f.cover_template || 'splatter_mountain',
+      cover_portrait_pos: document.getElementById('mfCoverPortraitPos') ? document.getElementById('mfCoverPortraitPos').value : (f.cover_portrait_pos || 'center'),
       father_name: document.getElementById('mfFatherName').value.trim(),
       father_name_ur: document.getElementById('mfFatherNameUr') ? document.getElementById('mfFatherNameUr').value.trim() : '',
       mother_name: document.getElementById('mfMotherName').value.trim(),
@@ -4036,9 +4193,116 @@
     }
   });
 
+  function selectCoverTemplate(tplId) {
+    state.formState.cover_template = tplId;
+    document.querySelectorAll('#mfCoverTemplateGrid .admin-template-option').forEach(btn => {
+      btn.classList.toggle('selected', btn.getAttribute('data-cover-tpl') === tplId);
+    });
+  }
+
+  async function previewFormMemorialCover() {
+    const f = state.formState;
+    const btn = document.getElementById('btnMfPreviewCover');
+    const box = document.getElementById('mfCoverPreviewBox');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Generating Preview...';
+    }
+    try {
+      const payload = {
+        id: f.editId || 'preview',
+        full_name: document.getElementById('mfFullName') ? document.getElementById('mfFullName').value.trim() : f.full_name,
+        full_name_ur: document.getElementById('mfFullNameUr') ? document.getElementById('mfFullNameUr').value.trim() : f.full_name_ur,
+        father_name: document.getElementById('mfFatherName') ? document.getElementById('mfFatherName').value.trim() : f.father_name,
+        father_name_ur: document.getElementById('mfFatherNameUr') ? document.getElementById('mfFatherNameUr').value.trim() : f.father_name_ur,
+        date_of_martyrdom: document.getElementById('mfDom') ? document.getElementById('mfDom').value : f.date_of_martyrdom,
+        place_of_martyrdom: document.getElementById('mfPlaceOfMartyrdom') ? document.getElementById('mfPlaceOfMartyrdom').value.trim() : f.place_of_martyrdom,
+        place_of_martyrdom_ur: document.getElementById('mfPlaceOfMartyrdomUr') ? document.getElementById('mfPlaceOfMartyrdomUr').value.trim() : f.place_of_martyrdom_ur,
+        primary_war_id: Number((document.getElementById('mfPrimaryWarId') && document.getElementById('mfPrimaryWarId').value) || f.primaryWarId || 0),
+        profile_photo_url: f.profilePhotoUrl || null,
+        cutout_photo_url: f.cutout_photo_url || null,
+        cover_template: f.cover_template || 'splatter_mountain',
+        cover_portrait_pos: document.getElementById('mfCoverPortraitPos') ? document.getElementById('mfCoverPortraitPos').value : (f.cover_portrait_pos || 'center')
+      };
+
+      const res = await apiFetch('/preview-cover', { method: 'POST', body: payload });
+      if (res.cutout_photo_url) f.cutout_photo_url = res.cutout_photo_url;
+      if (box) {
+        box.innerHTML = `
+          <div class="admin-cover-preview-card">
+            <header><span>English Banner Preview (LTR)</span><span style="color:#881337;">${esc(res.cover_template)}</span></header>
+            <img src="${esc(res.memorial_cover_url)}?t=${Date.now()}" alt="English Cover Preview" />
+          </div>
+          <div class="admin-cover-preview-card">
+            <header><span>Urdu Banner Preview (RTL · شہداءِ ملت)</span><span style="color:#881337;">${esc(res.cover_template)}</span></header>
+            <img src="${esc(res.memorial_cover_url_ur)}?t=${Date.now()}" alt="Urdu Cover Preview" />
+          </div>
+        `;
+      }
+      notify('Memorial cover previews generated.', 'success');
+    } catch (err) {
+      notify(err.message || 'Failed to generate cover preview.', 'error');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-eye"></i> Preview EN &amp; UR Banners';
+      }
+    }
+  }
+
+  async function regenerateCoverForMartyr(martyrId, fromForm = false) {
+    const f = state.formState;
+    const btn = document.getElementById('btnMfRegenCover');
+    if (btn && fromForm) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Regenerating...';
+    }
+    try {
+      const body = fromForm
+        ? {
+            template: f.cover_template || 'splatter_mountain',
+            portrait_pos: document.getElementById('mfCoverPortraitPos') ? document.getElementById('mfCoverPortraitPos').value : (f.cover_portrait_pos || 'center'),
+            force_regenerate: true
+          }
+        : { force_regenerate: true };
+      const res = await apiFetch(`/generate-cover/${martyrId}`, { method: 'POST', body });
+      notify(res.message || 'Memorial cover banners saved.', 'success');
+      if (fromForm) {
+        f.memorial_cover_url = res.memorial_cover_url || '';
+        f.memorial_cover_url_ur = res.memorial_cover_url_ur || '';
+        f.cutout_photo_url = res.cutout_photo_url || f.cutout_photo_url;
+        const box = document.getElementById('mfCoverPreviewBox');
+        if (box) {
+          box.innerHTML = `
+            <div class="admin-cover-preview-card">
+              <header><span>English Banner (LTR)</span><span style="color:#166534;">Saved</span></header>
+              <img src="${esc(res.memorial_cover_url)}?t=${Date.now()}" alt="English Memorial Cover" />
+            </div>
+            <div class="admin-cover-preview-card">
+              <header><span>Urdu Banner (RTL · شہداءِ ملت)</span><span style="color:#166534;">Saved</span></header>
+              <img src="${esc(res.memorial_cover_url_ur)}?t=${Date.now()}" alt="Urdu Memorial Cover" />
+            </div>
+          `;
+        }
+      } else {
+        await renderMartyrProfile(martyrId);
+      }
+    } catch (err) {
+      notify(err.message || 'Failed to regenerate memorial covers.', 'error');
+    } finally {
+      if (btn && fromForm) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-arrows-rotate"></i> Regenerate &amp; Save Covers';
+      }
+    }
+  }
+
   // Public Controller API
   window.QSFMartyrs = {
     onTabActivated,
+    selectCoverTemplate,
+    previewFormMemorialCover,
+    regenerateCoverForMartyr,
     loadAndRenderWarsList,
     openWarDetail,
     backToWarsList,

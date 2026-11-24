@@ -84,118 +84,15 @@
 
   <link rel="stylesheet" href="/css/style.css?v=20261123_v1">
   <link rel="stylesheet" href="/css/rtl.css?v=20261123_v1">
-  <link rel="stylesheet" href="/css/martyrs.css?v=3.1.0">
+  <link rel="stylesheet" href="/css/martyrs.css?v=3.2.0">
   <link rel="stylesheet" href="/fonts/fa.min.css">
 
   <style>
-    /* Public Memorial Archive Specific Enhancements & RTL/LTR Bilingual Polish */
-    .public-martyrs-hero {
-      background: linear-gradient(135deg, #4C0519 0%, #881337 55%, #1E050D 100%);
-      color: #FFFFFF;
-      padding: 36px 0 28px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-    }
-    .public-martyrs-hero-inner {
-      width: 100%;
-      padding: 0 clamp(16px, 3vw, 40px);
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      gap: 24px;
-      flex-wrap: wrap;
-    }
-    .public-martyrs-hero-title {
-      font-family: var(--font-en-title);
-      font-size: clamp(1.85rem, 2.8vw, 2.45rem);
-      font-weight: 800;
-      margin: 4px 0 8px;
-      color: #FFFFFF;
-      line-height: 1.25;
-    }
-    body.urdu .public-martyrs-hero-title,
-    html[dir="rtl"] .public-martyrs-hero-title {
-      font-family: var(--font-ur);
-      line-height: 1.75;
-    }
-    .public-martyrs-hero-sub {
-      color: #FECDD3;
-      font-size: 0.96rem;
-      max-width: 720px;
-      margin: 0;
-      line-height: 1.65;
-    }
-    body.urdu .public-martyrs-hero-sub,
-    html[dir="rtl"] .public-martyrs-hero-sub {
-      font-family: var(--font-ur);
-      line-height: 2;
-    }
-    .public-martyrs-hero-stats {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .public-martyrs-stat-pill {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      border-radius: 10px;
-      padding: 10px 16px;
-      min-width: 135px;
-      backdrop-filter: blur(6px);
-    }
-    .public-martyrs-stat-pill small {
-      display: block;
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: #FECDD3;
-      font-weight: 700;
-    }
-    body.urdu .public-martyrs-stat-pill small {
-      font-family: var(--font-ur);
-      font-size: 0.78rem;
-      letter-spacing: 0;
-    }
-    .public-martyrs-stat-pill strong {
-      font-size: 1.45rem;
-      font-weight: 800;
-      color: #FFFFFF;
-      line-height: 1.2;
-    }
-    .public-martyrs-nav-tabs {
-      display: flex;
-      gap: 8px;
-      margin-top: 20px;
-      flex-wrap: wrap;
-    }
-    .public-martyrs-tab-btn {
-      background: rgba(255, 255, 255, 0.12);
-      color: #FFFFFF;
-      border: 1px solid rgba(255, 255, 255, 0.24);
-      padding: 8px 18px;
-      border-radius: 6px;
-      font-weight: 700;
-      font-size: 0.88rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.2s ease;
-    }
-    body.urdu .public-martyrs-tab-btn {
-      font-family: var(--font-ur);
-      font-size: 0.94rem;
-    }
-    .public-martyrs-tab-btn.active,
-    .public-martyrs-tab-btn:hover {
-      background: #FFFFFF;
-      color: #881337;
-      border-color: #FFFFFF;
-    }
+    /* Public Memorial Archive Shell & RTL/LTR Bilingual Polish */
     .public-martyrs-shell {
       width: 100%;
       max-width: 100%;
-      padding: 18px clamp(12px, 2.2vw, 32px) 48px;
+      padding: 14px clamp(12px, 2.2vw, 32px) 48px;
       min-height: 68vh;
     }
     .btn-public-martyr {
@@ -408,10 +305,6 @@
       </div>
     </a>
     <div class="mobile-header-actions">
-      <div class="lang-toggle" title="Switch Language / زبان تبدیل کریں">
-        <button type="button" class="lang-btn active" data-lang="en">EN</button>
-        <button type="button" class="lang-btn" data-lang="ur">اردو</button>
-      </div>
       <button type="button" class="mobile-hamburger-btn" id="mobileToggle" aria-label="Toggle navigation" aria-expanded="false">
         <i class="fas fa-bars"></i>
       </button>
@@ -436,43 +329,25 @@
     </div>
   </aside>
 
-  <!-- ==================== PUBLIC MARTYRS MEMORIAL HERO ==================== -->
-  <section class="public-martyrs-hero">
-    <div class="public-martyrs-hero-inner">
-      <div>
-        <div style="font-size: 0.76rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #FCA5A5;" id="pmHeroKicker">
-          QSF HISTORICAL MEMORIAL ARCHIVE · تاریخی ریکارڈ
-        </div>
-        <h1 class="public-martyrs-hero-title" id="pmHeroTitle" data-i18n="martyrsTitle">
-          Martyrs (شہداءِ ملت) — Historical Memorial Archive
-        </h1>
-        <p class="public-martyrs-hero-sub" id="pmHeroSubtitle" data-i18n="martyrsSubtitle">
-          Preserving the verified biographies, photographs, and historical conflict records of the martyrs.
-        </p>
-        <div class="public-martyrs-nav-tabs" role="tablist">
-          <button type="button" class="public-martyrs-tab-btn active" id="pmTabMartyrsBtn" onclick="window.QSFPublicMartyrs.switchSection('martyrs')">
-            <i class="fas fa-monument"></i>
-            <span id="pmTabMartyrsLabel" data-i18n="allMartyrs">All Martyrs</span>
-          </button>
-          <button type="button" class="public-martyrs-tab-btn" id="pmTabWarsBtn" onclick="window.QSFPublicMartyrs.switchSection('wars')">
-            <i class="fas fa-landmark"></i>
-            <span id="pmTabWarsLabel" data-i18n="warsAndConflicts">Wars &amp; Conflicts</span>
-          </button>
-        </div>
+  <!-- ==================== COMPACT SECONDARY ARCHIVE HEADER & TOOLBAR ==================== -->
+  <nav class="pm-secondary-bar" id="pmSecondaryBar" aria-label="Martyrs Archive Navigation">
+    <div class="pm-secondary-bar-inner">
+      <div class="pm-sec-nav-group" role="tablist">
+        <button type="button" class="pm-sec-nav-btn active" id="pmTabMartyrsBtn" onclick="window.QSFPublicMartyrs && window.QSFPublicMartyrs.switchSection('martyrs')">
+          <i class="fas fa-monument"></i>
+          <span id="pmTabMartyrsLabel" data-i18n="allMartyrs">All Martyrs</span>
+          <span class="pm-sec-count" id="pmStatMartyrsCount">—</span>
+        </button>
+        <button type="button" class="pm-sec-nav-btn" id="pmTabWarsBtn" onclick="window.QSFPublicMartyrs && window.QSFPublicMartyrs.switchSection('wars')">
+          <i class="fas fa-landmark"></i>
+          <span id="pmTabWarsLabel" data-i18n="warsAndConflicts">Wars &amp; Conflicts</span>
+          <span class="pm-sec-count" id="pmStatWarsCount">—</span>
+        </button>
       </div>
-
-      <div class="public-martyrs-hero-stats">
-        <div class="public-martyrs-stat-pill">
-          <small id="pmStatMartyrsLabel" data-i18n="allMartyrs">All Martyrs</small>
-          <strong id="pmStatMartyrsCount">—</strong>
-        </div>
-        <div class="public-martyrs-stat-pill">
-          <small id="pmStatWarsLabel" data-i18n="warsAndConflicts">Wars &amp; Conflicts</small>
-          <strong id="pmStatWarsCount">—</strong>
-        </div>
-      </div>
+      <div class="pm-sec-actions-group" id="pmSecondaryActions"></div>
     </div>
-  </section>
+    <div class="pm-filter-panel hidden" id="pmFilterDropdownPanel"></div>
+  </nav>
 
   <!-- ==================== FULL-WIDTH PUBLIC MARTYRS ARCHIVE WORKSPACE ==================== -->
   <main class="public-martyrs-shell" id="publicMartyrsMainRoot">
@@ -584,6 +459,6 @@
 
   <script src="/js/translations.js?v=20261123_v1" defer></script>
   <script src="/js/main.js?v=20261123_v1" defer></script>
-  <script src="/js/public-martyrs.js?v=1.0.0" defer></script>
+  <script src="/js/public-martyrs.js?v=3.2.0" defer></script>
 </body>
 </html>

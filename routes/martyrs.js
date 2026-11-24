@@ -21,6 +21,7 @@ const { requirePermission } = require('../middleware/auth');
 const { upload, optimizeUploadedImage } = require('../middleware/upload');
 const kurramSeed = require('../config/kurramLocationsSeed');
 const kurramHistoricalSeed = require('../config/kurramHistoricalSeed');
+const memorialCoverService = require('../services/memorialCoverService');
 
 function generateRecordSlug(primaryText, fallbackText, idOrCode = '') {
   const base = String(primaryText || fallbackText || 'record')
@@ -687,6 +688,12 @@ async function ensureMartyrsSchema() {
     await ensureColumn('martyrs', 'updated_by', "updated_by INT NULL AFTER created_by_name");
     await ensureColumn('martyrs', 'updated_by_name', "updated_by_name VARCHAR(180) NULL AFTER updated_by");
     await ensureColumn('martyrs', 'last_updated_at', "last_updated_at DATETIME NULL AFTER updated_by_name");
+    await ensureColumn('martyrs', 'cutout_photo_url', "cutout_photo_url VARCHAR(512) NULL AFTER profile_photo_url");
+    await ensureColumn('martyrs', 'memorial_card_url', "memorial_card_url VARCHAR(512) NULL AFTER cutout_photo_url");
+    await ensureColumn('martyrs', 'cover_template', "cover_template VARCHAR(64) NOT NULL DEFAULT 'splatter_mountain' AFTER memorial_card_url");
+    await ensureColumn('martyrs', 'memorial_cover_url', "memorial_cover_url VARCHAR(512) NULL AFTER cover_template");
+    await ensureColumn('martyrs', 'memorial_cover_url_ur', "memorial_cover_url_ur VARCHAR(512) NULL AFTER memorial_cover_url");
+    await ensureColumn('martyrs', 'cover_portrait_pos', "cover_portrait_pos VARCHAR(32) NOT NULL DEFAULT 'center' AFTER memorial_cover_url_ur");
 
     await ensureIndex('martyrs', 'idx_m_res_loc', '(residence_location_id)');
     await ensureIndex('martyrs', 'idx_m_mar_loc', '(martyrdom_location_id)');
@@ -1053,6 +1060,171 @@ router.post('/upload-image', (req, res) => {
 // =========================================================================
 // ACCESS / SUMMARY META + HISTORICAL IMPORT & DEMO DATA MANAGEMENT
 // =========================================================================
+// =========================================================================
+// MEMORIAL COVER GENERATION HELPER & ADMIN ENDPOINTS
+// =========================================================================
+async function generateAndPersistMartyrCover(martyrId, options = {}) {
+  await ensureMartyrsSchema();
+  const [rows] = await db.query(`
+    SELECT m.*, w.name AS war_name, w.name_ur AS war_name_ur
+    FROM martyrs m
+    LEFT JOIN martyr_wars w ON w.id = m.primary_war_id
+    WHERE m.id = ? AND m.is_deleted = 0
+    LIMIT 1
+  `, [martyrId]);
+  if (!rows.length) {
+    throw new Error('Martyr record not found.');
+  }
+  const m = rows[0];
+  const tpl = memorialCoverService.VALID_TEMPLATE_IDS.has(options.template)
+    ? options.template
+    : (memorialCoverService.VALID_TEMPLATE_IDS.has(m.cover_template) ? m.cover_template : 'splatter_mountain');
+  const pos = ['left', 'center', 'right'].includes(options.portraitPos)
+    ? options.portraitPos
+    : (['left', 'center', 'right'].includes(m.cover_portrait_pos) ? m.cover_portrait_pos : 'center');
+
+  const result = await memorialCoverService.generateMemorialCover(
+    {
+      ...m,
+      date_of_martyrdom: formatDbDate(m.date_of_martyrdom)
+    },
+    {
+      template: tpl,
+      portraitPos: pos,
+      forceRegenerate: Boolean(options.forceRegenerate)
+    }
+  );
+
+  await db.query(`
+    UPDATE martyrs SET
+      cutout_photo_url = COALESCE(?, cutout_photo_url),
+      memorial_card_url = COALESCE(?, memorial_card_url),
+      cover_template = ?,
+      memorial_cover_url = ?,
+      memorial_cover_url_ur = ?,
+      cover_portrait_pos = ?
+    WHERE id = ?
+  `, [
+    result.cutoutUrl || null,
+    result.cardUrl || null,
+    result.template,
+    result.coverUrlEn,
+    result.coverUrlUr,
+    result.portraitPos,
+    martyrId
+  ]);
+
+  return result;
+}
+
+router.get('/templates', (req, res) => {
+  return res.json({
+    success: true,
+    templates: memorialCoverService.MEMORIAL_TEMPLATES
+  });
+});
+
+router.post('/generate-cover/:id', async (req, res) => {
+  try {
+    await ensureMartyrsSchema();
+    const martyrId = parseInt(req.params.id, 10);
+    if (!martyrId) return res.status(400).json({ success: false, message: 'Invalid martyr ID.' });
+
+    const b = req.body || {};
+    const template = memorialCoverService.VALID_TEMPLATE_IDS.has(b.template) ? b.template : undefined;
+    const portraitPos = ['left', 'center', 'right'].includes(b.portrait_pos) ? b.portrait_pos : undefined;
+    const forceRegenerate = Boolean(b.force_regenerate);
+
+    const result = await generateAndPersistMartyrCover(martyrId, {
+      template,
+      portraitPos,
+      forceRegenerate
+    });
+
+    const actor = getActor(req);
+    await logActivity(db, {
+      entityType: 'martyr',
+      entityId: martyrId,
+      action: 'cover_generated',
+      actor,
+      summary: `Generated memorial cover banners (Template: ${result.template})`
+    });
+
+    return res.json({
+      success: true,
+      memorial_card_url: result.cardUrl || null,
+      memorial_cover_url: result.coverUrlEn,
+      memorial_cover_url_ur: result.coverUrlUr,
+      cutout_photo_url: result.cutoutUrl,
+      cover_template: result.template,
+      cover_portrait_pos: result.portraitPos,
+      message: 'Memorial cover banners generated successfully.'
+    });
+  } catch (err) {
+    console.error('[Martyr Generate Cover Error]', err);
+    return res.status(500).json({ success: false, message: err.message || 'Failed to generate memorial cover.' });
+  }
+});
+
+router.post('/preview-cover', async (req, res) => {
+  try {
+    await ensureMartyrsSchema();
+    const b = req.body || {};
+    let warName = cleanStr(b.war_name, 200);
+    let warNameUr = cleanStr(b.war_name_ur, 200);
+    const primaryWarId = parseInt(b.primary_war_id, 10) || 0;
+    if (primaryWarId && !warName) {
+      const [wRows] = await db.query('SELECT name, name_ur FROM martyr_wars WHERE id = ? LIMIT 1', [primaryWarId]);
+      if (wRows.length) {
+        warName = wRows[0].name;
+        warNameUr = wRows[0].name_ur;
+      }
+    }
+
+    const template = memorialCoverService.VALID_TEMPLATE_IDS.has(b.cover_template || b.template)
+      ? (b.cover_template || b.template)
+      : 'splatter_mountain';
+    const portraitPos = ['left', 'center', 'right'].includes(b.cover_portrait_pos || b.portrait_pos)
+      ? (b.cover_portrait_pos || b.portrait_pos)
+      : 'center';
+
+    const previewMartyr = {
+      id: parseInt(b.id, 10) || 'preview',
+      full_name: cleanStr(b.full_name, 255) || 'Martyr Profile',
+      full_name_ur: cleanStr(b.full_name_ur, 255) || cleanStr(b.full_name, 255) || 'شہیدِ ملت',
+      father_name: cleanStr(b.father_name, 255) || null,
+      father_name_ur: cleanStr(b.father_name_ur, 255) || null,
+      date_of_martyrdom: cleanDate(b.date_of_martyrdom),
+      place_of_martyrdom: cleanStr(b.place_of_martyrdom, 255) || 'Kurram District',
+      place_of_martyrdom_ur: cleanStr(b.place_of_martyrdom_ur, 255) || 'ضلع کرم',
+      war_name: warName || null,
+      war_name_ur: warNameUr || null,
+      profile_photo_url: cleanStr(b.profile_photo_url, 512) || null,
+      cutout_photo_url: cleanStr(b.cutout_photo_url, 512) || null
+    };
+
+    const result = await memorialCoverService.generateMemorialCover(previewMartyr, {
+      template,
+      portraitPos,
+      forceRegenerate: Boolean(b.force_regenerate),
+      isPreview: true
+    });
+
+    return res.json({
+      success: true,
+      memorial_card_url: result.cardUrl || null,
+      memorial_cover_url: result.coverUrlEn,
+      memorial_cover_url_ur: result.coverUrlUr,
+      cutout_photo_url: result.cutoutUrl,
+      cover_template: result.template,
+      cover_portrait_pos: result.portraitPos
+    });
+  } catch (err) {
+    console.error('[Martyr Preview Cover Error]', err);
+    return res.status(500).json({ success: false, message: err.message || 'Failed to generate cover preview.' });
+  }
+});
+
 router.get('/summary', async (req, res) => {
   try {
     await ensureMartyrsSchema();
@@ -2463,11 +2635,14 @@ router.get('/profile/:id', async (req, res) => {
     }
 
     const r0 = rows[0];
+    const dobStr = formatDbDate(r0.date_of_birth);
+    const domStr = formatDbDate(r0.date_of_martyrdom);
     const martyr = {
       ...r0,
       is_demo: Boolean(r0.is_demo),
-      date_of_birth: formatDbDate(r0.date_of_birth),
-      date_of_martyrdom: formatDbDate(r0.date_of_martyrdom),
+      date_of_birth: dobStr,
+      date_of_martyrdom: domStr,
+      age_at_death: computeAgeAtDeath(dobStr, domStr, r0.age_at_death),
       created_by_name: r0.created_by_name || r0.joined_creator_name || null,
       updated_by_name: r0.updated_by_name || r0.joined_updater_name || null
     };
@@ -2586,13 +2761,15 @@ router.post('/profile', async (req, res) => {
     const verifStatus = ['verified', 'needs_review', 'unverified'].includes(b.verification_status) ? b.verification_status : 'verified';
     const showFatherPublic = b.show_father_name_public === undefined ? 1 : (b.show_father_name_public ? 1 : 0);
     const showHomePublic = b.show_home_location_public === undefined ? 1 : (b.show_home_location_public ? 1 : 0);
+    const coverTemplate = memorialCoverService.VALID_TEMPLATE_IDS.has(b.cover_template) ? b.cover_template : 'splatter_mountain';
+    const coverPortraitPos = ['left', 'center', 'right'].includes(b.cover_portrait_pos) ? b.cover_portrait_pos : 'center';
     const isDemo = b.is_demo ? 1 : 0;
     const actor = getActor(req);
 
     await conn.beginTransaction();
     const [result] = await conn.query(`
       INSERT INTO martyrs (
-        full_name, full_name_ur, profile_photo_url, father_name, father_name_ur, mother_name, mother_name_ur, gender,
+        full_name, full_name_ur, profile_photo_url, cover_template, cover_portrait_pos, father_name, father_name_ur, mother_name, mother_name_ur, gender,
         date_of_birth, date_of_martyrdom, age_at_death,
         place_of_birth, place_of_birth_ur, birth_location_id,
         place_of_martyrdom, place_of_martyrdom_ur, martyrdom_location_id, country, martyrdom_province, martyrdom_district, martyrdom_tehsil,
@@ -2600,11 +2777,13 @@ router.post('/profile', async (req, res) => {
         primary_war_id, biography_html, biography_ur, biography_dir,
         religious_community, community_source_note, status, show_father_name_public, show_home_location_public, verification_status, is_demo,
         created_by, created_by_name
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       fullName,
       fullNameUr,
       cleanStr(b.profile_photo_url, 512),
+      coverTemplate,
+      coverPortraitPos,
       cleanStr(b.father_name, 255),
       cleanStr(b.father_name_ur, 255),
       cleanStr(b.mother_name, 255),
@@ -2710,9 +2889,28 @@ router.post('/profile', async (req, res) => {
     });
 
     await conn.commit();
+
+    // Auto-generate memorial covers asynchronously if a profile photo is present
+    let generatedCover = null;
+    if (cleanStr(b.profile_photo_url, 512)) {
+      try {
+        generatedCover = await generateAndPersistMartyrCover(martyrId, {
+          template: coverTemplate,
+          portraitPos: coverPortraitPos,
+          forceRegenerate: false
+        });
+      } catch (coverErr) {
+        console.warn('[Martyr Create Auto-Cover Warning]', coverErr.message);
+      }
+    }
+
     return res.status(201).json({
       success: true,
       id: martyrId,
+      memorial_card_url: generatedCover ? generatedCover.cardUrl : null,
+      memorial_cover_url: generatedCover ? generatedCover.coverUrlEn : null,
+      memorial_cover_url_ur: generatedCover ? generatedCover.coverUrlUr : null,
+      cutout_photo_url: generatedCover ? generatedCover.cutoutUrl : null,
       message: `Martyr profile for "${fullName}" saved successfully.`
     });
   } catch (err) {
@@ -2779,6 +2977,24 @@ router.put('/profile/:id', async (req, res) => {
     const verifStatus = ['verified', 'needs_review', 'unverified'].includes(b.verification_status) ? b.verification_status : (prev.verification_status || 'verified');
     const showFatherPublic = b.show_father_name_public === undefined ? (prev.show_father_name_public ?? 1) : (b.show_father_name_public ? 1 : 0);
     const showHomePublic = b.show_home_location_public === undefined ? (prev.show_home_location_public ?? 1) : (b.show_home_location_public ? 1 : 0);
+    const coverTemplate = memorialCoverService.VALID_TEMPLATE_IDS.has(b.cover_template)
+      ? b.cover_template
+      : (prev.cover_template || 'splatter_mountain');
+    const coverPortraitPos = ['left', 'center', 'right'].includes(b.cover_portrait_pos)
+      ? b.cover_portrait_pos
+      : (prev.cover_portrait_pos || 'center');
+    const nextPhotoUrl = cleanStr(b.profile_photo_url, 512);
+    const photoChanged = nextPhotoUrl !== (prev.profile_photo_url || null);
+    const coverMetaChanged = photoChanged
+      || coverTemplate !== (prev.cover_template || 'splatter_mountain')
+      || coverPortraitPos !== (prev.cover_portrait_pos || 'center')
+      || fullName !== prev.full_name
+      || fullNameUr !== prev.full_name_ur
+      || dom !== formatDbDate(prev.date_of_martyrdom)
+      || placeOfMartyrdom !== prev.place_of_martyrdom
+      || placeOfMartyrdomUr !== prev.place_of_martyrdom_ur
+      || primaryWarId !== prev.primary_war_id
+      || Boolean(b.regenerate_cover);
     const isDemo = b.is_demo === undefined ? prev.is_demo : (b.is_demo ? 1 : 0);
     const actor = getActor(req);
 
@@ -2789,7 +3005,10 @@ router.put('/profile/:id', async (req, res) => {
     await conn.beginTransaction();
     await conn.query(`
       UPDATE martyrs SET
-        full_name = ?, full_name_ur = ?, profile_photo_url = ?, father_name = ?, father_name_ur = ?, mother_name = ?, mother_name_ur = ?, gender = ?,
+        full_name = ?, full_name_ur = ?, profile_photo_url = ?, cover_template = ?, cover_portrait_pos = ?,
+        cutout_photo_url = CASE WHEN ? THEN NULL ELSE cutout_photo_url END,
+        memorial_card_url = CASE WHEN ? THEN NULL ELSE memorial_card_url END,
+        father_name = ?, father_name_ur = ?, mother_name = ?, mother_name_ur = ?, gender = ?,
         date_of_birth = ?, date_of_martyrdom = ?, age_at_death = ?,
         place_of_birth = ?, place_of_birth_ur = ?, birth_location_id = ?,
         place_of_martyrdom = ?, place_of_martyrdom_ur = ?, martyrdom_location_id = ?, country = ?, martyrdom_province = ?, martyrdom_district = ?, martyrdom_tehsil = ?,
@@ -2801,7 +3020,11 @@ router.put('/profile/:id', async (req, res) => {
     `, [
       fullName,
       fullNameUr,
-      cleanStr(b.profile_photo_url, 512),
+      nextPhotoUrl,
+      coverTemplate,
+      coverPortraitPos,
+      photoChanged ? 1 : 0,
+      photoChanged ? 1 : 0,
       cleanStr(b.father_name, 255),
       cleanStr(b.father_name_ur, 255),
       cleanStr(b.mother_name, 255),
@@ -2952,9 +3175,27 @@ router.put('/profile/:id', async (req, res) => {
     });
 
     await conn.commit();
+
+    let generatedCover = null;
+    if (nextPhotoUrl && (coverMetaChanged || !prev.memorial_cover_url || !prev.memorial_card_url)) {
+      try {
+        generatedCover = await generateAndPersistMartyrCover(martyrId, {
+          template: coverTemplate,
+          portraitPos: coverPortraitPos,
+          forceRegenerate: Boolean(b.regenerate_cover)
+        });
+      } catch (coverErr) {
+        console.warn('[Martyr Update Auto-Cover Warning]', coverErr.message);
+      }
+    }
+
     return res.json({
       success: true,
       id: martyrId,
+      memorial_card_url: generatedCover ? generatedCover.cardUrl : (prev.memorial_card_url || null),
+      memorial_cover_url: generatedCover ? generatedCover.coverUrlEn : (prev.memorial_cover_url || null),
+      memorial_cover_url_ur: generatedCover ? generatedCover.coverUrlUr : (prev.memorial_cover_url_ur || null),
+      cutout_photo_url: generatedCover ? generatedCover.cutoutUrl : (prev.cutout_photo_url || null),
       message: `Martyr profile for "${fullName}" updated successfully.`
     });
   } catch (err) {
@@ -3056,6 +3297,9 @@ const COUNTRY_UR_MAP = {
 function sanitizePublicMartyrRow(m) {
   const showFather = m.show_father_name_public === undefined || Number(m.show_father_name_public) !== 0;
   const showHome = m.show_home_location_public === undefined || Number(m.show_home_location_public) !== 0;
+  const dob = formatDbDate(m.date_of_birth);
+  const dom = formatDbDate(m.date_of_martyrdom);
+  const computedAge = computeAgeAtDeath(dob, dom, m.age_at_death);
 
   return {
     id: m.id,
@@ -3063,12 +3307,18 @@ function sanitizePublicMartyrRow(m) {
     full_name: m.full_name,
     full_name_ur: m.full_name_ur || null,
     profile_photo_url: m.profile_photo_url || null,
+    cutout_photo_url: m.cutout_photo_url || null,
+    memorial_card_url: m.memorial_card_url || null,
+    cover_template: m.cover_template || 'splatter_mountain',
+    memorial_cover_url: m.memorial_cover_url || null,
+    memorial_cover_url_ur: m.memorial_cover_url_ur || null,
+    cover_portrait_pos: m.cover_portrait_pos || 'center',
     father_name: showFather ? (m.father_name || null) : null,
     father_name_ur: showFather ? (m.father_name_ur || null) : null,
     gender: m.gender || 'male',
-    date_of_birth: formatDbDate(m.date_of_birth),
-    date_of_martyrdom: formatDbDate(m.date_of_martyrdom),
-    age_at_death: m.age_at_death != null ? Number(m.age_at_death) : null,
+    date_of_birth: dob,
+    date_of_martyrdom: dom,
+    age_at_death: computedAge,
     place_of_birth: showHome ? (m.place_of_birth || m.birth_location_name || null) : null,
     place_of_birth_ur: showHome ? (m.place_of_birth_ur || m.birth_location_name_ur || null) : null,
     place_of_martyrdom: m.place_of_martyrdom || m.martyrdom_location_name || null,
@@ -3398,6 +3648,7 @@ publicMartyrsRouter.get('/list', async (req, res) => {
     const [rows] = await db.query(`
       SELECT
         m.id, m.slug, m.full_name, m.full_name_ur, m.profile_photo_url,
+        m.cutout_photo_url, m.memorial_card_url, m.cover_template, m.memorial_cover_url, m.memorial_cover_url_ur, m.cover_portrait_pos,
         m.father_name, m.father_name_ur, m.gender,
         m.date_of_birth, m.date_of_martyrdom, m.age_at_death,
         m.place_of_martyrdom, m.place_of_martyrdom_ur, m.martyrdom_location_id, m.martyrdom_tehsil, m.martyrdom_district, m.country,
@@ -3443,6 +3694,7 @@ publicMartyrsRouter.get('/profile/:slugOrId', async (req, res) => {
     const [rows] = await db.query(`
       SELECT
         m.id, m.slug, m.full_name, m.full_name_ur, m.profile_photo_url,
+        m.cutout_photo_url, m.memorial_card_url, m.cover_template, m.memorial_cover_url, m.memorial_cover_url_ur, m.cover_portrait_pos,
         m.father_name, m.father_name_ur, m.gender,
         m.date_of_birth, m.date_of_martyrdom, m.age_at_death,
         m.place_of_birth, m.place_of_birth_ur, m.birth_location_id,
@@ -3629,6 +3881,7 @@ publicMartyrsRouter.get('/wars/:slugOrId', async (req, res) => {
     const [martyrs] = await db.query(`
       SELECT
         m.id, m.slug, m.full_name, m.full_name_ur, m.profile_photo_url,
+        m.cutout_photo_url, m.memorial_card_url, m.cover_template, m.memorial_cover_url, m.memorial_cover_url_ur, m.cover_portrait_pos,
         m.father_name, m.father_name_ur, m.gender, m.date_of_birth,
         m.date_of_martyrdom, m.age_at_death, m.place_of_martyrdom, m.place_of_martyrdom_ur,
         m.city, m.city_ur, m.district, m.residence_tehsil, m.martyrdom_tehsil, m.martyrdom_district, m.country,

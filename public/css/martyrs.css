@@ -967,7 +967,6 @@
 .martyr-memorial-header {
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
-  border-top: 4px solid #881337;
   border-radius: 4px;
   padding: 28px 32px;
   margin-bottom: 20px;
@@ -1082,6 +1081,176 @@
   font-size: 0.92rem;
   color: #0F172A;
   font-weight: 600;
+}
+
+/* Structured Two-Column Personal & Biographical Records Table (LTR & Urdu RTL) */
+.martyr-record-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #E2E8F0;
+  border-radius: 3px;
+  background: #FFFFFF;
+}
+
+.martyr-record-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+  margin: 0;
+}
+
+.martyr-record-table thead th {
+  background: #F1F5F9;
+  color: #334155;
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: start;
+  padding: 10px 16px;
+  border-bottom: 1px solid #CBD5E1;
+}
+
+.martyr-record-table thead th:first-child {
+  width: 34%;
+  min-width: 185px;
+  border-inline-end: 1px solid #E2E8F0;
+}
+
+.martyr-record-table tbody tr {
+  border-bottom: 1px solid #E2E8F0;
+  transition: background 0.14s ease;
+}
+
+.martyr-record-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.martyr-record-table tbody tr:hover {
+  background: #FAFAFC;
+}
+
+.martyr-record-table tbody th[scope="row"] {
+  width: 34%;
+  min-width: 185px;
+  padding: 12px 16px;
+  text-align: start;
+  vertical-align: top;
+  background: #F8FAFC;
+  color: #475569;
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.55;
+  border-inline-end: 1px solid #E2E8F0;
+}
+
+.martyr-record-table tbody td {
+  padding: 12px 18px;
+  text-align: start;
+  vertical-align: top;
+  color: #0F172A;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.martyr-record-table tbody td.is-emphasis {
+  color: #881337;
+  font-weight: 700;
+}
+
+.martyr-record-table tbody td.is-muted {
+  color: #64748B;
+  font-weight: 500;
+}
+
+.martyr-record-table-link {
+  color: #881337;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.martyr-record-table-link:hover {
+  color: #BE123C;
+  text-decoration: underline;
+}
+
+/* Urdu RTL Nastaliq Typography for Personal Records Table */
+body.urdu .martyr-record-table,
+html[dir="rtl"] .martyr-record-table {
+  direction: rtl;
+  font-family: var(--font-ur);
+}
+
+body.urdu .martyr-record-table thead th,
+html[dir="rtl"] .martyr-record-table thead th {
+  font-family: var(--font-ur);
+  font-size: 0.9rem;
+  text-transform: none;
+  letter-spacing: 0;
+  line-height: 2;
+  padding: 9px 16px;
+}
+
+body.urdu .martyr-record-table tbody th[scope="row"],
+html[dir="rtl"] .martyr-record-table tbody th[scope="row"] {
+  font-family: var(--font-ur);
+  font-size: 0.92rem;
+  line-height: 2.1;
+  padding: 11px 16px;
+}
+
+body.urdu .martyr-record-table tbody td,
+html[dir="rtl"] .martyr-record-table tbody td {
+  font-family: var(--font-ur);
+  font-size: 0.98rem;
+  line-height: 2.1;
+  padding: 11px 18px;
+}
+
+@media (max-width: 600px) {
+  .martyr-record-table thead {
+    display: none;
+  }
+
+  .martyr-record-table,
+  .martyr-record-table tbody,
+  .martyr-record-table tr,
+  .martyr-record-table th[scope="row"],
+  .martyr-record-table td {
+    display: block;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box;
+  }
+
+  .martyr-record-table tbody th[scope="row"] {
+    border-inline-end: none;
+    border-bottom: 1px solid #F1F5F9;
+    padding: 8px 14px 5px;
+    font-size: 0.78rem;
+  }
+
+  .martyr-record-table tbody td {
+    padding: 8px 14px 12px;
+    font-size: 0.9rem;
+  }
+
+  body.urdu .martyr-record-table tbody th[scope="row"],
+  html[dir="rtl"] .martyr-record-table tbody th[scope="row"] {
+    font-size: 0.86rem;
+    padding: 8px 14px 4px;
+  }
+
+  body.urdu .martyr-record-table tbody td,
+  html[dir="rtl"] .martyr-record-table tbody td {
+    font-size: 0.94rem;
+    padding: 6px 14px 12px;
+  }
 }
 
 .martyr-richtext-content {
@@ -1394,7 +1563,8 @@
 
 /* Modals & Lightbox */
 .martyr-modal-backdrop.hidden,
-.martyr-lightbox-backdrop.hidden {
+.martyr-lightbox-backdrop.hidden,
+.martyr-lightbox-overlay.hidden {
   display: none !important;
 }
 
@@ -1464,7 +1634,8 @@
   flex: 1;
 }
 
-.martyr-lightbox-backdrop {
+.martyr-lightbox-backdrop,
+.martyr-lightbox-overlay {
   position: fixed;
   inset: 0;
   background: rgba(2, 6, 23, 0.92);
@@ -1475,7 +1646,8 @@
   padding: 24px;
 }
 
-.martyr-lb-stage {
+.martyr-lb-stage,
+.martyr-lightbox-stage {
   max-width: 90vw;
   max-height: 86vh;
   display: flex;
@@ -1484,21 +1656,25 @@
   gap: 10px;
 }
 
-.martyr-lb-stage img {
+.martyr-lb-stage img,
+.martyr-lightbox-stage img {
   max-width: 100%;
   max-height: 78vh;
   border-radius: 3px;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
 }
 
-.martyr-lb-caption {
+.martyr-lb-caption,
+.martyr-lightbox-caption {
   color: #E2E8F0;
   font-size: 0.9rem;
   text-align: center;
 }
 
 .martyr-lb-close,
-.martyr-lb-nav {
+.martyr-lb-nav,
+.martyr-lightbox-close,
+.martyr-lightbox-nav {
   position: fixed;
   background: rgba(255, 255, 255, 0.14);
   border: 1px solid rgba(255, 255, 255, 0.25);
@@ -1513,9 +1689,12 @@
   justify-content: center;
 }
 
-.martyr-lb-close { top: 18px; right: 20px; font-size: 1.5rem; }
-.martyr-lb-nav.prev { left: 18px; top: 50%; transform: translateY(-50%); }
-.martyr-lb-nav.next { right: 18px; top: 50%; transform: translateY(-50%); }
+.martyr-lb-close,
+.martyr-lightbox-close { top: 18px; right: 20px; font-size: 1.5rem; }
+.martyr-lb-nav.prev,
+.martyr-lightbox-nav.prev { left: 18px; top: 50%; transform: translateY(-50%); }
+.martyr-lb-nav.next,
+.martyr-lightbox-nav.next { right: 18px; top: 50%; transform: translateY(-50%); }
 
 /* Responsive Breakpoints */
 @media (max-width: 1024px) {
@@ -1591,5 +1770,902 @@
   .martyr-editorial-section,
   .martyr-form-shell {
     padding: 16px;
+  }
+}
+
+/* ==========================================================================
+   VIEW MODE SWITCHER (CARDS vs TABLE)
+   ========================================================================== */
+.pm-view-switcher {
+  display: inline-flex;
+  align-items: center;
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  border-radius: 5px;
+  padding: 2px;
+  gap: 2px;
+  height: 36px;
+  box-sizing: border-box;
+}
+
+.pm-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  white-space: nowrap;
+}
+
+.pm-view-btn:hover {
+  color: #881337;
+  background: rgba(136, 19, 55, 0.06);
+}
+
+.pm-view-btn.active {
+  background: #881337;
+  color: #FFFFFF;
+  box-shadow: 0 1px 3px rgba(136, 19, 55, 0.25);
+}
+
+body.urdu .pm-view-btn {
+  font-family: var(--font-ur);
+  font-size: 0.85rem;
+}
+
+/* ==========================================================================
+   PREMIUM MEMORIAL PROFILE CARDS (CARDS VIEW)
+   ========================================================================== */
+.pm-memorial-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(262px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+.pm-memorial-card {
+  display: flex;
+  flex-direction: column;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-top: 3px solid #4A0D14;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.06);
+}
+
+.pm-memorial-card:hover {
+  transform: translateY(-3px);
+  border-color: #7F1D1D;
+  box-shadow: 0 14px 30px rgba(69, 10, 10, 0.18);
+}
+
+.pm-card-portrait-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 4.4;
+  background-color: #120305;
+  background-image: url('/media/martyrs/backgrounds/memorial_bg_splatter.webp');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  border-bottom: 2px solid #B45309;
+}
+
+.pm-card-portrait-stage.bg-splatter {
+  background-image: url('/media/martyrs/backgrounds/memorial_bg_splatter.webp');
+}
+
+.pm-card-portrait-stage.bg-halo {
+  background-image: url('/media/martyrs/backgrounds/memorial_bg_halo.webp');
+}
+
+.pm-card-portrait-stage.bg-velvet {
+  background-image: url('/media/martyrs/backgrounds/memorial_bg_velvet.webp');
+}
+
+/* Subtle bottom mist shadow for depth — never overlaps the face */
+.pm-card-portrait-stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(10, 2, 4, 0.72) 0%,
+    rgba(10, 2, 4, 0.22) 18%,
+    rgba(10, 2, 4, 0) 42%,
+    rgba(10, 2, 4, 0.18) 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+.pm-card-portrait-stage img.pm-card-photo {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+  transition: transform 0.35s ease;
+}
+
+.pm-card-portrait-stage.has-cutout img.pm-card-photo {
+  object-fit: contain;
+  object-position: center bottom;
+  padding: 18px 10px 0;
+  filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.72));
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 84%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 84%, transparent 100%);
+}
+
+.pm-memorial-card:hover .pm-card-portrait-stage img.pm-card-photo {
+  transform: scale(1.03);
+}
+
+.pm-card-portrait-fallback {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: rgba(254, 226, 226, 0.8);
+  padding: 20px;
+  text-align: center;
+  background: transparent;
+}
+
+.pm-card-portrait-fallback img.pm-fallback-emblem {
+  width: 68px;
+  height: 68px;
+  opacity: 0.9;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.65));
+}
+
+.pm-card-portrait-fallback span {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #FDE68A;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75);
+}
+
+body.urdu .pm-card-portrait-fallback span {
+  font-family: var(--font-ur);
+  font-size: 0.96rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.pm-card-kicker-ribbon {
+  position: absolute;
+  top: 10px;
+  inset-inline-start: 10px;
+  z-index: 3;
+  background: rgba(12, 3, 5, 0.82);
+  border: 1px solid rgba(251, 191, 36, 0.5);
+  color: #FDE68A;
+  font-size: 0.66rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 2px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  backdrop-filter: blur(4px);
+}
+
+body.urdu .pm-card-kicker-ribbon {
+  font-family: var(--font-ur);
+  font-size: 0.76rem;
+  letter-spacing: 0;
+  text-transform: none;
+  padding: 1px 9px;
+}
+
+.pm-card-body {
+  padding: 15px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 8px;
+}
+
+.pm-card-name {
+  margin: 0;
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1.35;
+}
+
+body.urdu .pm-card-name {
+  font-family: var(--font-ur);
+  font-size: 1.18rem;
+  line-height: 1.85;
+}
+
+.pm-card-father {
+  font-size: 0.82rem;
+  color: #475569;
+  font-weight: 600;
+  margin-top: -3px;
+}
+
+body.urdu .pm-card-father {
+  font-family: var(--font-ur);
+  font-size: 0.88rem;
+}
+
+.pm-card-meta-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-top: 6px;
+  border-top: 1px solid #F1F5F9;
+  font-size: 0.8rem;
+  color: #334155;
+  flex: 1;
+}
+
+.pm-card-meta-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  line-height: 1.45;
+}
+
+.pm-card-meta-item i {
+  color: #991B1B;
+  margin-top: 3px;
+  width: 13px;
+  flex-shrink: 0;
+  font-size: 0.76rem;
+}
+
+body.urdu .pm-card-meta-list {
+  font-family: var(--font-ur);
+  font-size: 0.86rem;
+  line-height: 1.85;
+}
+
+.pm-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 10px;
+  margin-top: auto;
+  border-top: 1px solid #F1F5F9;
+}
+
+.pm-card-war-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #FFF1F2;
+  color: #881337;
+  border: 1px solid #FECDD3;
+  border-radius: 3px;
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  max-width: 64%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pm-card-war-chip:hover {
+  background: #FFE4E6;
+  border-color: #FB7185;
+}
+
+body.urdu .pm-card-war-chip {
+  font-family: var(--font-ur);
+  font-size: 0.76rem;
+}
+
+.pm-card-profile-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #881337;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.pm-card-profile-link:hover {
+  color: #BE123C;
+  text-decoration: underline;
+}
+
+body.urdu .pm-card-profile-link {
+  font-family: var(--font-ur);
+  font-size: 0.84rem;
+}
+
+/* ==========================================================================
+   PROFESSIONAL MARTYR DIRECTORY TABLE (TABLE VIEW)
+   STRICTLY DISPLAYS AUTHENTIC ORIGINAL PHOTOGRAPH THUMBNAILS
+   ========================================================================== */
+.pm-directory-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-top: 3px solid #991B1B;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.pm-directory-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  min-width: 780px;
+}
+
+.pm-directory-table thead th {
+  background: #F8FAFC;
+  color: #1E293B;
+  font-weight: 800;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 12px 14px;
+  border-bottom: 2px solid #E2E8F0;
+  text-align: start;
+  white-space: nowrap;
+}
+
+body.urdu .pm-directory-table thead th {
+  font-family: var(--font-ur);
+  font-size: 0.88rem;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.pm-directory-table tbody tr {
+  border-bottom: 1px solid #F1F5F9;
+  cursor: pointer;
+  transition: background 0.14s ease;
+}
+
+.pm-directory-table tbody tr:hover {
+  background: #FFF8F9;
+}
+
+.pm-directory-table tbody td {
+  padding: 10px 14px;
+  vertical-align: middle;
+  color: #334155;
+}
+
+body.urdu .pm-directory-table tbody td {
+  font-family: var(--font-ur);
+  font-size: 0.92rem;
+}
+
+.pm-table-orig-thumb {
+  width: 48px;
+  height: 58px;
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid #CBD5E1;
+  background: #1E070A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pm-table-orig-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+.pm-table-orig-thumb i {
+  color: #FECDD3;
+  font-size: 1.1rem;
+  opacity: 0.7;
+}
+
+.pm-table-name-cell {
+  font-weight: 800;
+  color: #0F172A;
+  font-size: 0.92rem;
+}
+
+body.urdu .pm-table-name-cell {
+  font-size: 1.02rem;
+}
+
+.pm-table-sub-name {
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #64748B;
+  margin-top: 2px;
+}
+
+.pm-table-date-badge {
+  font-weight: 700;
+  color: #881337;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   INDIVIDUAL PROFILE — WIDE GENERATED MEMORIAL COVER BANNER + ORIGINAL PHOTO
+   ========================================================================== */
+.pm-profile-cover-section {
+  margin-bottom: 20px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #CBD5E1;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.14);
+  background: #160306;
+  position: relative;
+}
+
+.pm-profile-cover-img-wrap {
+  position: relative;
+  width: 100%;
+  cursor: pointer;
+  overflow: hidden;
+  background: #160306;
+}
+
+.pm-profile-cover-img-wrap img {
+  width: 100%;
+  height: auto;
+  display: block;
+  max-height: 460px;
+  object-fit: cover;
+}
+
+.pm-profile-cover-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 16px;
+  background: linear-gradient(90deg, #1E0508 0%, #3B0911 100%);
+  border-top: 1px solid rgba(251, 191, 36, 0.3);
+  color: #F8FAFC;
+  font-size: 0.78rem;
+}
+
+.pm-profile-cover-actions .pm-cover-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #FDE68A;
+  font-weight: 700;
+}
+
+body.urdu .pm-profile-cover-actions {
+  font-family: var(--font-ur);
+  font-size: 0.86rem;
+}
+
+.pm-cover-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 4px;
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  background: rgba(255, 255, 255, 0.08);
+  color: #FFFFFF;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.16s ease;
+}
+
+.pm-cover-action-btn:hover {
+  background: #B91C1C;
+  border-color: #FBBF24;
+  color: #FFFFFF;
+}
+
+.pm-original-photo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  color: #475569;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+body.urdu .pm-original-photo-badge {
+  font-family: var(--font-ur);
+  font-size: 0.74rem;
+}
+
+/* ==========================================================================
+   ADMIN MEMORIAL COVER STUDIO (TEMPLATE PICKER & DUAL PREVIEW)
+   ========================================================================== */
+.admin-cover-studio {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-top: 3px solid #881337;
+  border-radius: 6px;
+  padding: 16px 18px;
+  margin-top: 14px;
+}
+
+.admin-template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+  gap: 10px;
+  margin: 10px 0 14px;
+}
+
+.admin-template-option {
+  border: 2px solid #CBD5E1;
+  border-radius: 5px;
+  padding: 10px 12px;
+  background: #FFFFFF;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  text-align: left;
+  position: relative;
+}
+
+.admin-template-option:hover {
+  border-color: #991B1B;
+  background: #FFF1F2;
+}
+
+.admin-template-option.selected {
+  border-color: #881337;
+  background: #FFF1F2;
+  box-shadow: 0 0 0 2px rgba(136, 19, 55, 0.18);
+}
+
+.admin-template-swatch {
+  height: 10px;
+  border-radius: 2px;
+  margin-bottom: 7px;
+}
+
+.admin-cover-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.admin-cover-preview-card {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.admin-cover-preview-card header {
+  padding: 7px 12px;
+  background: #F1F5F9;
+  border-bottom: 1px solid #E2E8F0;
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #334155;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-cover-preview-card img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .pm-memorial-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   COMPACT SECONDARY ARCHIVE HEADER & COLLAPSIBLE FILTER PANEL
+   ========================================================================== */
+.pm-secondary-bar {
+  background: #FFFFFF;
+  border-bottom: 1px solid #E2E8F0;
+  position: relative;
+  z-index: 40;
+  width: 100%;
+}
+
+.pm-secondary-bar-inner {
+  width: 100%;
+  padding: 9px clamp(12px, 2.2vw, 32px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pm-sec-nav-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pm-sec-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 13px;
+  border-radius: 4px;
+  border: 1px solid #CBD5E1;
+  background: #F8FAFC;
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.pm-sec-nav-btn:hover {
+  border-color: #881337;
+  color: #881337;
+  background: #FFF1F2;
+}
+
+.pm-sec-nav-btn.active {
+  background: #881337;
+  color: #FFFFFF;
+  border-color: #881337;
+}
+
+.pm-sec-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  background: rgba(15, 23, 42, 0.08);
+  color: inherit;
+}
+
+.pm-sec-nav-btn.active .pm-sec-count {
+  background: rgba(255, 255, 255, 0.22);
+  color: #FFFFFF;
+}
+
+body.urdu .pm-sec-nav-btn {
+  font-family: var(--font-ur);
+  font-size: 0.88rem;
+  height: 36px;
+}
+
+.pm-sec-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pm-sec-meta-count {
+  font-size: 0.8rem;
+  color: #475569;
+  font-weight: 600;
+  padding-inline-end: 4px;
+}
+
+body.urdu .pm-sec-meta-count {
+  font-family: var(--font-ur);
+  font-size: 0.86rem;
+}
+
+.pm-sec-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 4px;
+  border: 1px solid #CBD5E1;
+  background: #FFFFFF;
+  color: #1E293B;
+  font-size: 0.81rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.pm-sec-filter-btn:hover,
+.pm-sec-filter-btn.open,
+.pm-sec-filter-btn.has-active {
+  border-color: #881337;
+  color: #881337;
+  background: #FFF1F2;
+}
+
+body.urdu .pm-sec-filter-btn {
+  font-family: var(--font-ur);
+  font-size: 0.86rem;
+  height: 36px;
+}
+
+.pm-filter-panel {
+  background: #F8FAFC;
+  border-top: 1px solid #E2E8F0;
+  border-bottom: 1px solid #CBD5E1;
+  padding: 14px clamp(12px, 2.2vw, 32px) 16px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.pm-filter-panel.hidden {
+  display: none !important;
+}
+
+.pm-filter-panel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
+  gap: 10px 14px;
+  align-items: end;
+}
+
+.pm-filter-panel-grid .form-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 4px;
+  display: block;
+}
+
+body.urdu .pm-filter-panel-grid .form-label {
+  font-family: var(--font-ur);
+  font-size: 0.84rem;
+}
+
+.pm-filter-panel-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #E2E8F0;
+}
+
+/* Unified War Card Media Stage matching Memorial Card design */
+.pm-war-card-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9.5;
+  background-color: #160306;
+  background-image: url('/media/martyrs/backgrounds/memorial_bg_velvet.webp');
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+  border-bottom: 2px solid #B45309;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pm-war-card-stage img.pm-war-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.35s ease;
+}
+
+.pm-memorial-card:hover .pm-war-card-stage img.pm-war-cover-img {
+  transform: scale(1.03);
+}
+
+.pm-war-card-stage .pm-card-kicker-ribbon {
+  top: 10px;
+  inset-inline-start: 10px;
+}
+
+.pm-war-card-count-badge {
+  position: absolute;
+  bottom: 10px;
+  inset-inline-end: 10px;
+  z-index: 3;
+  background: rgba(15, 3, 5, 0.85);
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  color: #FFFFFF;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 3px;
+  backdrop-filter: blur(4px);
+}
+
+body.urdu .pm-war-card-count-badge {
+  font-family: var(--font-ur);
+  font-size: 0.78rem;
+}
+
+.pm-war-card-desc {
+  margin: 0;
+  font-size: 0.81rem;
+  color: #475569;
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+body.urdu .pm-war-card-desc {
+  font-family: var(--font-ur);
+  font-size: 0.88rem;
+  line-height: 1.9;
+}
+
+/* Server-composited Memorial Card Portrait image fills 4:4.4 stage naturally */
+.pm-card-portrait-stage.is-composited img.pm-card-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  padding: 0;
+  filter: none;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.pm-card-portrait-stage.is-composited::after {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .pm-secondary-bar-inner {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+  .pm-sec-nav-btn {
+    padding: 0 10px;
+    font-size: 0.78rem;
   }
 }

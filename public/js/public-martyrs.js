@@ -9,6 +9,7 @@
 
   const API_BASE = '/api/public/martyrs';
   const LOC_COLLAPSED_KEY = 'qsf_public_martyrs_loc_collapsed';
+  const VIEW_MODE_KEY = 'qsf_martyrs_view_mode';
 
   const L = {
     en: {
@@ -94,7 +95,26 @@
       pageOf: (p, tp, tot) => `Page <strong>${p}</strong> of <strong>${tp}</strong> (${tot} total)`,
       dateFrom: 'Date From',
       dateTo: 'Date To',
-      locationMatchScope: 'Location Filter Type'
+      locationMatchScope: 'Location Filter Type',
+      cardsView: 'Cards',
+      tableView: 'Table',
+      colPhoto: 'Photograph',
+      colAction: 'Action',
+      memorialBannerLabel: 'Official Digital Memorial Banner',
+      authenticPhotoBadge: 'Original Photograph',
+      downloadBanner: 'Download Banner',
+      viewFullSize: 'Full Size',
+      martyrsNationRibbon: 'Martyr of the Nation',
+      colFieldLabel: 'Field',
+      colFieldValue: 'Details',
+      close: 'Close',
+      allCategories: 'All Categories',
+      searchWarsLabel: 'Search Conflict / Location',
+      searchWarsPlaceholder: 'Search war, conflict, or location...',
+      sortOrderLabel: 'Sort Order',
+      casualtiesLabel: 'Casualties',
+      viewDetails: 'View Details',
+      recordsCount: (n) => `${n} record${n === 1 ? '' : 's'}`
     },
     ur: {
       heroKicker: 'قصرِ شبیر فاؤنڈیشن · تاریخی و یادگاری ریکارڈ',
@@ -179,7 +199,26 @@
       pageOf: (p, tp, tot) => `صفحہ <strong>${p}</strong> از <strong>${tp}</strong> (کل ${tot})`,
       dateFrom: 'تاریخ سے',
       dateTo: 'تاریخ تک',
-      locationMatchScope: 'علاقہ فلٹر کی قسم'
+      locationMatchScope: 'علاقہ فلٹر کی قسم',
+      cardsView: 'کارڈز',
+      tableView: 'فہرست / ٹیبل',
+      colPhoto: 'تصویر',
+      colAction: 'عمل',
+      memorialBannerLabel: 'باضابطہ ڈیجیٹل یادگاری بینر',
+      authenticPhotoBadge: 'اصل محفوظ تصویر',
+      downloadBanner: 'بینر ڈاؤن لوڈ کریں',
+      viewFullSize: 'مکمل سائز',
+      martyrsNationRibbon: 'شہیدِ ملت',
+      colFieldLabel: 'عنوان',
+      colFieldValue: 'تفصیلات',
+      close: 'بند کریں',
+      allCategories: 'تمام اقسام',
+      searchWarsLabel: 'جنگ یا مقام تلاش کریں',
+      searchWarsPlaceholder: 'جنگ، معرکہ یا مقام تلاش کریں...',
+      sortOrderLabel: 'ترتیب',
+      casualtiesLabel: 'شہادتیں',
+      viewDetails: 'تفصیل دیکھیں',
+      recordsCount: (n) => `${n} ریکارڈ`
     }
   };
 
@@ -207,12 +246,15 @@
     totalTreeMartyrs: 0,
 
     locSidebarCollapsed: localStorage.getItem(LOC_COLLAPSED_KEY) === '1',
+    viewMode: localStorage.getItem(VIEW_MODE_KEY) === 'table' ? 'table' : 'cards',
     locMobileOpen: false,
     locSearchQuery: '',
     locExpanded: new Set(),
     locExpandedInit: false,
 
     filter: createDefaultFilter(),
+    warFilter: { search: '', category: '' },
+    filterPanelOpen: false,
     martyrsList: [],
     pagination: { total: 0, page: 1, limit: 12, totalPages: 1 },
     lightbox: { items: [], index: 0 },
@@ -284,6 +326,50 @@
     return isUr() ? (CATEGORY_UR_MAP[cat] || cat) : cat;
   }
 
+  /**
+   * Calculate exact age from Date of Birth and Date of Martyrdom / Death.
+   * Returns { years, months, days, formatted } or null if dates are incomplete/invalid.
+   */
+  function calculateAgeFromDates(dobVal, domVal) {
+    if (!dobVal || !domVal) return null;
+    const bStr = String(dobVal).slice(0, 10);
+    const dStr = String(domVal).slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(bStr) || !/^\d{4}-\d{2}-\d{2}$/.test(dStr)) return null;
+    const b = new Date(`${bStr}T00:00:00Z`);
+    const d = new Date(`${dStr}T00:00:00Z`);
+    if (Number.isNaN(b.getTime()) || Number.isNaN(d.getTime()) || d < b) return null;
+
+    let years = d.getUTCFullYear() - b.getUTCFullYear();
+    let months = d.getUTCMonth() - b.getUTCMonth();
+    let days = d.getUTCDate() - b.getUTCDate();
+    if (days < 0) {
+      const prevMonthDays = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 0)).getUTCDate();
+      days += prevMonthDays;
+      months--;
+    }
+    if (months < 0) {
+      months += 12;
+      years--;
+    }
+    years = Math.max(0, Math.min(140, years));
+    return { years, months, days };
+  }
+
+  function formatResolvedAge(martyr) {
+    const d = dict();
+    const calc = calculateAgeFromDates(martyr.date_of_birth, martyr.date_of_martyrdom);
+    if (calc) {
+      if (calc.years === 0 && calc.months > 0) {
+        return isUr() ? `${calc.months} ماہ` : `${calc.months} month${calc.months === 1 ? '' : 's'}`;
+      }
+      return `${calc.years} ${d.yearsOld}`;
+    }
+    if (martyr.age_at_death != null && martyr.age_at_death !== '') {
+      return `${martyr.age_at_death} ${d.yearsOld}`;
+    }
+    return null;
+  }
+
   async function apiGet(path) {
     const res = await fetch(`${API_BASE}${path}`);
     const data = await res.json();
@@ -308,25 +394,22 @@
     if (ogU) ogU.setAttribute('content', fullUrl);
   }
 
+  function getActiveWarFilterCount() {
+    let c = 0;
+    if (state.warFilter.search) c++;
+    if (state.warFilter.category) c++;
+    return c;
+  }
+
   function syncHeroTextAndStats() {
     const d = dict();
-    const kicker = document.getElementById('pmHeroKicker');
-    const title = document.getElementById('pmHeroTitle');
-    const sub = document.getElementById('pmHeroSubtitle');
     const tabM = document.getElementById('pmTabMartyrsLabel');
     const tabW = document.getElementById('pmTabWarsLabel');
-    const statMLabel = document.getElementById('pmStatMartyrsLabel');
-    const statWLabel = document.getElementById('pmStatWarsLabel');
     const statMCount = document.getElementById('pmStatMartyrsCount');
     const statWCount = document.getElementById('pmStatWarsCount');
 
-    if (kicker) kicker.textContent = d.heroKicker;
-    if (title) title.textContent = `${d.pageTitle} (${isUr() ? 'Martyrs' : 'شہداءِ ملت'})`;
-    if (sub) sub.textContent = d.pageSubtitle;
     if (tabM) tabM.textContent = d.allMartyrs;
     if (tabW) tabW.textContent = d.warsAndConflicts;
-    if (statMLabel) statMLabel.textContent = d.totalMartyrsLabel;
-    if (statWLabel) statWLabel.textContent = d.warsAndConflicts;
     if (statMCount) statMCount.textContent = String(state.summary.total_martyrs || 0);
     if (statWCount) statWCount.textContent = String(state.summary.total_wars || 0);
 
@@ -334,6 +417,205 @@
     const btnW = document.getElementById('pmTabWarsBtn');
     if (btnM) btnM.classList.toggle('active', state.section === 'martyrs' || state.section === 'profile');
     if (btnW) btnW.classList.toggle('active', state.section === 'wars' || state.section === 'war-detail');
+
+    const actionsEl = document.getElementById('pmSecondaryActions');
+    if (actionsEl) {
+      if (state.section === 'martyrs') {
+        const fc = getActiveFilterCount();
+        actionsEl.innerHTML = `
+          <span class="pm-sec-meta-count" id="pmToolbarCount">${esc(d.recordsCount(state.pagination.total || state.martyrsList.length || 0))}</span>
+          <button type="button" id="pmToolbarFilterBtn" class="pm-sec-filter-btn ${state.filterPanelOpen ? 'open' : ''} ${fc > 0 ? 'has-active' : ''}" onclick="window.QSFPublicMartyrs.toggleFilterPanel()">
+            <i class="fas fa-filter"></i> <span>${esc(d.filters)}</span>${fc > 0 ? ` <span class="pm-sec-count">${fc}</span>` : ''}
+          </button>
+          <div class="pm-view-switcher" role="group" aria-label="View Mode">
+            <button type="button" id="pmViewCardsBtn" class="pm-view-btn ${state.viewMode === 'cards' ? 'active' : ''}" onclick="window.QSFPublicMartyrs.setViewMode('cards')" title="${esc(d.cardsView)}">
+              <i class="fas fa-th-large"></i> <span>${esc(d.cardsView)}</span>
+            </button>
+            <button type="button" id="pmViewTableBtn" class="pm-view-btn ${state.viewMode === 'table' ? 'active' : ''}" onclick="window.QSFPublicMartyrs.setViewMode('table')" title="${esc(d.tableView)}">
+              <i class="fas fa-table-list"></i> <span>${esc(d.tableView)}</span>
+            </button>
+          </div>
+        `;
+      } else if (state.section === 'wars') {
+        const wfc = getActiveWarFilterCount();
+        const filteredLen = getFilteredWarsList().length;
+        actionsEl.innerHTML = `
+          <span class="pm-sec-meta-count" id="pmToolbarCount">${esc(d.recordsCount(filteredLen))}</span>
+          <button type="button" id="pmToolbarFilterBtn" class="pm-sec-filter-btn ${state.filterPanelOpen ? 'open' : ''} ${wfc > 0 ? 'has-active' : ''}" onclick="window.QSFPublicMartyrs.toggleFilterPanel()">
+            <i class="fas fa-filter"></i> <span>${esc(d.filters)}</span>${wfc > 0 ? ` <span class="pm-sec-count">${wfc}</span>` : ''}
+          </button>
+        `;
+      } else if (state.section === 'profile') {
+        actionsEl.innerHTML = `
+          <button type="button" class="pm-sec-filter-btn" onclick="window.QSFPublicMartyrs.switchSection('martyrs')">
+            <i class="fas ${isUr() ? 'fa-arrow-right' : 'fa-arrow-left'}"></i> <span>${esc(d.backToAllMartyrs)}</span>
+          </button>
+        `;
+      } else if (state.section === 'war-detail') {
+        actionsEl.innerHTML = `
+          <button type="button" class="pm-sec-filter-btn" onclick="window.QSFPublicMartyrs.switchSection('wars')">
+            <i class="fas ${isUr() ? 'fa-arrow-right' : 'fa-arrow-left'}"></i> <span>${esc(d.backToWars)}</span>
+          </button>
+        `;
+      }
+    }
+
+    renderCollapsibleFilterPanel();
+  }
+
+  function renderCollapsibleFilterPanel() {
+    const panel = document.getElementById('pmFilterDropdownPanel');
+    if (!panel) return;
+    if (!state.filterPanelOpen || (state.section !== 'martyrs' && state.section !== 'wars')) {
+      panel.classList.add('hidden');
+      panel.innerHTML = '';
+      return;
+    }
+
+    const d = dict();
+    panel.classList.remove('hidden');
+
+    if (state.section === 'wars') {
+      const wf = state.warFilter;
+      const cats = Array.from(new Set(state.wars.map(w => w.category).filter(Boolean)));
+      panel.innerHTML = `
+        <form id="pmWarsFilterForm" novalidate>
+          <div class="pm-filter-panel-grid">
+            <div>
+              <label class="form-label" for="pmWfSearch">${esc(d.searchWarsLabel)}</label>
+              <input type="text" id="pmWfSearch" class="form-control" style="height: 36px; font-size: 0.84rem;" placeholder="${esc(d.searchWarsPlaceholder)}" value="${esc(wf.search)}" />
+            </div>
+            <div>
+              <label class="form-label" for="pmWfCategory">${esc(d.allCategories)}</label>
+              <select id="pmWfCategory" class="form-control" style="height: 36px; font-size: 0.84rem;">
+                <option value="">${esc(d.allCategories)}</option>
+                ${cats.map(c => `<option value="${esc(c)}" ${wf.category === c ? 'selected' : ''}>${esc(fmtCategory(c))}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="pm-filter-panel-actions">
+            <button type="button" class="btn-public-martyr" onclick="window.QSFPublicMartyrs.resetAllWarFilters()">
+              <i class="fas fa-rotate-left"></i> ${esc(d.resetFilters)}
+            </button>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn-public-martyr" onclick="window.QSFPublicMartyrs.toggleFilterPanel(false)">${esc(d.close)}</button>
+              <button type="submit" class="btn-public-martyr primary">
+                <i class="fas fa-check"></i> ${esc(d.applyFilters)}
+              </button>
+            </div>
+          </div>
+        </form>
+      `;
+      document.getElementById('pmWarsFilterForm').addEventListener('submit', e => {
+        e.preventDefault();
+        state.warFilter.search = document.getElementById('pmWfSearch').value.trim();
+        state.warFilter.category = document.getElementById('pmWfCategory').value;
+        state.filterPanelOpen = false;
+        syncHeroTextAndStats();
+        renderPublicWarsList();
+      });
+      return;
+    }
+
+    // All Martyrs Collapsible Filter Panel
+    const f = state.filter;
+    const allNodes = Array.from(state.locationsById.values());
+    const tehsils = allNodes.filter(l => l.location_type === 'Tehsil');
+    const villages = allNodes.filter(l => ['District', 'Tehsil', 'Town', 'Village', 'Area', 'Locality'].includes(l.location_type));
+
+    panel.innerHTML = `
+      <form id="pmFiltersPopupForm" novalidate>
+        <div class="pm-filter-panel-grid">
+          <div>
+            <label class="form-label" for="pmFpSearch">${esc(d.searchMartyrs)}</label>
+            <input type="text" id="pmFpSearch" class="form-control" style="height: 36px; font-size: 0.84rem;" placeholder="${esc(d.searchPlaceholder)}" value="${esc(f.search)}" />
+          </div>
+          <div>
+            <label class="form-label" for="pmFpWar">${esc(d.associatedConflict)}</label>
+            <select id="pmFpWar" class="form-control" style="height: 36px; font-size: 0.84rem;">
+              <option value="">${esc(d.allWars)}</option>
+              ${state.wars.map(w => `<option value="${w.id}" ${String(f.war_id) === String(w.id) ? 'selected' : ''}>${esc(pickBi(w.name, w.name_ur).text)} (${w.total_martyrs})</option>`).join('')}
+            </select>
+          </div>
+          <div>
+            <label class="form-label" for="pmFpTehsil">${esc(d.allTehsils)}</label>
+            <select id="pmFpTehsil" class="form-control" style="height: 36px; font-size: 0.84rem;">
+              <option value="">${esc(d.allTehsils)}</option>
+              ${tehsils.map(t => `<option value="${esc(t.name_en)}" ${f.tehsil === t.name_en ? 'selected' : ''}>${esc(isUr() ? (t.name_ur || t.name_en) : t.name_en)} (${Number(t.martyr_count) || 0})</option>`).join('')}
+            </select>
+          </div>
+          <div>
+            <label class="form-label" for="pmFpLocationId">${esc(d.locations)}</label>
+            <select id="pmFpLocationId" class="form-control" style="height: 36px; font-size: 0.84rem;">
+              <option value="">${esc(d.allLocations)} (${state.totalTreeMartyrs})</option>
+              ${villages.map(v => {
+                const lbl = isUr() ? (v.name_ur || v.name_en) : v.name_en;
+                const prefix = v.location_type === 'Tehsil' ? '— ' : (v.location_type === 'District' ? '' : '· ');
+                return `<option value="${v.id}" ${String(f.location_id) === String(v.id) ? 'selected' : ''}>${esc(prefix + lbl)}${v.martyr_count ? ` (${v.martyr_count})` : ''}</option>`;
+              }).join('')}
+            </select>
+          </div>
+          <div>
+            <label class="form-label" for="pmFpScope">${esc(d.locationMatchScope)}</label>
+            <select id="pmFpScope" class="form-control" style="height: 36px; font-size: 0.84rem;">
+              <option value="residential" ${f.location_scope === 'residential' ? 'selected' : ''}>${esc(d.scopeHome)}</option>
+              <option value="martyrdom" ${f.location_scope === 'martyrdom' ? 'selected' : ''}>${esc(d.scopeMartyrdom)}</option>
+              <option value="either" ${f.location_scope === 'either' ? 'selected' : ''}>${esc(d.scopeBoth)}</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" for="pmFpSort">${esc(d.sortOrderLabel)}</label>
+            <select id="pmFpSort" class="form-control" style="height: 36px; font-size: 0.84rem;">
+              <option value="martyrdom_desc" ${f.sort === 'martyrdom_desc' ? 'selected' : ''}>${esc(d.sortNewest)}</option>
+              <option value="martyrdom_asc" ${f.sort === 'martyrdom_asc' ? 'selected' : ''}>${esc(d.sortOldest)}</option>
+              <option value="name_asc" ${f.sort === 'name_asc' ? 'selected' : ''}>${esc(d.sortNameAsc)}</option>
+              <option value="name_desc" ${f.sort === 'name_desc' ? 'selected' : ''}>${esc(d.sortNameDesc)}</option>
+              <option value="recent" ${f.sort === 'recent' ? 'selected' : ''}>${esc(d.sortRecent)}</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" for="pmFpDateFrom">${esc(d.dateFrom)}</label>
+            <input type="date" id="pmFpDateFrom" class="form-control" style="height: 36px; font-size: 0.84rem;" value="${esc(f.date_from)}" />
+          </div>
+          <div>
+            <label class="form-label" for="pmFpDateTo">${esc(d.dateTo)}</label>
+            <input type="date" id="pmFpDateTo" class="form-control" style="height: 36px; font-size: 0.84rem;" value="${esc(f.date_to)}" />
+          </div>
+        </div>
+
+        <div class="pm-filter-panel-actions">
+          <button type="button" class="btn-public-martyr" onclick="window.QSFPublicMartyrs.resetAllFilters()">
+            <i class="fas fa-rotate-left"></i> ${esc(d.resetFilters)}
+          </button>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn-public-martyr" onclick="window.QSFPublicMartyrs.toggleFilterPanel(false)">${esc(d.close)}</button>
+            <button type="submit" class="btn-public-martyr primary">
+              <i class="fas fa-check"></i> ${esc(d.applyFilters)}
+            </button>
+          </div>
+        </div>
+      </form>
+    `;
+
+    document.getElementById('pmFiltersPopupForm').addEventListener('submit', e => {
+      e.preventDefault();
+      state.filter.search = document.getElementById('pmFpSearch').value.trim();
+      state.filter.war_id = document.getElementById('pmFpWar').value;
+      state.filter.tehsil = document.getElementById('pmFpTehsil').value;
+      state.filter.location_id = document.getElementById('pmFpLocationId').value;
+      state.filter.location_scope = document.getElementById('pmFpScope').value;
+      state.filter.sort = document.getElementById('pmFpSort').value;
+      state.filter.date_from = document.getElementById('pmFpDateFrom').value;
+      state.filter.date_to = document.getElementById('pmFpDateTo').value;
+      state.filter.page = 1;
+      state.filterPanelOpen = false;
+      loadAndRenderPublicMartyrsList();
+    });
+  }
+
+  function toggleFilterPanel(forceOpen) {
+    state.filterPanelOpen = forceOpen === undefined ? !state.filterPanelOpen : Boolean(forceOpen);
+    syncHeroTextAndStats();
   }
 
   function indexLocationTree(nodes) {
@@ -414,6 +696,7 @@
   }
 
   async function switchSection(sec) {
+    state.filterPanelOpen = false;
     if (sec === 'wars') {
       state.section = 'wars';
       window.history.pushState({}, '', '/martyrs/wars');
@@ -522,185 +805,48 @@
     const root = document.getElementById('publicMartyrsMainRoot');
     if (!root) return;
     const d = dict();
-    const f = state.filter;
     const pg = state.pagination;
     const martyrs = state.martyrsList;
-    const startIdx = pg.total === 0 ? 0 : (pg.page - 1) * pg.limit + 1;
-    const endIdx = Math.min(pg.total, pg.page * pg.limit);
-    const selLocLabel = getSelectedLocationLabel();
     const activeChips = buildActiveFilterChips();
 
-    root.innerHTML = `
-      <div class="martyrs-loc-mobile-backdrop ${state.locMobileOpen ? 'open' : ''}" id="pmLocMobileBackdrop" onclick="window.QSFPublicMartyrs.toggleMobileLocDrawer(false)"></div>
+    syncHeroTextAndStats();
 
-      <div class="martyrs-workspace-split">
-        <!-- DEDICATED PUBLIC LOCATIONS SIDEBAR (READ-ONLY) -->
-        <aside class="martyrs-locations-sidebar ${state.locSidebarCollapsed ? 'collapsed' : ''} ${state.locMobileOpen ? 'mobile-open' : ''}" id="pmLocationsSidebar" aria-label="${esc(d.locations)}">
-          <div class="martyrs-loc-header">
-            <div class="martyrs-loc-header-title">
-              <i class="fas fa-map-location-dot"></i>
-              <span>${esc(d.locations)}</span>
-            </div>
-            <button type="button" class="martyrs-loc-toggle-btn" onclick="window.QSFPublicMartyrs.toggleLocationsSidebar()" title="${esc(d.locations)}">
-              <i class="fas ${state.locSidebarCollapsed ? (isUr() ? 'fa-angles-left' : 'fa-angles-right') : (isUr() ? 'fa-angles-right' : 'fa-angles-left')}"></i>
+    root.innerHTML = `
+      <div class="martyrs-workspace-main">
+        ${activeChips.length ? `
+          <div class="martyrs-active-chips">
+            ${activeChips.map(ch => `
+              <span class="martyrs-active-chip">
+                ${esc(ch.label)}
+                <button type="button" onclick="window.QSFPublicMartyrs.clearSingleFilter('${esc(ch.key)}')">&times;</button>
+              </span>
+            `).join('')}
+            <button type="button" class="btn-public-martyr" style="padding: 2px 10px; font-size: 0.74rem; height: 24px;" onclick="window.QSFPublicMartyrs.resetAllFilters()">
+              ${esc(d.resetFilters)}
             </button>
           </div>
+        ` : ''}
 
-          <div class="martyrs-loc-body">
-            <div class="martyrs-loc-controls">
-              <input type="text" id="pmLocSearchInput" class="martyrs-loc-search"
-                placeholder="${esc(d.findLocation)}"
-                value="${esc(state.locSearchQuery)}" />
-              <div class="martyrs-loc-scope-tabs">
-                <button type="button" class="martyrs-loc-scope-btn ${f.location_scope === 'residential' ? 'active' : ''}" onclick="window.QSFPublicMartyrs.setLocationScope('residential')">${esc(d.scopeHome)}</button>
-                <button type="button" class="martyrs-loc-scope-btn ${f.location_scope === 'martyrdom' ? 'active' : ''}" onclick="window.QSFPublicMartyrs.setLocationScope('martyrdom')">${esc(d.scopeMartyrdom)}</button>
-                <button type="button" class="martyrs-loc-scope-btn ${f.location_scope === 'either' ? 'active' : ''}" onclick="window.QSFPublicMartyrs.setLocationScope('either')">${esc(d.scopeBoth)}</button>
-              </div>
-            </div>
-
-            <div class="martyrs-loc-tree-scroll" id="pmLocTreeContainer">
-              <div class="martyrs-loc-row ${!f.location_id ? 'active' : ''}" onclick="window.QSFPublicMartyrs.selectLocation('')">
-                <span class="martyrs-loc-row-left">
-                  <i class="fas fa-globe" style="color:#881337; width:14px;"></i>
-                  <span class="martyrs-loc-name" style="font-weight:700;">${esc(d.allLocations)}</span>
-                </span>
-                <span class="martyrs-loc-count ${state.totalTreeMartyrs > 0 ? 'has-records' : ''}">${state.totalTreeMartyrs}</span>
-              </div>
-              ${renderPublicLocationTreeNodes(state.locationTree, 0)}
-            </div>
+        ${martyrs.length === 0 ? `
+          <div class="martyr-editorial-section" style="text-align: center; padding: 52px 24px;">
+            <i class="fas fa-monument" style="font-size: 2.2rem; color: #CBD5E1; margin-bottom: 12px;"></i>
+            <h3 style="margin: 0 0 6px; color: #334155;">${esc(d.noMartyrsFound)}</h3>
+            <p style="margin: 0 0 18px; color: #64748B; font-size: 0.88rem;">${esc(d.noMartyrsSub)}</p>
+            ${getActiveFilterCount() > 0 ? `
+              <button type="button" class="btn-public-martyr primary" onclick="window.QSFPublicMartyrs.resetAllFilters()">
+                <i class="fas fa-rotate-left"></i> ${esc(d.resetFilters)}
+              </button>
+            ` : ''}
           </div>
-        </aside>
-
-        <!-- FULL-WIDTH PUBLIC MARTYRS ARCHIVE LISTING -->
-        <div class="martyrs-workspace-main">
-          <!-- Public Search & Filter Toolbar -->
-          <div class="martyrs-directory-toolbar" style="gap: 12px;">
-            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-              <button type="button" class="btn-public-martyr martyrs-mobile-loc-btn" onclick="window.QSFPublicMartyrs.toggleMobileLocDrawer(true)">
-                <i class="fas fa-map-location-dot"></i> ${esc(d.locations)}
-              </button>
-              <span style="font-size: 0.88rem; color: #334155;">
-                ${d.showingRecords(startIdx, endIdx, pg.total)}
-                ${selLocLabel ? d.inLocation(esc(selLocLabel)) : ''}
-              </span>
-            </div>
-
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1; justify-content: flex-end;">
-              <div style="position: relative; min-width: 240px; max-width: 340px; flex: 1;">
-                <input type="text" id="pmQuickSearchInput" class="form-control"
-                  style="height: 36px; padding-inline-start: 34px; font-size: 0.84rem;"
-                  placeholder="${esc(d.searchPlaceholder)}"
-                  value="${esc(f.search)}" />
-                <i class="fas fa-search" style="position: absolute; top: 50%; transform: translateY(-50%); inset-inline-start: 11px; color: #94A3B8; font-size: 0.82rem;"></i>
-              </div>
-
-              <select id="pmQuickWarSelect" class="form-control" style="width: auto; max-width: 260px; height: 36px; padding: 4px 10px; font-size: 0.82rem;">
-                <option value="">${esc(d.allWars)}</option>
-                ${state.wars.map(w => {
-                  const wName = pickBi(w.name, w.name_ur).text;
-                  return `<option value="${w.id}" ${String(f.war_id) === String(w.id) ? 'selected' : ''}>${esc(wName)} (${w.total_martyrs})</option>`;
-                }).join('')}
-              </select>
-
-              <select id="pmQuickSortSelect" class="form-control" style="width: auto; height: 36px; padding: 4px 10px; font-size: 0.82rem;">
-                <option value="martyrdom_desc" ${f.sort === 'martyrdom_desc' ? 'selected' : ''}>${esc(d.sortNewest)}</option>
-                <option value="martyrdom_asc" ${f.sort === 'martyrdom_asc' ? 'selected' : ''}>${esc(d.sortOldest)}</option>
-                <option value="name_asc" ${f.sort === 'name_asc' ? 'selected' : ''}>${esc(d.sortNameAsc)}</option>
-                <option value="name_desc" ${f.sort === 'name_desc' ? 'selected' : ''}>${esc(d.sortNameDesc)}</option>
-                <option value="recent" ${f.sort === 'recent' ? 'selected' : ''}>${esc(d.sortRecent)}</option>
-              </select>
-
-              <button type="button" class="btn-public-martyr" style="height: 36px;" onclick="window.QSFPublicMartyrs.openFiltersModal()">
-                <i class="fas fa-sliders"></i> ${esc(d.filters)} ${getActiveFilterCount() > 0 ? `(${getActiveFilterCount()})` : ''}
-              </button>
-            </div>
-          </div>
-
-          ${activeChips.length ? `
-            <div class="martyrs-active-chips">
-              ${activeChips.map(ch => `
-                <span class="martyrs-active-chip">
-                  ${esc(ch.label)}
-                  <button type="button" onclick="window.QSFPublicMartyrs.clearSingleFilter('${esc(ch.key)}')">&times;</button>
-                </span>
-              `).join('')}
-              <button type="button" class="btn-public-martyr" style="padding: 2px 10px; font-size: 0.74rem; height: 24px;" onclick="window.QSFPublicMartyrs.resetAllFilters()">
-                ${esc(d.resetFilters)}
-              </button>
-            </div>
-          ` : ''}
-
-          ${martyrs.length === 0 ? `
-            <div class="martyr-editorial-section" style="text-align: center; padding: 52px 24px;">
-              <i class="fas fa-monument" style="font-size: 2.2rem; color: #CBD5E1; margin-bottom: 12px;"></i>
-              <h3 style="margin: 0 0 6px; color: #334155;">${esc(d.noMartyrsFound)}</h3>
-              <p style="margin: 0 0 18px; color: #64748B; font-size: 0.88rem;">${esc(d.noMartyrsSub)}</p>
-              ${getActiveFilterCount() > 0 ? `
-                <button type="button" class="btn-public-martyr primary" onclick="window.QSFPublicMartyrs.resetAllFilters()">
-                  <i class="fas fa-rotate-left"></i> ${esc(d.resetFilters)}
-                </button>
-              ` : ''}
-            </div>
-          ` : `
-            <div class="martyrs-cards-grid" id="publicMartyrsCardsGrid">
-              ${martyrs.map(renderPublicMartyrCard).join('')}
-            </div>
-            ${renderPublicPaginationBar(pg)}
-          `}
-        </div>
+        ` : `
+          ${state.viewMode === 'table'
+            ? renderPublicMartyrsTable(martyrs)
+            : `<div class="pm-memorial-cards-grid" id="publicMartyrsCardsGrid">${martyrs.map(renderPublicMartyrCard).join('')}</div>`
+          }
+          ${renderPublicPaginationBar(pg)}
+        `}
       </div>
     `;
-
-    // Wire inputs
-    const locInput = document.getElementById('pmLocSearchInput');
-    if (locInput) {
-      locInput.addEventListener('input', () => {
-        state.locSearchQuery = locInput.value;
-        const box = document.getElementById('pmLocTreeContainer');
-        if (box) {
-          box.innerHTML = `
-            <div class="martyrs-loc-row ${!state.filter.location_id ? 'active' : ''}" onclick="window.QSFPublicMartyrs.selectLocation('')">
-              <span class="martyrs-loc-row-left">
-                <i class="fas fa-globe" style="color:#881337; width:14px;"></i>
-                <span class="martyrs-loc-name" style="font-weight:700;">${esc(dict().allLocations)}</span>
-              </span>
-              <span class="martyrs-loc-count ${state.totalTreeMartyrs > 0 ? 'has-records' : ''}">${state.totalTreeMartyrs}</span>
-            </div>
-            ${renderPublicLocationTreeNodes(state.locationTree, 0)}
-          `;
-        }
-      });
-    }
-
-    const searchInput = document.getElementById('pmQuickSearchInput');
-    if (searchInput) {
-      searchInput.addEventListener('input', () => {
-        clearTimeout(state.searchTimer);
-        state.searchTimer = setTimeout(() => {
-          state.filter.search = searchInput.value.trim();
-          state.filter.page = 1;
-          loadAndRenderPublicMartyrsList();
-        }, 320);
-      });
-    }
-
-    const warSel = document.getElementById('pmQuickWarSelect');
-    if (warSel) {
-      warSel.addEventListener('change', () => {
-        state.filter.war_id = warSel.value;
-        state.filter.page = 1;
-        loadAndRenderPublicMartyrsList();
-      });
-    }
-
-    const sortSel = document.getElementById('pmQuickSortSelect');
-    if (sortSel) {
-      sortSel.addEventListener('change', () => {
-        state.filter.sort = sortSel.value;
-        state.filter.page = 1;
-        loadAndRenderPublicMartyrsList();
-      });
-    }
   }
 
   function renderPublicLocationTreeNodes(nodes, depth) {
@@ -760,44 +906,148 @@
       [m.martyrdom_location_name || m.place_of_martyrdom, m.martyrdom_tehsil].filter((v, i, a) => v && a.indexOf(v) === i).join(', '),
       [m.martyrdom_location_name_ur || m.place_of_martyrdom_ur, m.martyrdom_tehsil_ur].filter((v, i, a) => v && a.indexOf(v) === i).join('، ')
     );
-    const homeLocBi = pickBi(
-      [m.residence_location_name || m.city, m.residence_tehsil].filter((v, i, a) => v && a.indexOf(v) === i).join(', '),
-      [m.residence_location_name_ur || m.city_ur, m.residence_tehsil_ur].filter((v, i, a) => v && a.indexOf(v) === i).join('، ')
-    );
     const warBi = pickBi(m.primary_war_name, m.primary_war_name_ur);
     const profileUrl = `/martyrs/${encodeURIComponent(m.slug || String(m.id))}`;
     const relPrefix = m.gender === 'female' ? d.daughterOf : d.sonOf;
 
+    // Cards View presents server-composited painterly memorial portrait card when available,
+    // or transparent cutout / authentic portrait over painterly dark-crimson backdrop
+    const isComposited = Boolean(m.memorial_card_url);
+    const hasCutout = !isComposited && Boolean(m.cutout_photo_url);
+    const cardImgUrl = m.memorial_card_url || m.cutout_photo_url || m.profile_photo_url;
+    const tplBgMap = {
+      splatter_mountain: 'bg-splatter',
+      fallen_memorial: 'bg-splatter',
+      halo_dove: 'bg-halo',
+      maroon_ribbon: 'bg-halo',
+      islamic_arch: 'bg-velvet',
+      arabesque_plate: 'bg-velvet'
+    };
+    const bgCycle = ['bg-splatter', 'bg-halo', 'bg-velvet'];
+    const stageBgClass = (m.cover_template && m.cover_template !== 'splatter_mountain' && tplBgMap[m.cover_template])
+      ? tplBgMap[m.cover_template]
+      : (m.cover_template === 'splatter_mountain' && m.profile_photo_url ? 'bg-splatter' : bgCycle[Math.abs(Number(m.id) || 0) % bgCycle.length]);
+
     return `
-      <article class="martyr-profile-card" data-public-martyr-id="${m.id}" data-public-martyr-slug="${esc(m.slug)}" onclick="window.QSFPublicMartyrs.openProfile('${esc(m.slug || m.id)}')">
-        <div class="martyr-card-avatar">
-          ${m.profile_photo_url
-            ? `<img src="${esc(m.profile_photo_url)}" alt="${esc(nameBi.text)}" loading="lazy" />`
-            : `<i class="fas fa-user"></i>`
+      <article class="pm-memorial-card" data-public-martyr-id="${m.id}" data-public-martyr-slug="${esc(m.slug)}" onclick="window.QSFPublicMartyrs.openProfile('${esc(m.slug || m.id)}')">
+        <div class="pm-card-portrait-stage ${stageBgClass} ${isComposited ? 'is-composited' : (hasCutout ? 'has-cutout' : '')}">
+          <span class="pm-card-kicker-ribbon">${esc(d.martyrsNationRibbon)}</span>
+          ${cardImgUrl
+            ? `<img class="pm-card-photo" src="${esc(cardImgUrl)}" alt="${esc(nameBi.text)}" loading="lazy" />`
+            : `<div class="pm-card-portrait-fallback">
+                 <img class="pm-fallback-emblem" src="/media/branding/logo_header_58.webp" alt="QSF" loading="lazy" />
+                 <span>${esc(d.pageTitle)}</span>
+               </div>`
           }
         </div>
-        <div class="martyr-card-info">
-          <h3 class="martyr-card-name ${isUr() ? 'martyr-urdu' : ''}">${esc(nameBi.text)}</h3>
-          ${fatherBi.text ? `<div class="martyr-card-father ${isUr() ? 'martyr-urdu' : ''}">${esc(relPrefix)} ${esc(fatherBi.text)}</div>` : ''}
-          <div class="martyr-card-details">
-            ${m.date_of_birth ? `<span><i class="fas fa-cake-candles"></i> ${esc(d.dateOfBirth)}: ${esc(fmtDate(m.date_of_birth))}</span>` : ''}
-            <span><i class="fas fa-calendar-day"></i> ${esc(d.dateOfMartyrdom)}: <strong>${esc(fmtDate(m.date_of_martyrdom))}</strong></span>
-            ${marLocBi.text ? `<span><i class="fas fa-location-dot"></i> ${esc(d.placeOfMartyrdom)}: ${esc(marLocBi.text)}</span>` : ''}
-            ${homeLocBi.text ? `<span><i class="fas fa-house"></i> ${esc(d.homeVillage)}: ${esc(homeLocBi.text)}</span>` : ''}
+        <div class="pm-card-body">
+          <h3 class="pm-card-name">${esc(nameBi.text)}</h3>
+          ${fatherBi.text ? `<div class="pm-card-father">${esc(relPrefix)} ${esc(fatherBi.text)}</div>` : ''}
+          <div class="pm-card-meta-list">
+            <div class="pm-card-meta-item">
+              <i class="fas fa-calendar-day"></i>
+              <span>${esc(d.dateOfMartyrdom)}: <strong>${esc(fmtDate(m.date_of_martyrdom))}</strong></span>
+            </div>
+            ${marLocBi.text ? `
+              <div class="pm-card-meta-item">
+                <i class="fas fa-location-dot"></i>
+                <span>${esc(d.placeOfMartyrdom)}: ${esc(marLocBi.text)}</span>
+              </div>
+            ` : ''}
           </div>
-          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
+          <div class="pm-card-footer">
             ${warBi.text ? `
-              <span class="martyr-card-war-link" style="margin-top:0;" onclick="event.stopPropagation(); window.QSFPublicMartyrs.openWarDetail('${esc(m.primary_war_slug || m.primary_war_id)}')" title="${esc(d.associatedConflict)}">
+              <span class="pm-card-war-chip" onclick="event.stopPropagation(); window.QSFPublicMartyrs.openWarDetail('${esc(m.primary_war_slug || m.primary_war_id)}')" title="${esc(warBi.text)}">
                 <i class="fas fa-landmark"></i> ${esc(warBi.text)}
               </span>
             ` : '<span></span>'}
-            <a href="${profileUrl}" class="btn-public-martyr" style="padding: 3px 10px; font-size: 0.74rem;" onclick="event.stopPropagation(); event.preventDefault(); window.QSFPublicMartyrs.openProfile('${esc(m.slug || m.id)}')">
-              ${esc(d.viewProfile)} <i class="fas ${isUr() ? 'fa-arrow-left' : 'fa-arrow-right'}" style="font-size: 0.68rem;"></i>
+            <a href="${profileUrl}" class="pm-card-profile-link" onclick="event.stopPropagation(); event.preventDefault(); window.QSFPublicMartyrs.openProfile('${esc(m.slug || m.id)}')">
+              ${esc(d.viewProfile)} <i class="fas ${isUr() ? 'fa-arrow-left' : 'fa-arrow-right'}" style="font-size: 0.7rem;"></i>
             </a>
           </div>
         </div>
       </article>
     `;
+  }
+
+  /**
+   * Professional Martyr Directory Table (Table View)
+   * STRICT RULE: Always displays the exact original uploaded photograph (m.profile_photo_url),
+   * never an AI-generated banner or altered cutout.
+   */
+  function renderPublicMartyrsTable(martyrs) {
+    const d = dict();
+    return `
+      <div class="pm-directory-table-wrap" id="publicMartyrsTableWrap">
+        <table class="pm-directory-table" id="publicMartyrsDirectoryTable">
+          <thead>
+            <tr>
+              <th style="width: 72px;">${esc(d.colPhoto)}</th>
+              <th>${esc(d.fullName)}</th>
+              <th>${esc(d.fatherName)}</th>
+              <th>${esc(d.dateOfMartyrdom)}</th>
+              <th>${esc(d.placeOfMartyrdom)}</th>
+              <th>${esc(d.associatedConflict)}</th>
+              <th style="width: 132px; text-align: center;">${esc(d.colAction)}</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${martyrs.map(m => {
+              const nameBi = pickBi(m.full_name, m.full_name_ur);
+              const altName = isUr()
+                ? (m.full_name && m.full_name !== nameBi.text ? m.full_name : '')
+                : (m.full_name_ur && m.full_name_ur !== nameBi.text ? m.full_name_ur : '');
+              const fatherBi = pickBi(m.father_name, m.father_name_ur);
+              const marLocBi = pickBi(
+                [m.martyrdom_location_name || m.place_of_martyrdom, m.martyrdom_tehsil].filter((v, i, a) => v && a.indexOf(v) === i).join(', '),
+                [m.martyrdom_location_name_ur || m.place_of_martyrdom_ur, m.martyrdom_tehsil_ur].filter((v, i, a) => v && a.indexOf(v) === i).join('، ')
+              );
+              const warBi = pickBi(m.primary_war_name, m.primary_war_name_ur);
+              const profileUrl = `/martyrs/${encodeURIComponent(m.slug || String(m.id))}`;
+
+              return `
+                <tr data-public-table-row-id="${m.id}" onclick="window.QSFPublicMartyrs.openProfile('${esc(m.slug || m.id)}')">
+                  <td>
+                    <div class="pm-table-orig-thumb" title="${esc(d.authenticPhotoBadge)}">
+                      ${m.profile_photo_url
+                        ? `<img src="${esc(m.profile_photo_url)}" alt="${esc(nameBi.text)}" data-original-photo="1" loading="lazy" />`
+                        : `<i class="fas fa-user"></i>`
+                      }
+                    </div>
+                  </td>
+                  <td>
+                    <span class="pm-table-name-cell">${esc(nameBi.text)}</span>
+                    ${altName ? `<span class="pm-table-sub-name">${esc(altName)}</span>` : ''}
+                  </td>
+                  <td>${esc(fatherBi.text || d.notAvailable)}</td>
+                  <td><span class="pm-table-date-badge">${esc(fmtDate(m.date_of_martyrdom))}</span></td>
+                  <td>${esc(marLocBi.text || d.notAvailable)}</td>
+                  <td>
+                    ${warBi.text ? `
+                      <span class="pm-card-war-chip" style="max-width: 240px;" onclick="event.stopPropagation(); window.QSFPublicMartyrs.openWarDetail('${esc(m.primary_war_slug || m.primary_war_id)}')" title="${esc(warBi.text)}">
+                        <i class="fas fa-landmark"></i> ${esc(warBi.text)}
+                      </span>
+                    ` : esc(d.notAvailable)}
+                  </td>
+                  <td style="text-align: center;">
+                    <a href="${profileUrl}" class="btn-public-martyr" style="padding: 5px 11px; font-size: 0.76rem; white-space: nowrap;" onclick="event.stopPropagation(); event.preventDefault(); window.QSFPublicMartyrs.openProfile('${esc(m.slug || m.id)}')">
+                      ${esc(d.viewProfile)} <i class="fas ${isUr() ? 'fa-arrow-left' : 'fa-arrow-right'}" style="font-size: 0.68rem;"></i>
+                    </a>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  function setViewMode(mode) {
+    const next = mode === 'table' ? 'table' : 'cards';
+    state.viewMode = next;
+    try { localStorage.setItem(VIEW_MODE_KEY, next); } catch (_) {}
+    renderPublicMartyrsView();
   }
 
   function renderPublicPaginationBar(pg) {
@@ -890,7 +1140,12 @@
     const genderLabel = m.gender === 'female' ? d.female : m.gender === 'other' ? d.other : d.male;
 
     const lbItems = [];
-    if (m.profile_photo_url) lbItems.push({ image_url: m.profile_photo_url, caption: nameBi.text });
+    let origPhotoIdx = -1;
+    if (m.profile_photo_url) {
+      origPhotoIdx = lbItems.length;
+      lbItems.push({ image_url: m.profile_photo_url, caption: `${nameBi.text} — ${d.authenticPhotoBadge}` });
+    }
+    const galleryStartIdx = lbItems.length;
     photos.forEach(p => lbItems.push({ image_url: p.image_url, caption: p.caption || nameBi.text }));
     window.__qsfPublicMartyrPhotos = lbItems;
 
@@ -901,20 +1156,18 @@
     });
 
     const bioDir = isUr() && !bioBi.usedFallback ? 'rtl' : (!isUr() && !bioBi.usedFallback ? 'ltr' : (isUr() ? 'ltr' : 'rtl'));
+    const resolvedAgeText = formatResolvedAge(m);
 
     root.innerHTML = `
-      <div class="martyr-page-topbar">
-        <button type="button" class="btn-public-martyr" onclick="window.QSFPublicMartyrs.switchSection('martyrs')">
-          <i class="fas ${isUr() ? 'fa-arrow-right' : 'fa-arrow-left'}"></i> ${esc(d.backToAllMartyrs)}
-        </button>
-      </div>
-
       <header class="martyr-memorial-header" data-public-profile-header="1">
-        <div class="martyr-memorial-portrait" ${m.profile_photo_url ? `onclick="window.QSFPublicMartyrs.openLightbox(window.__qsfPublicMartyrPhotos, 0)"` : ''}>
-          ${m.profile_photo_url
-            ? `<img src="${esc(m.profile_photo_url)}" alt="${esc(nameBi.text)}" />`
-            : `<i class="fas fa-user"></i>`
-          }
+        <div style="display: flex; flex-direction: column; align-items: center; flex-shrink: 0;">
+          <div class="martyr-memorial-portrait" ${origPhotoIdx >= 0 ? `onclick="window.QSFPublicMartyrs.openLightbox(window.__qsfPublicMartyrPhotos, ${origPhotoIdx})"` : ''}>
+            ${m.profile_photo_url
+              ? `<img src="${esc(m.profile_photo_url)}" alt="${esc(nameBi.text)}" data-original-profile-photo="1" />`
+              : `<i class="fas fa-user"></i>`
+            }
+          </div>
+          ${m.profile_photo_url ? `<span class="pm-original-photo-badge"><i class="fas fa-camera"></i> ${esc(d.authenticPhotoBadge)}</span>` : ''}
         </div>
         <div class="martyr-memorial-identity">
           <div class="martyr-memorial-kicker">
@@ -943,7 +1196,7 @@
             </div>
             <div class="martyr-keyfact">
               <small>${esc(d.ageAtMartyrdom)}</small>
-              <strong>${m.age_at_death != null ? `${m.age_at_death} ${esc(d.yearsOld)}` : esc(d.notAvailable)}</strong>
+              <strong>${esc(resolvedAgeText || d.notAvailable)}</strong>
             </div>
             <div class="martyr-keyfact">
               <small>${esc(d.placeOfMartyrdom)}</small>
@@ -955,18 +1208,65 @@
 
       <div class="martyr-profile-2col">
         <div>
-          <section class="martyr-editorial-section">
+          <section class="martyr-editorial-section" id="publicProfilePersonalRecordSection">
             <h3 class="martyr-section-heading"><span><i class="fas fa-id-card"></i> ${esc(d.personalRecord)}</span></h3>
-            <dl class="martyr-info-dl">
-              <div class="martyr-info-pair"><dt>${esc(d.fullName)}</dt><dd>${esc(nameBi.text)}</dd></div>
-              <div class="martyr-info-pair"><dt>${esc(d.fatherName)}</dt><dd>${esc(fatherBi.text || d.notAvailable)}</dd></div>
-              <div class="martyr-info-pair"><dt>${esc(d.gender)}</dt><dd>${esc(genderLabel)}</dd></div>
-              <div class="martyr-info-pair"><dt>${esc(d.dateOfBirth)}</dt><dd>${esc(fmtDate(m.date_of_birth))}</dd></div>
-              <div class="martyr-info-pair"><dt>${esc(d.dateOfMartyrdom)}</dt><dd style="color:#881337;">${esc(fmtDate(m.date_of_martyrdom))}</dd></div>
-              <div class="martyr-info-pair"><dt>${esc(d.placeOfBirth)}</dt><dd>${esc(birthPlaceBi.text || d.notAvailable)}</dd></div>
-              <div class="martyr-info-pair"><dt>${esc(d.homeVillage)}</dt><dd>${esc(homeBi.text || d.notAvailable)}</dd></div>
-              <div class="martyr-info-pair"><dt>${esc(d.placeOfMartyrdom)}</dt><dd style="color:#881337;">${esc(marBi.text || d.notAvailable)}</dd></div>
-            </dl>
+            <div class="martyr-record-table-wrap">
+              <table class="martyr-record-table" id="publicProfilePersonalRecordTable">
+                <thead>
+                  <tr>
+                    <th scope="col">${esc(d.colFieldLabel)}</th>
+                    <th scope="col">${esc(d.colFieldValue)}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">${esc(d.fullName)}</th>
+                    <td>${esc(nameBi.text)}${secondaryName ? ` <span style="color:#64748B; font-weight:500; font-size:0.86em;">(${esc(secondaryName)})</span>` : ''}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">${esc(d.fatherName)}</th>
+                    <td class="${fatherBi.text ? '' : 'is-muted'}">${esc(fatherBi.text || d.notAvailable)}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">${esc(d.gender)}</th>
+                    <td>${esc(genderLabel)}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">${esc(d.dateOfBirth)}</th>
+                    <td class="${m.date_of_birth ? '' : 'is-muted'}">${esc(fmtDate(m.date_of_birth))}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">${esc(d.dateOfMartyrdom)}</th>
+                    <td class="${m.date_of_martyrdom ? 'is-emphasis' : 'is-muted'}">${esc(fmtDate(m.date_of_martyrdom))}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">${esc(d.ageAtMartyrdom)}</th>
+                    <td class="${resolvedAgeText ? '' : 'is-muted'}">${esc(resolvedAgeText || d.notAvailable)}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">${esc(d.placeOfBirth)}</th>
+                    <td class="${birthPlaceBi.text ? '' : 'is-muted'}">${esc(birthPlaceBi.text || d.notAvailable)}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">${esc(d.homeVillage)}</th>
+                    <td class="${homeBi.text ? '' : 'is-muted'}">${esc(homeBi.text || d.notAvailable)}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">${esc(d.placeOfMartyrdom)}</th>
+                    <td class="${marBi.text ? 'is-emphasis' : 'is-muted'}">${esc(marBi.text || d.notAvailable)}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">${esc(d.associatedConflict)}</th>
+                    <td class="${warBi.text ? '' : 'is-muted'}">
+                      ${warBi.text
+                        ? `<a href="/martyrs/war/${encodeURIComponent(m.primary_war_slug || m.primary_war_id)}" class="martyr-record-table-link" onclick="event.preventDefault(); window.QSFPublicMartyrs.openWarDetail('${esc(m.primary_war_slug || m.primary_war_id)}')"><i class="fas fa-landmark" style="font-size:0.78em;"></i> ${esc(warBi.text)}</a>`
+                        : esc(d.notAvailable)
+                      }
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </section>
 
           <section class="martyr-editorial-section" id="publicProfileBiographySection">
@@ -992,7 +1292,7 @@
             ` : `
               <div class="martyr-gallery-grid">
                 ${photos.map((p, idx) => `
-                  <figure class="martyr-gallery-tile" style="margin: 0;" onclick="window.QSFPublicMartyrs.openLightbox(window.__qsfPublicMartyrPhotos, ${m.profile_photo_url ? idx + 1 : idx})">
+                  <figure class="martyr-gallery-tile" style="margin: 0;" onclick="window.QSFPublicMartyrs.openLightbox(window.__qsfPublicMartyrPhotos, ${galleryStartIdx + idx})">
                     <img src="${esc(p.image_url)}" alt="${esc(p.caption || nameBi.text)}" loading="lazy" />
                     ${p.caption ? `<figcaption>${esc(p.caption)}</figcaption>` : ''}
                   </figure>
@@ -1075,10 +1375,32 @@
   // =========================================================================
   // 3. PUBLIC WARS & CONFLICTS ARCHIVE & WAR DETAIL VIEW (/martyrs/war/:slug)
   // =========================================================================
+  function getFilteredWarsList() {
+    const q = String(state.warFilter.search || '').trim().toLowerCase();
+    const cat = String(state.warFilter.category || '').trim();
+    return (state.wars || []).filter(w => {
+      if (cat && w.category !== cat) return false;
+      if (!q) return true;
+      const hay = [w.name, w.name_ur, w.location, w.location_ur, w.tehsil, w.district, w.short_description, w.short_description_ur]
+        .filter(Boolean).join(' ').toLowerCase();
+      return hay.includes(q);
+    });
+  }
+
+  function resetAllWarFilters() {
+    state.warFilter = { search: '', category: '' };
+    state.filterPanelOpen = false;
+    syncHeroTextAndStats();
+    renderPublicWarsList();
+  }
+
   function renderPublicWarsList() {
     const root = document.getElementById('publicMartyrsMainRoot');
     if (!root) return;
     const d = dict();
+    const filteredWars = getFilteredWarsList();
+
+    syncHeroTextAndStats();
 
     updateSeoMeta({
       title: `${d.warsAndConflicts} — ${d.pageTitle} | Qasr-e-Shabbir Foundation`,
@@ -1086,57 +1408,106 @@
       urlPath: '/martyrs/wars'
     });
 
+    const wf = state.warFilter;
+    const warChips = [];
+    if (wf.search) warChips.push({ key: 'search', label: `${d.searchWarsLabel}: "${wf.search}"` });
+    if (wf.category) warChips.push({ key: 'category', label: fmtCategory(wf.category) });
+
     root.innerHTML = `
-      <div class="martyr-wars-grid">
-        ${state.wars.map(w => {
-          const wTitle = pickBi(w.name, w.name_ur).text;
-          const wDesc = pickBi(w.short_description, w.short_description_ur).text;
-          const wLoc = pickBi(
-            [w.location, w.tehsil, w.district].filter((v, i, a) => v && a.indexOf(v) === i).join(', '),
-            [w.location_ur || w.location, w.tehsil, w.district].filter((v, i, a) => v && a.indexOf(v) === i).join('، ')
-          ).text;
-          const wToll = pickBi(w.reported_casualties, w.reported_casualties_ur).text;
-          const parentTitle = pickBi(w.parent_war_name, w.parent_war_name_ur).text;
-          return `
-            <article class="martyr-war-card" onclick="window.QSFPublicMartyrs.openWarDetail('${esc(w.slug || w.id)}')" style="cursor:pointer;">
-              <div class="martyr-war-cover">
-                ${w.cover_image_url
-                  ? `<img src="${esc(w.cover_image_url)}" alt="${esc(wTitle)}" loading="lazy" />`
-                  : `<div class="martyr-war-cover-placeholder"><i class="fas fa-landmark" style="font-size: 2rem;"></i><span style="font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase;">${esc(d.historicalArchive)}</span></div>`
-                }
-                <div style="position: absolute; top: 10px; inset-inline-start: 10px; display: flex; gap: 5px; flex-wrap: wrap;">
-                  ${w.category ? `<span class="martyr-status-tag" style="background: rgba(15,23,42,0.82); color:#FFF;">${esc(fmtCategory(w.category))}</span>` : ''}
-                </div>
-                <div class="martyr-war-count-chip">
-                  <i class="fas fa-users" style="margin-inline-end: 4px;"></i> ${esc(d.totalMartyrsLabel)}: ${Number(w.total_martyrs) || 0}
-                </div>
-              </div>
-              <div class="martyr-war-card-body">
-                ${parentTitle ? `
-                  <div style="font-size: 0.74rem; color: #881337; font-weight: 700; margin-bottom: 5px;">
-                    <i class="fas fa-sitemap"></i> ${esc(parentTitle)}
+      <div class="martyrs-workspace-main">
+        ${warChips.length ? `
+          <div class="martyrs-active-chips">
+            ${warChips.map(ch => `
+              <span class="martyrs-active-chip">
+                ${esc(ch.label)}
+                <button type="button" onclick="window.QSFPublicMartyrs.clearSingleWarFilter('${esc(ch.key)}')">&times;</button>
+              </span>
+            `).join('')}
+            <button type="button" class="btn-public-martyr" style="padding: 2px 10px; font-size: 0.74rem; height: 24px;" onclick="window.QSFPublicMartyrs.resetAllWarFilters()">
+              ${esc(d.resetFilters)}
+            </button>
+          </div>
+        ` : ''}
+
+        ${filteredWars.length === 0 ? `
+          <div class="martyr-editorial-section" style="text-align: center; padding: 52px 24px;">
+            <i class="fas fa-landmark" style="font-size: 2.2rem; color: #CBD5E1; margin-bottom: 12px;"></i>
+            <h3 style="margin: 0 0 6px; color: #334155;">${esc(d.noMartyrsFound)}</h3>
+            <button type="button" class="btn-public-martyr primary" style="margin-top: 12px;" onclick="window.QSFPublicMartyrs.resetAllWarFilters()">
+              <i class="fas fa-rotate-left"></i> ${esc(d.resetFilters)}
+            </button>
+          </div>
+        ` : `
+          <div class="pm-memorial-cards-grid" id="publicWarsCardsGrid">
+            ${filteredWars.map(w => {
+              const wTitle = pickBi(w.name, w.name_ur).text;
+              const wDesc = pickBi(w.short_description, w.short_description_ur).text;
+              const wLoc = pickBi(
+                [w.location, w.tehsil, w.district].filter((v, i, a) => v && a.indexOf(v) === i).join(', '),
+                [w.location_ur || w.location, w.tehsil, w.district].filter((v, i, a) => v && a.indexOf(v) === i).join('، ')
+              ).text;
+              const wToll = pickBi(w.reported_casualties, w.reported_casualties_ur).text;
+              const dateRange = `${fmtDate(w.start_date)} – ${w.end_date ? fmtDate(w.end_date) : d.ongoing}`;
+              const warSlugOrId = esc(w.slug || w.id);
+
+              return `
+                <article class="pm-memorial-card" data-public-war-id="${w.id}" onclick="window.QSFPublicMartyrs.openWarDetail('${warSlugOrId}')">
+                  <div class="pm-war-card-stage">
+                    ${w.category ? `<span class="pm-card-kicker-ribbon">${esc(fmtCategory(w.category))}</span>` : ''}
+                    <span class="pm-war-card-count-badge">
+                      <i class="fas fa-users" style="color:#FBBF24; margin-inline-end: 4px;"></i>${Number(w.total_martyrs) || 0} ${esc(d.pageTitle)}
+                    </span>
+                    ${w.cover_image_url
+                      ? `<img class="pm-war-cover-img" src="${esc(w.cover_image_url)}" alt="${esc(wTitle)}" loading="lazy" />`
+                      : `<div class="pm-card-portrait-fallback">
+                           <img class="pm-fallback-emblem" src="/media/branding/logo_header_58.webp" alt="QSF" loading="lazy" />
+                           <span>${esc(d.warsAndConflicts)}</span>
+                         </div>`
+                    }
                   </div>
-                ` : ''}
-                <h3 class="martyr-war-card-title ${isUr() ? 'martyr-urdu' : ''}">${esc(wTitle)}</h3>
-                <div class="martyr-war-meta">
-                  <span><i class="fas fa-location-dot"></i> ${esc(wLoc)}</span>
-                  <span><i class="fas fa-calendar-days"></i> ${esc(fmtDate(w.start_date))} – ${w.end_date ? esc(fmtDate(w.end_date)) : esc(d.ongoing)}</span>
-                  ${wToll ? `<span><i class="fas fa-chart-simple"></i> ${esc(wToll)}</span>` : ''}
-                </div>
-                <p class="martyr-war-desc ${isUr() ? 'martyr-urdu' : ''}">
-                  ${wDesc ? esc(wDesc.slice(0, 190)) + (wDesc.length > 190 ? '…' : '') : ''}
-                </p>
-                <div class="martyr-war-card-footer">
-                  <span class="btn-public-martyr primary" style="padding: 5px 12px; font-size: 0.78rem;">
-                    <i class="fas fa-book-open"></i> ${esc(d.historicalArchive)}
-                  </span>
-                </div>
-              </div>
-            </article>
-          `;
-        }).join('')}
+                  <div class="pm-card-body">
+                    <h3 class="pm-card-name">${esc(wTitle)}</h3>
+                    <div class="pm-card-meta-list">
+                      <div class="pm-card-meta-item">
+                        <i class="fas fa-calendar-days"></i>
+                        <span><strong>${esc(dateRange)}</strong></span>
+                      </div>
+                      ${wLoc ? `
+                        <div class="pm-card-meta-item">
+                          <i class="fas fa-location-dot"></i>
+                          <span>${esc(wLoc)}</span>
+                        </div>
+                      ` : ''}
+                      ${wToll ? `
+                        <div class="pm-card-meta-item">
+                          <i class="fas fa-chart-simple"></i>
+                          <span>${esc(wToll)}</span>
+                        </div>
+                      ` : ''}
+                      ${wDesc ? `<p class="pm-war-card-desc">${esc(wDesc)}</p>` : ''}
+                    </div>
+                    <div class="pm-card-footer">
+                      <span class="pm-card-war-chip">
+                        <i class="fas fa-book-open"></i> ${esc(d.historicalArchive)}
+                      </span>
+                      <a href="/martyrs/war/${encodeURIComponent(w.slug || String(w.id))}" class="pm-card-profile-link" onclick="event.stopPropagation(); event.preventDefault(); window.QSFPublicMartyrs.openWarDetail('${warSlugOrId}')">
+                        ${esc(d.viewDetails)} <i class="fas ${isUr() ? 'fa-arrow-left' : 'fa-arrow-right'}" style="font-size: 0.7rem;"></i>
+                      </a>
+                    </div>
+                  </div>
+                </article>
+              `;
+            }).join('')}
+          </div>
+        `}
       </div>
     `;
+  }
+
+  function clearSingleWarFilter(key) {
+    if (key in state.warFilter) state.warFilter[key] = '';
+    syncHeroTextAndStats();
+    renderPublicWarsList();
   }
 
   async function openWarDetail(slugOrId) {
@@ -1201,12 +1572,6 @@
     });
 
     root.innerHTML = `
-      <div class="martyr-page-topbar">
-        <button type="button" class="btn-public-martyr" onclick="window.QSFPublicMartyrs.switchSection('wars')">
-          <i class="fas ${isUr() ? 'fa-arrow-right' : 'fa-arrow-left'}"></i> ${esc(d.backToWars)}
-        </button>
-      </div>
-
       <section class="martyr-war-hero">
         <div class="martyr-war-hero-media">
           ${w.cover_image_url ? `<img src="${esc(w.cover_image_url)}" alt="${esc(titleBi.text)}" />` : ''}
@@ -1364,7 +1729,7 @@
         ${martyrs.length === 0 ? `
           <p style="color: #64748B; font-size: 0.88rem; margin: 0;">${esc(d.noMartyrsFound)}</p>
         ` : `
-          <div class="martyrs-cards-grid">
+          <div class="pm-memorial-cards-grid">
             ${martyrs.map(renderPublicMartyrCard).join('')}
           </div>
         `}
@@ -1619,6 +1984,7 @@
     }
     if (e.key === 'Escape') {
       closeFiltersModal();
+      if (state.filterPanelOpen) toggleFilterPanel(false);
     }
   });
 
@@ -1628,6 +1994,8 @@
 
   window.QSFPublicMartyrs = {
     switchSection,
+    setViewMode,
+    toggleFilterPanel,
     openProfile,
     openWarDetail,
     openFiltersModal,
@@ -1639,7 +2007,9 @@
     setLocationScope,
     filterByWarAndLocation,
     clearSingleFilter,
+    clearSingleWarFilter,
     resetAllFilters,
+    resetAllWarFilters,
     goToPage,
     openLightbox,
     stepLightbox,
